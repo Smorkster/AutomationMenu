@@ -11,8 +11,8 @@ A Python-based GUI application for managing and executing automation scripts.
 ## Installation
 1. Clone the repository
 2. Install dependencies: `pip install -r requirements.txt`
-3. Copy `config.template.json` to `config.json`
-4. Update `config.json` with your actual values
+3. Copy `secrets.template.json` to `secrets.json`
+4. Update `secrets.json` with your actual values
 5. Run: `python main.py`
 
 ## Requirements
