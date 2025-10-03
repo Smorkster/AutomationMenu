@@ -39,7 +39,7 @@ def connect_to_AD( app_state: ApplicationState ) -> None :
             ok_string = _( 'Ok' )
             password = inputbox( message = inputbox_label_text, input = True, input_show = '*', buttons = [ ok_string, abort_string ] ).get( dictionary = True )
             if password.get( 'button' ) == abort_string or password.get( 'button' ) == 'Cancel':
-                inputbox( title = abort_string, message = _( 'No password was entered. Exiting.' ) )
+                inputbox( message = _( 'No password was entered. Exiting.' ) )
                 AD_loginattempts = 3
                 sys.exit()
             server = Server( host = app_state.secrets.get( 'ldap_server' ), get_info = ALL )

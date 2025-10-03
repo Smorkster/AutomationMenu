@@ -9,15 +9,11 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-import queue
 import threading
-from io import TextIOWrapper
 from tkinter import Menu
 from tkinter.ttk import Label
 from automation_menu.models import ScriptInfo
 #from automation_menu.ui.main_window import AutomationMenuWindow
-from automation_menu.utils.email_handler import report_script_error
-from automation_menu.utils.screenshot import take_screenshot
 
 class ScriptMenuItem:
 #    def __init__ ( self, script_menu: Menu, script_info: ScriptInfo, main_object: AutomationMenuWindow ):
@@ -72,102 +68,32 @@ class ScriptMenuItem:
         self._in_debug = False
 
     def run_script( self ):
+        from automation_menu.utils.localization import _
         def script_process_wrapper():
             with self.master_self.app_state.script_manager.create_runner() as runner:
                 runner.run_script( script_info = self.script_info, enable_stop_button_callback = self.master_self.enable_stop_script_button )
+
             self.master_self.disable_stop_script_button()
 
+            if self.master_self.app_state.settings.get( 'minimize_on_running' ) and not self.script_info.get_attr( 'DisableMinimizeOnRunning' ):
+                self.master_self.set_min_max_on_running()
+
         self.script_menu.withdraw()
-        threading.Thread( target = script_process_wrapper, daemon = True ).start()
 
-    def set_window_minimized_on_running( self ):
-        """ Set the main window to a minimized state when a script is running """
+        if self.master_self.app_state.settings.get( 'minimize_on_running' ):
+            if self.script_info.get_attr( 'DisableMinimizeOnRunning' ):
+                self.master_self.app_state.output_queue.put( {
+                    'line': _( 'The script has \'DisableMinimizeOnRunning\', meaning the window will not be minimized.' ),
+                    'tag': 'suite_sysinfo'
+                } )
 
-        if self.master_self.app_state.settings.get( 'minimize_on_running' ) and hasattr( self.master_self , 'old_window_geometry' ) and not self.script_info.DisableMinimizeOnRunning:
-            win_width = 400
-            win_height = 100
-            if self.master_self.root.winfo_height() == self.master_self.old_window_geometry[ 'h' ] and self.master_self.root.winfo_width() == self.master_self.old_window_geometry[ 'w' ]:
-                if self.master_self.app_state.settings.get( 'minimize_on_running' ):
-                    self.master_self.root.geometry( newGeometry = f'{ win_width }x{ win_height }+{ self.master_self.root.winfo_screenwidth() - win_width  }+{ self.master_self.root.winfo_screenheight() - win_height - 100 }' )
             else:
-                self.master_self.root.geometry( newGeometry = f'{ self.master_self.old_window_geometry['w'] }x{ self.master_self.old_window_geometry['h'] }+{ self.master_self.old_window_geometry['x'] }+{ self.master_self.old_window_geometry['y'] }' )
+                old_geometry = {
+                    'h': self.master_self.root.winfo_height(),
+                    'w': self.master_self.root.winfo_width(),
+                    'x': self.master_self.root.winfo_x(),
+                    'y': self.master_self.root.winfo_y()
+                }
+                self.master_self.set_min_max_on_running( old_geometry )
 
-    def read_process_pipes( self, out, err ):
-        """ Initiate pipe readers and populate queue with each output line """
-
-        # Constants
-        PIPE_OPENED = 1
-        PIPE_OUTPUT = 2
-        PIPE_CLOSED = 3
-        q = queue.Queue()
-
-        def pipe_reader( name, pipe: TextIOWrapper ):
-            """ Reads a single pipe into output queue """
-
-            try:
-                for line in iter( pipe.readline, '' ):
-                    if pipe.closed:
-                        q.put( ( PIPE_CLOSED, name, ) )
-                        #break
-                    if line:
-                        q.put( ( PIPE_OUTPUT, { 'n': name, 'line': line.rstrip() } , ) )
-
-            finally:
-                q.put( ( PIPE_CLOSED, name, ) )
-
-        # Start a reader for each pipe
-        threading.Thread( target = pipe_reader, args = ( 'stderr', err, ) , daemon = True ).start()
-        threading.Thread( target = pipe_reader, args = ( 'stdout', out, ) , daemon = True ).start()
-
-        # Use a counter to determine how many pipes are left open.
-        # Return if all are closed
-        pipe_count = 2
-
-        # Read the queue in order, blocking if there's no data
-        for data in iter( q.get, '' ):
-            code = data[ 0 ]
-            if code == PIPE_CLOSED:
-                pipe_count -= 1
-            elif code == PIPE_OUTPUT:
-                yield data[ 1 : ][0]
-            if pipe_count == 0:
-                return
-
-    def _report_error( self, message: str = None ):
-        """ Send report to author of script error """
-        from automation_menu.utils.localization import _
-
-        if not message:
-            message = self.master_self.tbOutput.get( '1.0', 'end-1c' )
-
-        if self.master_self.app_state.settings.include_ss_in_error_mail:
-            ss_path = take_screenshot( root_window = self.master_self.root, script = self.script_info, file_name_prefix = self.master_self.app_state.secrets.get( 'error_ss_prefix' ) )
-        else:
-            ss_path = None
-
-        report_script_error( app_state = self.master_self.app_state,
-                            error_msg = message,
-                            script_info = self.script_info,
-                            screenshot = ss_path
-                            )
-        self.master_self.output_message_manager.sysinfo( _( 'A mail with the error message was sent to script developer.' ) )
-
-    def enter_debug( self, row: int = None ):
-        """ Set application in debug mode
-
-        Args:
-            row (int): Row number that have the breakpoint
-        """
-
-        from automation_menu.utils.localization import _
-
-        self.master_self.btnContinueBreakpoint.after( 0, self.master_self.enable_breakpoint_button )
-        line_nr = str( row ) if row else ''
-        line =_( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr )
-        self.master_self.output_message_manager.sysinfo( line )
-        self._in_debug = True
-
-    def exit_debug( self ):
-        """ Reset debug flag """
-
-        self._in_debug = False
+        threading.Thread( target = script_process_wrapper, daemon = True ).start()

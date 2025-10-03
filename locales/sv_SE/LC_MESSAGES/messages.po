@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-03 10:46+0200\n"
+"POT-Creation-Date: 2025-10-03 13:51+0200\n"
 "PO-Revision-Date: 2025-09-19 09:46+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv_SE\n"
@@ -62,7 +62,7 @@ msgstr ""
 
 #: automation_menu/core/auth.py:38
 msgid "Abort"
-msgstr "Avbryter"
+msgstr "Avbryt"
 
 #: automation_menu/core/auth.py:39
 msgid "Ok"
@@ -122,7 +122,6 @@ msgid "Termination - Exception: {e}"
 msgstr "Tvångsavslutning - Fel: {e}"
 
 #: automation_menu/core/execution_manager.py:172
-#: automation_menu/core/script_runner.py:166
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
@@ -163,31 +162,35 @@ msgstr "Kunde inte läsa fil: {error}"
 msgid "{filename} not loaded: {e}"
 msgstr "{filename} kunde inte laddas: {e}"
 
-#: automation_menu/core/script_runner.py:45
+#: automation_menu/core/script_runner.py:41
 msgid " (Dev)"
 msgstr " (Dev)"
 
-#: automation_menu/core/script_runner.py:60
+#: automation_menu/core/script_runner.py:56
 msgid "In development, and should only be run by its developer."
 msgstr "Under utveckling och bör bara köras av ansvarig utvecklare."
 
-#: automation_menu/core/script_runner.py:153
-msgid "A mail with the error message was sent to script developer."
-msgstr "Ett mail med felmeddelandet har skickats to skriptets utvecklare."
+#: automation_menu/core/script_runner.py:86
+msgid ""
+"The script has 'DisableMinimizeOnRunning', meaning the window will not be"
+" minimized."
+msgstr "
+"Skriptet använder 'DisableMinimizeOnRunning', dvs fönstret kommer"
+" inte minimeras"
 
-#: automation_menu/ui/main_window.py:57
+#: automation_menu/ui/main_window.py:56
 msgid "Continue"
 msgstr "Fortsätt"
 
-#: automation_menu/ui/main_window.py:62
+#: automation_menu/ui/main_window.py:61
 msgid "Stop script"
 msgstr "Stoppa skript"
 
-#: automation_menu/ui/main_window.py:73
+#: automation_menu/ui/main_window.py:72
 msgid "Script output"
 msgstr "Utdata från skript"
 
-#: automation_menu/ui/main_window.py:85
+#: automation_menu/ui/main_window.py:84
 msgid ""
 "Some script have an active breakpoint in the code, handling this has not "
 "been implemented and these will not be available:"
@@ -195,15 +198,15 @@ msgstr ""
 "Vissa skript har en aktiv brytpunkt i koden, hantering för detta har inte"
 " implementerats, därför kommer dessa inte vara tillgängliga:"
 
-#: automation_menu/ui/main_window.py:89
+#: automation_menu/ui/main_window.py:88
 msgid "Script ..."
 msgstr "Skript ..."
 
-#: automation_menu/ui/main_window.py:95
+#: automation_menu/ui/main_window.py:94
 msgid "Settings"
 msgstr "Inställningar"
 
-#: automation_menu/ui/main_window.py:154
+#: automation_menu/ui/main_window.py:155
 #, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
@@ -250,7 +253,7 @@ msgstr ""
 msgid "Application language"
 msgstr "Applikationsspråk"
 
-#: automation_menu/ui/settings_tab.py:75
+#: automation_menu/ui/settings_tab.py:76
 msgid "Language to use in the application"
 msgstr "Språk i applikationen"
 
@@ -291,4 +294,7 @@ msgstr "Detta är ett automatiskt meddelande från AutomationMenu"
 
 #~ msgid "Script timed out after 5 minutes"
 #~ msgstr "Skript nådde time out efter 5 minuter"
+
+#~ msgid "A mail with the error message was sent to script developer."
+#~ msgstr "Ett mail med felmeddelandet har skickats to skriptets utvecklare."
 

@@ -8,18 +8,12 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-import asyncio
-import threading
-from tkinter import E, N, S, W, Tk, ttk
-import asyncio
-import threading
 from tkinter import E, N, S, W, Tk, ttk
 
 from automation_menu.core.script_discovery import get_scripts
 from automation_menu.core.script_runner import ScriptMenuItem
 from automation_menu.core.state import ApplicationState
 from automation_menu.ui.custom_menu import CustomMenu
-from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
@@ -34,6 +28,7 @@ class AutomationMenuWindow:
         self.settings_file_path = self.app_state.secrets.get( 'settings_file_path' )
         self.dev_controls = []
         self.widgets = {}
+        self.old_window_geometry = {}
         self.language_manager = LanguageManager( current_language = self.app_state.settings.current_language )
 
         # Create main GUI
@@ -59,18 +54,13 @@ class AutomationMenuWindow:
         self.op_buttons_frame.grid( columnspan = 2, row = 2, sticky = ( S, W, E ) )
 
         self.btnContinueBreakpoint = ttk.Button( master = self.op_buttons_frame, text = _( 'Continue' ), command = self._continue_breakpoint )
-        # Add Op buttons
-        self.op_buttons_frame = ttk.Frame( master = self.root )
-        self.op_buttons_frame.grid( columnspan = 2, row = 2, sticky = ( S, W, E ) )
-
-        self.btnContinueBreakpoint = ttk.Button( master = self.op_buttons_frame, text = _( 'Continue' ), command = self._continue_breakpoint )
         self.btnContinueBreakpoint.state( [ "disabled" ] )
-        self.btnContinueBreakpoint.grid( column = 1, row = 0, pady = 0, sticky = ( E, S ) )
+        self.btnContinueBreakpoint.grid( column = 1, row = 0, padx = 5, ipadx = 5, pady = 0, ipady = 10, sticky = ( E, S ) )
         self.language_manager.add_translatable_widget( ( self.btnContinueBreakpoint, 'Continue' ) )
 
         self.btnStopScript = ttk.Button( master = self.op_buttons_frame, text = _( 'Stop script' ), command = self._stop_script )
         self.btnStopScript.state( [ "disabled" ] )
-        self.btnStopScript.grid( column = 0, row = 0, pady = 0, sticky = ( E, S ) )
+        self.btnStopScript.grid( column = 0, row = 0, padx = 5, ipadx = 5, pady = 0, ipady = 10, sticky = ( E, S ) )
         self.language_manager.add_translatable_widget( ( self.btnStopScript, 'Stop script' ) )
 
         self.op_buttons_frame.grid_columnconfigure( 0 , weight = 0 )
@@ -84,19 +74,8 @@ class AutomationMenuWindow:
         # Manage output
         self.output_controller = AsyncOutputController( output_queue = self.app_state.output_queue, text_widget = self.tbOutput , breakpoint_button = self.btnContinueBreakpoint )
         self.output_controller.start()
-        self.output_controller = AsyncOutputController( output_queue = self.app_state.output_queue, text_widget = self.tbOutput , breakpoint_button = self.btnContinueBreakpoint )
-        self.output_controller.start()
 
         # Add a custom menu
-        self.script_list = get_scripts( app_state = self.app_state )
-        scriptswithbreakpoint = [ s for s
-                                 in self.script_list
-                                 if s.get_attr( 'UsingBreakpoint' ) ]
-        if len( scriptswithbreakpoint ) > 0:
-            line = _( 'Some script have an active breakpoint in the code, handling this has not been implemented and these will not be available:' )
-            self.app_state.output_queue.put( { 'line': line , 'tag': 'suite_sysinfo' } )
-            self.app_state.output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ) , 'tag': 'suite_sysinfo' } )
-
         self.script_list = get_scripts( app_state = self.app_state )
         scriptswithbreakpoint = [ s for s
                                  in self.script_list
@@ -132,31 +111,27 @@ class AutomationMenuWindow:
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
         self.root.mainloop()
 
-    def _continue_breakpoint( self ):
+    def _continue_breakpoint( self ) -> None:
         """ Reset application debug mode """
 
         self.app_state.running_automation.continue_breakpoint()
         self.btnContinueBreakpoint.state( [ "disabled" ] )
 
-    def _on_language_change( self, old_lang: str, new_lang: str ):
+    def _on_language_change( self, new_lang: str ) -> None:
         self._update_ui_text()
 
         self.app_state.settings.current_language = new_lang
         write_settingsfile( settings = self.app_state.settings, settings_file_path = self.settings_file_path )
 
-    def _stop_script( self ):
+    def _stop_script( self ) -> None:
 
         self.app_state.script_manager.stop_current_script()
 
-    def _stop_script( self ):
-
-        self.app_state.script_manager.stop_current_script()
-
-    def _update_settings_tab_text( self ):
+    def _update_settings_tab_text( self ) -> None:
         if hasattr( self, 'settings_widgets' ):
             self.settings_widgets[ '' ]
 
-    def center_screen( self ):
+    def center_screen( self ) -> None:
         """ Center main window on screen """
 
         self.root.update_idletasks()
@@ -170,7 +145,7 @@ class AutomationMenuWindow:
         y = self.root.winfo_screenheight() // 2 - win_height // 2
         self.root.geometry( newGeometry = f'{ width }x{ height }+{ x }+{ y }' )
  
-    def create_script_controls( self ):
+    def create_script_controls( self ) -> None:
         """ Create menuitems for each script and set grid information for window """
 
         from automation_menu.utils.localization import _
@@ -179,73 +154,100 @@ class AutomationMenuWindow:
             if hasattr( scriptinfo, 'NoScriptBlock' ):
                 line = _( 'File {file} does not contain a ScriptInfo-block. Some settings will be ignored.' ).format( file = scriptinfo.fullpath )
                 self.app_state.output_queue.put( { 'line': line, 'tag': 'suite_sysinfo' } )
-                line = _( 'File {file} does not contain a ScriptInfo-block. Some settings will be ignored.' ).format( file = scriptinfo.fullpath )
-                self.app_state.output_queue.put( { 'line': line, 'tag': 'suite_sysinfo' } )
             ScriptMenuItem( script_menu = self.script_menu, script_info = scriptinfo, main_object = self )
 
-    def enable_breakpoint_button( self ):
-        """ Enable the breakpoint button """
+    def enable_breakpoint_button( self ) -> None:
         """ Enable the breakpoint button """
 
         self.btnContinueBreakpoint.state( [ '!disabled' ] )
 
-    def enable_stop_script_button( self ):
+    def enable_stop_script_button( self ) -> None:
         """ Enable the stop script button """
 
         self.btnStopScript.state( [ '!disabled' ] )
 
-    def disable_stop_script_button( self ):
+    def disable_stop_script_button( self ) -> None:
         """ Disable the stop script button """
 
         self.btnStopScript.state( [ 'disabled' ] )
 
-    def enable_stop_script_button( self ):
+    def enable_stop_script_button( self ) -> None:
         """ Enable the stop script button """
 
         self.btnStopScript.state( [ '!disabled' ] )
 
-    def disable_stop_script_button( self ):
+    def disable_stop_script_button( self ) -> None:
         """ Disable the stop script button """
 
         self.btnStopScript.state( [ 'disabled' ] )
 
-    def on_closing( self ):
+    def on_closing( self ) -> None:
         """ Handle the window close event """
 
         write_settingsfile( settings = self.app_state.settings, settings_file_path = self.app_state.secrets.get( 'settings_file_path' ) )
         self.root.destroy()
 
-    def set_current_language( self, event ):
-        """ Change the language in the application """
+    def set_current_language( self, event ) -> None:
+        """ Change the language in the application
+
+        Args:
+            event: Event actualizing the function
+        """
 
         self.app_state.settings.current_language = event.widget.get()
         self.language_manager.change_language( new_language = event.widget.get() )
 
-    def set_display_dev( self ):
+    def set_display_dev( self ) -> None:
         """ Show or hide developer controls based on the checkbox state
 
             To be implemented
         """
-        return
 
-    def set_include_ss_in_error_mail( self, new_value: bool ):
-        """ Save setting to user_settings """
+        pass
+
+    def set_include_ss_in_error_mail( self, new_value: bool ) -> None:
+        """ Save setting to user_settings
+
+        Args:
+            new_value (bool): New value to save
+        """
 
         self.app_state.settings.include_ss_in_error_mail = new_value
 
-    def set_minimize_on_running( self, new_value: bool ):
-        """ Save data of mainwindow position and size from when the setting is set """
+    def set_minimize_on_running( self, new_value: bool ) -> None:
+        """ Save setting to user_settings
+        
+        Args:
+            new_value (bool): New value to save
+        """
 
         self.app_state.settings.minimize_on_running = new_value
-        self.old_window_geometry = {
-            'h': self.root.winfo_height(),
-            'w': self.root.winfo_width(),
-            'x': self.root.winfo_x(),
-            'y': self.root.winfo_y()
-        }
 
-    def set_on_top( self, new_value: bool ):
-        """ Set the window as top most """
+    def set_min_max_on_running( self, old_geometry: dict = None ) -> None:
+        """ Resize window during script execution
+
+        Args:
+            old_geometry (dict): Size values of main window before script execution
+        """
+
+        win_width = 400
+        win_height = 200
+
+        if old_geometry:
+            self.old_window_geometry = old_geometry
+            self.root.geometry( newGeometry = f'{ win_width }x{ win_height }+{ self.root.winfo_screenwidth() - win_width  }+{ self.root.winfo_screenheight() - win_height - 100 }' )
+
+        else:
+            self.root.geometry( newGeometry = f'{ self.old_window_geometry['w'] }x{ self.old_window_geometry['h'] }+{ self.old_window_geometry['x'] }+{ self.old_window_geometry['y'] }' )
+
+        self.root.update_idletasks()
+
+    def set_on_top( self, new_value: bool ) -> None:
+        """ Save setting to user_settings and set/unset the window as top most
+
+        Args:
+            new_value (bool): New value to set and save
+        """
 
         self.app_state.settings.on_top = new_value
         self.root.focus_force()
