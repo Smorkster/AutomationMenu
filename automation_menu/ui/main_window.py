@@ -57,12 +57,12 @@ class AutomationMenuWindow:
         self.btnContinueBreakpoint = ttk.Button( master = self.op_buttons_frame, text = _( 'Continue' ), command = self._continue_breakpoint )
         self.btnContinueBreakpoint.state( [ "disabled" ] )
         self.btnContinueBreakpoint.grid( column = 1, row = 0, pady = 0, sticky = ( E, S ) )
-        self.language_manager.add_widget( ( self.btnContinueBreakpoint, 'Continue' ) )
+        self.language_manager.add_translatable_widget( ( self.btnContinueBreakpoint, 'Continue' ) )
 
         self.btnStopScript = ttk.Button( master = self.op_buttons_frame, text = _( 'Stop script' ), command = self._stop_script )
         self.btnStopScript.state( [ "disabled" ] )
         self.btnStopScript.grid( column = 0, row = 0, pady = 0, sticky = ( E, S ) )
-        self.language_manager.add_widget( ( self.btnStopScript, 'Stop script' ) )
+        self.language_manager.add_translatable_widget( ( self.btnStopScript, 'Stop script' ) )
 
         self.op_buttons_frame.grid_columnconfigure( 0 , weight = 0 )
         self.op_buttons_frame.grid_columnconfigure( 1 , weight = 0 )
@@ -87,14 +87,14 @@ class AutomationMenuWindow:
             self.app_state.output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ) , 'tag': 'suite_sysinfo' } )
 
         self.custom_menu = CustomMenu( parent = self.root, text = _( 'Script ...' ), scripts = self.script_list , main_object = self )
-        self.language_manager.add_widget( ( self.custom_menu.menu_button, 'Script ...' ) )
+        self.language_manager.add_translatable_widget( ( self.custom_menu.menu_button, 'Script ...' ) )
 
         # Create settings
         self.tabSettings = get_settings_tab( tabcontrol = self.tabControl, settings = self.app_state.settings, main_object = self )
         self.tabSettings.grid( sticky = ( N, S, E, W ) )
         self.tabControl.add( child = self.tabSettings, text = _( 'Settings' ) )
 
-        self.language_manager.add_widget( ( self.tabControl, ( 'Script output', 'Settings' ) ) )
+        self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings' ) ) )
 
         self.center_screen()
 

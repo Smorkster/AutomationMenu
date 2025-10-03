@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-03 08:40+0200\n"
+"POT-Creation-Date: 2025-10-03 10:46+0200\n"
 "PO-Revision-Date: 2025-09-19 09:46+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv_SE\n"
@@ -23,7 +23,7 @@ msgid "Application interrupted by user"
 msgstr "Applikation avbryten av användare"
 
 #: main.py:64
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
 "\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Lösenordet kommer inte sparas"
 
 #: automation_menu/core/auth.py:36
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Wrong password. Try again\n"
 "{main_label_text}"
@@ -61,7 +61,6 @@ msgstr ""
 "{main_label_text}"
 
 #: automation_menu/core/auth.py:38
-#, fuzzy
 msgid "Abort"
 msgstr "Avbryter"
 
@@ -103,12 +102,12 @@ msgid "Unexpected error {error}"
 msgstr "Oväntat fel {error}"
 
 #: automation_menu/core/execution_manager.py:98
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Starting '{file}'"
 msgstr "Startar '{file}'"
 
 #: automation_menu/core/execution_manager.py:134
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr "Tvångsavslutning - SubprocessError: {e}"
 
@@ -123,7 +122,7 @@ msgid "Termination - Exception: {e}"
 msgstr "Tvångsavslutning - Fel: {e}"
 
 #: automation_menu/core/execution_manager.py:172
-#: automation_menu/core/script_runner.py:267
+#: automation_menu/core/script_runner.py:166
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
@@ -133,7 +132,6 @@ msgstr ""
 "för att fortsätta."
 
 #: automation_menu/core/execution_manager.py:209
-#, fuzzy
 msgid "Script terminated"
 msgstr "Skript avslutat"
 
@@ -161,7 +159,7 @@ msgid "Could not read file: {error}"
 msgstr "Kunde inte läsa fil: {error}"
 
 #: automation_menu/core/script_discovery.py:120
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr "{filename} kunde inte laddas: {e}"
 
@@ -173,7 +171,7 @@ msgstr " (Dev)"
 msgid "In development, and should only be run by its developer."
 msgstr "Under utveckling och bör bara köras av ansvarig utvecklare."
 
-#: automation_menu/core/script_runner.py:254
+#: automation_menu/core/script_runner.py:153
 msgid "A mail with the error message was sent to script developer."
 msgstr "Ett mail med felmeddelandet har skickats to skriptets utvecklare."
 
@@ -206,7 +204,7 @@ msgid "Settings"
 msgstr "Inställningar"
 
 #: automation_menu/ui/main_window.py:154
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
 "ignored."
@@ -249,6 +247,10 @@ msgstr ""
 " en skärmbild av huvudfönstret?"
 
 #: automation_menu/ui/settings_tab.py:65
+msgid "Application language"
+msgstr "Applikationsspråk"
+
+#: automation_menu/ui/settings_tab.py:75
 msgid "Language to use in the application"
 msgstr "Språk i applikationen"
 
@@ -262,7 +264,6 @@ msgid "Error occured in your automation script"
 msgstr "Fel uppstod i ditt automations skript"
 
 #: automation_menu/utils/email_handler.py:53
-#, fuzzy
 msgid "See attached picture of main window"
 msgstr "Se bifogad bild av huvudfönstret"
 

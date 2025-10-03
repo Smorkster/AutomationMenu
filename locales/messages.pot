@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-03 08:40+0200\n"
+"POT-Creation-Date: 2025-10-03 10:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -108,7 +108,7 @@ msgid "Termination - Exception: {e}"
 msgstr ""
 
 #: automation_menu/core/execution_manager.py:172
-#: automation_menu/core/script_runner.py:267
+#: automation_menu/core/script_runner.py:166
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
@@ -155,7 +155,7 @@ msgstr ""
 msgid "In development, and should only be run by its developer."
 msgstr ""
 
-#: automation_menu/core/script_runner.py:254
+#: automation_menu/core/script_runner.py:153
 msgid "A mail with the error message was sent to script developer."
 msgstr ""
 
@@ -222,6 +222,10 @@ msgid ""
 msgstr ""
 
 #: automation_menu/ui/settings_tab.py:65
+msgid "Application language"
+msgstr ""
+
+#: automation_menu/ui/settings_tab.py:75
 msgid "Language to use in the application"
 msgstr ""
 
