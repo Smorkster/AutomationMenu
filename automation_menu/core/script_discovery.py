@@ -14,7 +14,6 @@ import re
 
 from automation_menu.core.state import ApplicationState
 from automation_menu.models import ScriptInfo, User
-from automation_menu.utils.output_message_manager import OutputMessageManager
 
 def _check_breakpoints( lines: list[ str ] , si: ScriptInfo ) -> ScriptInfo:
     """ Check for uncommented breakpoints """
@@ -88,7 +87,7 @@ def read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptIn
 
     return si if ( ad_ok and user_ok ) or author_ok else None
 
-def get_scripts( app_state: ApplicationState, output_message_manager: OutputMessageManager ) -> list[ ScriptInfo ]:
+def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
     """ Get script files and parse for any ScriptInfo 
     
     Args:
@@ -98,6 +97,8 @@ def get_scripts( app_state: ApplicationState, output_message_manager: OutputMess
     Returns:
         list[ScriptInfo]: A list of available scripts
     """
+
+    from automation_menu.utils.localization import _
 
     # Setup file pattern
     pattern = r'^(?!(__init__)|(GeneralTestFile)).*\.p((y)|(s1))$'
@@ -116,6 +117,6 @@ def get_scripts( app_state: ApplicationState, output_message_manager: OutputMess
             si = read_scriptfile( file = filename, directory = app_state.secrets.get( 'script_dir_path' ), current_user = app_state.current_user )
             indexed_files.append( si )
         except Exception as e:
-            output_message_manager.sysinfo( f'{ filename } not loaded: { repr( e ) }' )
+            app_state.output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ) } )
             continue
     return indexed_files

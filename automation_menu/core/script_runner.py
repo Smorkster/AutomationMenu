@@ -9,15 +9,11 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-
-import os
 import queue
-import re
-import subprocess
 import threading
 from io import TextIOWrapper
 from tkinter import Menu
-from tkinter.ttk import Button, Label
+from tkinter.ttk import Label
 from automation_menu.models import ScriptInfo
 #from automation_menu.ui.main_window import AutomationMenuWindow
 from automation_menu.utils.email_handler import report_script_error
@@ -51,7 +47,7 @@ class ScriptMenuItem:
         else:
             style = 'Script.TLabel'
 
-        self.script_button = Label( self.script_menu, text = self.label_text, style = style, borderwidth=1 )
+        self.script_button = Label( self.script_menu, text = self.label_text, style = style, borderwidth = 1 )
         self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
 
         # Add tooltip to this button
@@ -74,6 +70,15 @@ class ScriptMenuItem:
         self.process.stdin.flush()
         self.master_self.btnContinueBreakpoint.after( 0, self.master_self.enable_breakpoint_button() )
         self._in_debug = False
+
+    def run_script( self ):
+        def script_process_wrapper():
+            with self.master_self.app_state.script_manager.create_runner() as runner:
+                runner.run_script( script_info = self.script_info, enable_stop_button_callback = self.master_self.enable_stop_script_button )
+            self.master_self.disable_stop_script_button()
+
+        self.script_menu.withdraw()
+        threading.Thread( target = script_process_wrapper, daemon = True ).start()
 
     def set_window_minimized_on_running( self ):
         """ Set the main window to a minimized state when a script is running """
@@ -127,105 +132,6 @@ class ScriptMenuItem:
                 yield data[ 1 : ][0]
             if pipe_count == 0:
                 return
-
-    def run_script( self ):
-        """ Run the script in a separate thread """
-        from automation_menu.utils.localization import _
-
-        def worker():
-            """ Start a process to run the script """
-
-            from automation_menu.utils.localization import _
-
-            try:
-                self.script_menu.withdraw()
-                self.master_self.tabControl.select( 0 )
-                self.master_self.output_message_manager.info( _( 'Starting ' ) + self.script_info.Synopsis + "'" )
-
-                if self.script_info.filename.endswith( '.py' ) and self.script_info.get_attr( 'UsingBreakpoint' ):
-                    env = os.environ
-                    #env['PYTHONBREAKPOINT'] = "0"
-                    self.process = subprocess.Popen( 
-                        args = [ 'python', self.script_path ],
-                        stdout = subprocess.PIPE,
-                        stderr = subprocess.PIPE,
-                        stdin = subprocess.PIPE,
-                        text = True,
-                        bufsize = 0,
-                        encoding = 'utf-8',
-                        shell = True,
-                        env = env
-                    )
-                elif self.script_info.filename.endswith( '.py' ):
-                    self.process = subprocess.Popen(
-                        args = [ 'python', self.script_path ],
-                        stdout = subprocess.PIPE,
-                        stderr = subprocess.PIPE,
-                        stdin = subprocess.PIPE,
-                        text = True,
-                        bufsize = 0,
-                        encoding = 'utf-8',
-                        shell = True
-                    )
-                elif ( self.script_info.filename.endswith( '.ps1' ) ):
-                    # -*- coding: iso-8859-1 -*-
-                    self.process = subprocess.Popen(
-                        args = [ 'powershell.exe', self.script_path, '-NoExit' ],
-                        stdout = subprocess.PIPE,
-                        stderr = subprocess.PIPE,
-                        stdin = subprocess.PIPE,
-                        text = True,
-                        bufsize = 0
-                    )
-                self.master_self.app_state.running_automation = self
-
-                # Need to make a copy of stderr, to separate the stdout and stderr pipes
-                fd = self.process.stderr.fileno()
-                my_stderr = os.fdopen( os.dup( fd ) )
-                os.close( fd )
-
-                for output in self.read_process_pipes( out = self.process.stdout, err = my_stderr ):
-                    match_py = re.search( r'^.*\((.*)\)<module>\(\)', output[ 'line' ].lower() )
-                    match_ps = re.search( r'^entering debug mode', output[ 'line' ].lower() )
-                    if match_py:
-                        line_nr = match_py.group( 1 )
-                        self.enter_debug( row = line_nr )
-                    elif match_ps:
-                        self.enter_debug()
-                    else:
-                        if not self._in_debug:
-                            if output[ 'n' ] == 'stdout':
-                                self.master_self.output_message_manager.info( output[ 'line' ] )
-                            else:
-                                self.master_self.output_message_manager.error( output[ 'line' ] )
-
-                self.process.stdout.close()
-                my_stderr.close()
-                self.process.wait()
-
-                if self.process.returncode == 0:
-                    self.master_self.output_message_manager.finished( _( 'Done ✅' ) )
-                else:
-                    self.master_self.output_message_manager.error( _( 'Exited with code {return_code} ❌' ).format( return_code = str( self.process.returncode ) ), finished = True )
-                    self._report_error()
-
-                if hasattr( self.script_info , 'DisableMinimizeOnRunning' ) and not self.script_info.DisableMinimizeOnRunning:
-                    self.set_window_minimized_on_running()
-
-            except Exception as e:
-                self.master_self.output_message_manager.error( _( 'Exception ❗: {error}' ).format( error = str( e ) ), finished = True )
-                self._report_error( message = e )
-            finally:
-                self.process = None
-
-        if self.master_self.app_state.running_automation.process == None:
-            if hasattr( self.script_info , 'DisableMinimizeOnRunning' ) and not self.script_info.DisableMinimizeOnRunning:
-                self.set_window_minimized_on_running()
-            self.master_self.output_controller.start_polling()
-            threading.Thread( target = worker, daemon = True ).start()
-        else:
-            self.master_self.output_message_manager.error( _( 'Another script is running, only one allowed at a time.' ), finished = True )
-        self.master_self.tbOutput.see( 'end' )
 
     def _report_error( self, message: str = None ):
         """ Send report to author of script error """

@@ -5,7 +5,7 @@ from automation_menu.core.script_runner import ScriptMenuItem
 from automation_menu.models import ScriptInfo
 
 class CustomMenu:
-    def __init__(self, parent, text, scripts, main_object ):
+    def __init__( self, parent, text, scripts, main_object ):
         self.parent = parent
         self.scripts = scripts
         self.main_object = main_object
@@ -20,22 +20,22 @@ class CustomMenu:
         self.menu_button.grid( row = 0, sticky = ( W ) )
 
         # Create popup window (initially hidden)
-        self.popup = tk.Toplevel(parent)
+        self.popup = tk.Toplevel( parent )
         self.popup.withdraw()  # Hide initially
-        self.popup.overrideredirect(True)  # Remove window decorations
+        self.popup.overrideredirect( True )  # Remove window decorations
         self.popup.config( relief = 'flat', borderwidth = 2 )
 
         self.create_popup_content()
 
-    def create_popup_content(self):
+    def create_popup_content( self ):
         """Create the popup menu content with tooltips"""
-        for i, script_info in enumerate(self.scripts):
+        for i, script_info in enumerate( [ script_info for script_info in self.scripts if not script_info.get_attr( 'UsingBreakpoint' ) ] ):
             script_object = ScriptMenuItem( self.popup, script_info = script_info, main_object = self.main_object )
-            script_object.script_button.grid(row=i, column=0, sticky=(W, E), padx=2, pady=1)
+            script_object.script_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
 
-        self.popup.bind('<FocusOut>', lambda e: self.popup.withdraw())
+        self.popup.bind( '<FocusOut>', lambda e: self.popup.withdraw() )
 
-    def show_popup_menu(self):
+    def show_popup_menu( self ):
         """Show the popup menu"""
 
         if self._visible:
@@ -46,8 +46,8 @@ class CustomMenu:
             x = self.menu_button.winfo_rootx()
             y = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
 
-            self.popup.geometry(f"+{x}+{y}")
-            self.popup.deiconify()  # Show popup
+            self.popup.geometry( f'+{ x }+{ y }' )
+            self.popup.deiconify() # Show popup
 
             self.popup.focus_set()
             self._visible = True

@@ -19,6 +19,7 @@ from pathlib import Path
 project_root = Path( __file__ ).parent.parent
 sys.path.insert( 0, str( project_root ) )
 
+from automation_menu.core.execution_manager import ScriptExecutionManager
 from automation_menu.core.state import ApplicationState
 from automation_menu.models import Secrets, Settings, User
 from automation_menu.utils.config import read_secrets_file, read_settingsfile, write_settingsfile
@@ -41,6 +42,8 @@ def main():
         from automation_menu.core.auth import connect_to_AD, get_user_adobject
         app_state.ldap_connection = connect_to_AD( app_state )
         app_state.current_user = User( get_user_adobject( app_state = app_state ) )
+
+        app_state.script_manager = ScriptExecutionManager( output_queue = app_state.output_queue, app_state = app_state )
 
         # Launch the main application window
         from automation_menu.ui.main_window import AutomationMenuWindow
