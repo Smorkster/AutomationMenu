@@ -61,7 +61,7 @@ class ScriptMenuItem:
                 dev = True
 
             tt = AlwaysOnTopToolTip( widget = self.script_button, msg = desc )
-            self.master_self.language_manager.add_widget( ( tt, self.script_info.Description, dev ) )
+            self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.Description, dev ) )
 
     def continue_breakpoint( self ):
         """ Continue execution of the script after hitting a breakpoint """

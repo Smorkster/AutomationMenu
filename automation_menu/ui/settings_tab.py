@@ -34,8 +34,8 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ):
                                  command = lambda: main_object.set_on_top( val_chb_on_top.get() ) )
     tt = AlwaysOnTopToolTip( widget = chbTopMost, msg = _ ( 'Shall the window be set as topmost, above all other windows' ) )
     chbTopMost.grid( column = 0 , row = 0, sticky = ( N, W ) )
-    main_object.language_manager.add_widget( ( chbTopMost, 'Set as topmost window' ) )
-    main_object.language_manager.add_widget( ( tt, 'Shall the window be set as topmost, above all other windows' , False ) )
+    main_object.language_manager.add_translatable_widget( ( chbTopMost, 'Set as topmost window' ) )
+    main_object.language_manager.add_translatable_widget( ( tt, 'Shall the window be set as topmost, above all other windows' , False ) )
 
     val_chb_minimize_on_running = BooleanVar( value = settings.get( 'minimize_on_running' ) )
     chbMinimizeOnRunning = ttk.Checkbutton( master = tab,
@@ -44,8 +44,8 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ):
                                               command = lambda: main_object.set_minimize_on_running( val_chb_minimize_on_running.get() ) )
     tt = AlwaysOnTopToolTip( widget = chbMinimizeOnRunning, msg = _( 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' ) )
     chbMinimizeOnRunning.grid( column = 0 , row = 1, sticky = ( N, W ) )
-    main_object.language_manager.add_widget( ( chbMinimizeOnRunning, 'Minimize size during script execution' ) )
-    main_object.language_manager.add_widget( ( tt, 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' , False ) )
+    main_object.language_manager.add_translatable_widget( ( chbMinimizeOnRunning, 'Minimize size during script execution' ) )
+    main_object.language_manager.add_translatable_widget( ( tt, 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' , False ) )
 
     val_chb_include_ss_in_error_mail = BooleanVar( value = settings.get( 'include_ss_in_error_mail' ) )
     chbIncludeSsInErrorMail = ttk.Checkbutton( master = tab,
@@ -54,16 +54,27 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ):
                                                     command = lambda: main_object.set_include_ss_in_error_mail( val_chb_include_ss_in_error_mail.get() ) )
     tt = AlwaysOnTopToolTip( widget = chbIncludeSsInErrorMail, msg = _( 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' ) )
     chbIncludeSsInErrorMail.grid( column = 0 , row = 2, sticky = ( N, W ) )
-    main_object.language_manager.add_widget( ( chbIncludeSsInErrorMail, 'Include screenshot in mail when reporting error' ) )
-    main_object.language_manager.add_widget( ( tt, 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' , False ) )
+    main_object.language_manager.add_translatable_widget( ( chbIncludeSsInErrorMail, 'Include screenshot in mail when reporting error' ) )
+    main_object.language_manager.add_translatable_widget( ( tt, 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' , False ) )
+
+    language_frame = ttk.Frame( tab )
+    language_frame.grid( column = 0 , row = 3, sticky = ( N, W ) )
+    language_frame.columnconfigure( index = 0, weight = 0 )
+    language_frame.columnconfigure( index = 1, weight = 0 )
+
+    lblCurrentLanguageTitle = ttk.Label( language_frame, text = _( 'Application language' ), padding = ( 5, 10 ) )
+    lblCurrentLanguageTitle.grid( column = 0, row = 0, sticky = ( N, W ) )
+    main_object.language_manager.add_translatable_widget( ( lblCurrentLanguageTitle, 'Application language' ) )
 
     val_cmb_current_language = StringVar( value = settings.get( 'current_language' ) )
-    cmbCurrentLanguage = ttk.Combobox( master = tab,
+    cmbCurrentLanguage = ttk.Combobox( master = language_frame,
                                        values = get_available_languages(),
-                                       textvariable = val_cmb_current_language )
+                                       textvariable = val_cmb_current_language.get )
     cmbCurrentLanguage.bind( '<<ComboboxSelected>>', main_object.set_current_language )
-    AlwaysOnTopToolTip( widget = cmbCurrentLanguage, msg = _( 'Language to use in the application' ) )
-    cmbCurrentLanguage.grid( column = 0 , row = 3, sticky = ( N, W ) )
+    cmbCurrentLanguage.grid( column = 1, row = 0, pady = 5, sticky = ( N, W ) )
+    cmbCurrentLanguage.current( cmbCurrentLanguage[ 'values' ].index( val_cmb_current_language.get() ) )
+    tt = AlwaysOnTopToolTip( widget = cmbCurrentLanguage, msg = _( 'Language to use in the application' ) )
+    main_object.language_manager.add_translatable_widget( ( tt, 'Language to use in the application' , False ) )
 
 # In settings_tab.py - when combobox changes
 def on_language_selection( event ):

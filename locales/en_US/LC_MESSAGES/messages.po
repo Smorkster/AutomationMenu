@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-03 08:40+0200\n"
+"POT-Creation-Date: 2025-10-03 10:46+0200\n"
 "PO-Revision-Date: 2025-09-18 15:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_US\n"
@@ -19,9 +19,11 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: main.py:54
+#: main.py:54
 msgid "Application interrupted by user"
 msgstr "Application interrupted by user"
 
+#: main.py:64
 #: main.py:64
 #, python-brace-format
 msgid ""
@@ -37,6 +39,7 @@ msgstr ""
 "\n"
 "The application will now exit."
 
+#: main.py:66
 #: main.py:66
 msgid "Application Error"
 msgstr "Application Error"
@@ -70,13 +73,26 @@ msgid "Ok"
 msgstr "Ok"
 
 #: automation_menu/core/auth.py:42
+#: automation_menu/core/auth.py:38
+msgid "Abort"
+msgstr "Aborting"
+
+#: automation_menu/core/auth.py:39
+msgid "Ok"
+msgstr "Ok"
+
+#: automation_menu/core/auth.py:42
 msgid "No password was entered. Exiting."
 msgstr "No password was entered. Exiting."
+msgstr "No password was entered. Exiting."
 
+#: automation_menu/core/auth.py:58
 #: automation_menu/core/auth.py:58
 msgid "Error"
 msgstr "Error"
 
+#: automation_menu/core/auth.py:58
+#, python-brace-format
 #: automation_menu/core/auth.py:58
 #, fuzzy, python-brace-format
 msgid ""
@@ -88,6 +104,7 @@ msgstr ""
 "{error}\n"
 "Exiting"
 
+#: automation_menu/core/auth.py:75
 #: automation_menu/core/auth.py:75
 msgid "Not connected to LDAP"
 msgstr "Not connected to LDAP"
@@ -103,12 +120,12 @@ msgid "Unexpected error {error}"
 msgstr "Unexpected error {error}"
 
 #: automation_menu/core/execution_manager.py:98
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Starting '{file}'"
 msgstr "Starting '{file}'"
 
 #: automation_menu/core/execution_manager.py:134
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr "Termination - SubprocessError: {e}"
 
@@ -123,8 +140,8 @@ msgid "Termination - Exception: {e}"
 msgstr "Termination - Exception: {e}"
 
 #: automation_menu/core/execution_manager.py:172
-#: automation_menu/core/script_runner.py:267
-#, fuzzy, python-brace-format
+#: automation_menu/core/script_runner.py:166
+#, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
 "reactivate script."
@@ -133,7 +150,6 @@ msgstr ""
 "reactivate script."
 
 #: automation_menu/core/execution_manager.py:209
-#, fuzzy
 msgid "Script terminated"
 msgstr "Script terminated"
 
@@ -151,17 +167,17 @@ msgid "Script info missing"
 msgstr "Script info missing"
 
 #: automation_menu/core/script_discovery.py:64
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "File not found: {error}"
 msgstr "File not found: {error}"
 
 #: automation_menu/core/script_discovery.py:66
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Could not read file: {error}"
 msgstr "Could not read file: {error}"
 
 #: automation_menu/core/script_discovery.py:120
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr "{filename} not loaded: {e}"
 
@@ -173,7 +189,7 @@ msgstr " (Dev)"
 msgid "In development, and should only be run by its developer."
 msgstr "In development, and should only be run by its developer."
 
-#: automation_menu/core/script_runner.py:254
+#: automation_menu/core/script_runner.py:153
 msgid "A mail with the error message was sent to script developer."
 msgstr "A mail with the error message was sent to script developer."
 
@@ -206,7 +222,7 @@ msgid "Settings"
 msgstr "Settings"
 
 #: automation_menu/ui/main_window.py:154
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
 "ignored."
@@ -249,11 +265,15 @@ msgstr ""
 "occured, have a screenshot of main window attached?"
 
 #: automation_menu/ui/settings_tab.py:65
+msgid "Application language"
+msgstr "Application language"
+
+#: automation_menu/ui/settings_tab.py:75
 msgid "Language to use in the application"
 msgstr "Language to use in the application"
 
 #: automation_menu/utils/config.py:53
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Writing settings error; file not found: {file_path}"
 msgstr "Writing settings error; file not found: {file_path}"
 
@@ -262,7 +282,6 @@ msgid "Error occured in your automation script"
 msgstr "Error occured in your automation script"
 
 #: automation_menu/utils/email_handler.py:53
-#, fuzzy
 msgid "See attached picture of main window"
 msgstr "See attached picture from main window"
 
@@ -271,12 +290,12 @@ msgid "Script error"
 msgstr "Script error"
 
 #: automation_menu/utils/email_handler.py:58
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Error occured when your script <strong>{script_name}</strong> was running"
 msgstr "Error occured when your script <strong>{script_name}</strong> was running"
 
 #: automation_menu/utils/email_handler.py:59
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "The error occured at: {time}"
 msgstr "The error occured at: {time}"
 

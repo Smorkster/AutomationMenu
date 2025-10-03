@@ -11,11 +11,15 @@ Created: 2025-09-25
 import asyncio
 import threading
 from tkinter import E, N, S, W, Tk, ttk
+import asyncio
+import threading
+from tkinter import E, N, S, W, Tk, ttk
 
 from automation_menu.core.script_discovery import get_scripts
 from automation_menu.core.script_runner import ScriptMenuItem
 from automation_menu.core.state import ApplicationState
 from automation_menu.ui.custom_menu import CustomMenu
+from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
@@ -55,14 +59,19 @@ class AutomationMenuWindow:
         self.op_buttons_frame.grid( columnspan = 2, row = 2, sticky = ( S, W, E ) )
 
         self.btnContinueBreakpoint = ttk.Button( master = self.op_buttons_frame, text = _( 'Continue' ), command = self._continue_breakpoint )
+        # Add Op buttons
+        self.op_buttons_frame = ttk.Frame( master = self.root )
+        self.op_buttons_frame.grid( columnspan = 2, row = 2, sticky = ( S, W, E ) )
+
+        self.btnContinueBreakpoint = ttk.Button( master = self.op_buttons_frame, text = _( 'Continue' ), command = self._continue_breakpoint )
         self.btnContinueBreakpoint.state( [ "disabled" ] )
         self.btnContinueBreakpoint.grid( column = 1, row = 0, pady = 0, sticky = ( E, S ) )
-        self.language_manager.add_widget( ( self.btnContinueBreakpoint, 'Continue' ) )
+        self.language_manager.add_translatable_widget( ( self.btnContinueBreakpoint, 'Continue' ) )
 
         self.btnStopScript = ttk.Button( master = self.op_buttons_frame, text = _( 'Stop script' ), command = self._stop_script )
         self.btnStopScript.state( [ "disabled" ] )
         self.btnStopScript.grid( column = 0, row = 0, pady = 0, sticky = ( E, S ) )
-        self.language_manager.add_widget( ( self.btnStopScript, 'Stop script' ) )
+        self.language_manager.add_translatable_widget( ( self.btnStopScript, 'Stop script' ) )
 
         self.op_buttons_frame.grid_columnconfigure( 0 , weight = 0 )
         self.op_buttons_frame.grid_columnconfigure( 1 , weight = 0 )
@@ -73,6 +82,8 @@ class AutomationMenuWindow:
         self.tabControl.add( child = self.tabOutput, text = _( 'Script output' ) )
 
         # Manage output
+        self.output_controller = AsyncOutputController( output_queue = self.app_state.output_queue, text_widget = self.tbOutput , breakpoint_button = self.btnContinueBreakpoint )
+        self.output_controller.start()
         self.output_controller = AsyncOutputController( output_queue = self.app_state.output_queue, text_widget = self.tbOutput , breakpoint_button = self.btnContinueBreakpoint )
         self.output_controller.start()
 
@@ -86,15 +97,24 @@ class AutomationMenuWindow:
             self.app_state.output_queue.put( { 'line': line , 'tag': 'suite_sysinfo' } )
             self.app_state.output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ) , 'tag': 'suite_sysinfo' } )
 
+        self.script_list = get_scripts( app_state = self.app_state )
+        scriptswithbreakpoint = [ s for s
+                                 in self.script_list
+                                 if s.get_attr( 'UsingBreakpoint' ) ]
+        if len( scriptswithbreakpoint ) > 0:
+            line = _( 'Some script have an active breakpoint in the code, handling this has not been implemented and these will not be available:' )
+            self.app_state.output_queue.put( { 'line': line , 'tag': 'suite_sysinfo' } )
+            self.app_state.output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ) , 'tag': 'suite_sysinfo' } )
+
         self.custom_menu = CustomMenu( parent = self.root, text = _( 'Script ...' ), scripts = self.script_list , main_object = self )
-        self.language_manager.add_widget( ( self.custom_menu.menu_button, 'Script ...' ) )
+        self.language_manager.add_translatable_widget( ( self.custom_menu.menu_button, 'Script ...' ) )
 
         # Create settings
         self.tabSettings = get_settings_tab( tabcontrol = self.tabControl, settings = self.app_state.settings, main_object = self )
         self.tabSettings.grid( sticky = ( N, S, E, W ) )
         self.tabControl.add( child = self.tabSettings, text = _( 'Settings' ) )
 
-        self.language_manager.add_widget( ( self.tabControl, ( 'Script output', 'Settings' ) ) )
+        self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings' ) ) )
 
         self.center_screen()
 
@@ -104,7 +124,9 @@ class AutomationMenuWindow:
         self.root.columnconfigure( index = 0, weight = 1 )
         self.root.columnconfigure( index = 1, weight = 0 )
         self.root.rowconfigure( index = 0, weight = 0 )
+        self.root.rowconfigure( index = 0, weight = 0 )
         self.root.rowconfigure( index = 1, weight = 1 )
+        self.root.rowconfigure( index = 2, weight = 0 )
         self.root.rowconfigure( index = 2, weight = 0 )
 
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
@@ -121,6 +143,10 @@ class AutomationMenuWindow:
 
         self.app_state.settings.current_language = new_lang
         write_settingsfile( settings = self.app_state.settings, settings_file_path = self.settings_file_path )
+
+    def _stop_script( self ):
+
+        self.app_state.script_manager.stop_current_script()
 
     def _stop_script( self ):
 
@@ -153,12 +179,25 @@ class AutomationMenuWindow:
             if hasattr( scriptinfo, 'NoScriptBlock' ):
                 line = _( 'File {file} does not contain a ScriptInfo-block. Some settings will be ignored.' ).format( file = scriptinfo.fullpath )
                 self.app_state.output_queue.put( { 'line': line, 'tag': 'suite_sysinfo' } )
+                line = _( 'File {file} does not contain a ScriptInfo-block. Some settings will be ignored.' ).format( file = scriptinfo.fullpath )
+                self.app_state.output_queue.put( { 'line': line, 'tag': 'suite_sysinfo' } )
             ScriptMenuItem( script_menu = self.script_menu, script_info = scriptinfo, main_object = self )
 
     def enable_breakpoint_button( self ):
         """ Enable the breakpoint button """
+        """ Enable the breakpoint button """
 
         self.btnContinueBreakpoint.state( [ '!disabled' ] )
+
+    def enable_stop_script_button( self ):
+        """ Enable the stop script button """
+
+        self.btnStopScript.state( [ '!disabled' ] )
+
+    def disable_stop_script_button( self ):
+        """ Disable the stop script button """
+
+        self.btnStopScript.state( [ 'disabled' ] )
 
     def enable_stop_script_button( self ):
         """ Enable the stop script button """

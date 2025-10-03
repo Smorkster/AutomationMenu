@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-03 08:40+0200\n"
+"POT-Creation-Date: 2025-10-03 10:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,9 +18,11 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: main.py:54
+#: main.py:54
 msgid "Application interrupted by user"
 msgstr ""
 
+#: main.py:64
 #: main.py:64
 #, python-brace-format
 msgid ""
@@ -31,6 +33,7 @@ msgid ""
 "The application will now exit."
 msgstr ""
 
+#: main.py:66
 #: main.py:66
 msgid "Application Error"
 msgstr ""
@@ -58,13 +61,24 @@ msgid "Ok"
 msgstr ""
 
 #: automation_menu/core/auth.py:42
+#: automation_menu/core/auth.py:38
+msgid "Abort"
+msgstr ""
+
+#: automation_menu/core/auth.py:39
+msgid "Ok"
+msgstr ""
+
+#: automation_menu/core/auth.py:42
 msgid "No password was entered. Exiting."
 msgstr ""
 
 #: automation_menu/core/auth.py:58
+#: automation_menu/core/auth.py:58
 msgid "Error"
 msgstr ""
 
+#: automation_menu/core/auth.py:58
 #: automation_menu/core/auth.py:58
 #, python-brace-format
 msgid ""
@@ -73,6 +87,7 @@ msgid ""
 "Exiting"
 msgstr ""
 
+#: automation_menu/core/auth.py:75
 #: automation_menu/core/auth.py:75
 msgid "Not connected to LDAP"
 msgstr ""
@@ -133,10 +148,12 @@ msgid "Script info missing"
 msgstr ""
 
 #: automation_menu/core/script_discovery.py:64
+#: automation_menu/core/script_discovery.py:64
 #, python-brace-format
 msgid "File not found: {error}"
 msgstr ""
 
+#: automation_menu/core/script_discovery.py:66
 #: automation_menu/core/script_discovery.py:66
 #, python-brace-format
 msgid "Could not read file: {error}"
@@ -148,14 +165,21 @@ msgid "{filename} not loaded: {e}"
 msgstr ""
 
 #: automation_menu/core/script_runner.py:45
+#: automation_menu/core/script_discovery.py:120
+#, python-brace-format
+msgid "{filename} not loaded: {e}"
+msgstr ""
+
+#: automation_menu/core/script_runner.py:45
 msgid " (Dev)"
 msgstr ""
 
 #: automation_menu/core/script_runner.py:60
+#: automation_menu/core/script_runner.py:60
 msgid "In development, and should only be run by its developer."
 msgstr ""
 
-#: automation_menu/core/script_runner.py:254
+#: automation_menu/core/script_runner.py:153
 msgid "A mail with the error message was sent to script developer."
 msgstr ""
 
@@ -163,6 +187,11 @@ msgstr ""
 msgid "Continue"
 msgstr ""
 
+#: automation_menu/ui/main_window.py:62
+msgid "Stop script"
+msgstr ""
+
+#: automation_menu/ui/main_window.py:73
 #: automation_menu/ui/main_window.py:62
 msgid "Stop script"
 msgstr ""
@@ -178,13 +207,22 @@ msgid ""
 msgstr ""
 
 #: automation_menu/ui/main_window.py:89
+#: automation_menu/ui/main_window.py:85
+msgid ""
+"Some script have an active breakpoint in the code, handling this has not "
+"been implemented and these will not be available:"
+msgstr ""
+
+#: automation_menu/ui/main_window.py:89
 msgid "Script ..."
 msgstr ""
 
 #: automation_menu/ui/main_window.py:95
+#: automation_menu/ui/main_window.py:95
 msgid "Settings"
 msgstr ""
 
+#: automation_menu/ui/main_window.py:154
 #: automation_menu/ui/main_window.py:154
 #, python-brace-format
 msgid ""
@@ -222,6 +260,10 @@ msgid ""
 msgstr ""
 
 #: automation_menu/ui/settings_tab.py:65
+msgid "Application language"
+msgstr ""
+
+#: automation_menu/ui/settings_tab.py:75
 msgid "Language to use in the application"
 msgstr ""
 
@@ -235,6 +277,7 @@ msgid "Error occured in your automation script"
 msgstr ""
 
 #: automation_menu/utils/email_handler.py:53
+msgid "See attached picture of main window"
 msgid "See attached picture of main window"
 msgstr ""
 
