@@ -35,24 +35,27 @@ def connect_to_AD( app_state: ApplicationState ) -> None :
             else:
                 inputbox_label_text = _( 'Wrong password. Try again\n{main_label_text}' ).format( main_label_text = main_input_text )
 
-            password = inputbox( message = inputbox_label_text, input = True, input_show = '*', buttons = [ 'Ok', 'Avbryt' ] ).get( dictionary = True )
-            if password.get( 'button' ) == 'Avbryt' or password.get( 'button' ) == 'Cancel':
-                inputbox( title = 'Avbryter', message = _( 'No password was entered. Exiting.' ) )
+            abort_string = _( 'Abort' )
+            ok_string = _( 'Ok' )
+            password = inputbox( message = inputbox_label_text, input = True, input_show = '*', buttons = [ ok_string, abort_string ] ).get( dictionary = True )
+            if password.get( 'button' ) == abort_string or password.get( 'button' ) == 'Cancel':
+                inputbox( title = abort_string, message = _( 'No password was entered. Exiting.' ) )
                 AD_loginattempts = 3
                 sys.exit()
             server = Server( host = app_state.secrets.get( 'ldap_server' ), get_info = ALL )
-            app_state.ldap_connection = Connection( server,
+            con = Connection( server,
                                user = f'{ app_state.secrets.get( 'domain_name' ) }\\{ os.getenv( key = 'USERNAME', default = 'DefaultUser' ) }',
                                password = password.get('inputs')['Input'].get().decode(),
                                auto_bind = True
                              )
-            break
+            if con:
+                return con
 
         except SystemExit:
             raise SystemExit()
 
         except LDAPSocketOpenError as e:
-            inputbox( title = _( 'Error' ), message =_( 'Could not connect to AD\n{error}\nExiting' ).format( error = str( e ) ) )
+            inputbox( title = _( 'Error' ), message = _( 'Could not connect to AD\n{error}\nExiting' ).format( error = str( e ) ) )
             AD_loginattempts = 3
             sys.exit()
 

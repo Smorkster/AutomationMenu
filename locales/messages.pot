@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-26 11:29+0200\n"
+"POT-Creation-Date: 2025-10-03 08:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: main.py:52
+#: main.py:54
 msgid "Application interrupted by user"
 msgstr ""
 
-#: main.py:62
+#: main.py:64
 #, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
@@ -31,7 +31,7 @@ msgid ""
 "The application will now exit."
 msgstr ""
 
-#: main.py:64
+#: main.py:66
 msgid "Application Error"
 msgstr ""
 
@@ -49,15 +49,23 @@ msgid ""
 "{main_label_text}"
 msgstr ""
 
-#: automation_menu/core/auth.py:40
+#: automation_menu/core/auth.py:38
+msgid "Abort"
+msgstr ""
+
+#: automation_menu/core/auth.py:39
+msgid "Ok"
+msgstr ""
+
+#: automation_menu/core/auth.py:42
 msgid "No password was entered. Exiting."
 msgstr ""
 
-#: automation_menu/core/auth.py:55
+#: automation_menu/core/auth.py:58
 msgid "Error"
 msgstr ""
 
-#: automation_menu/core/auth.py:55
+#: automation_menu/core/auth.py:58
 #, python-brace-format
 msgid ""
 "Could not connect to AD\n"
@@ -65,82 +73,119 @@ msgid ""
 "Exiting"
 msgstr ""
 
-#: automation_menu/core/auth.py:74
+#: automation_menu/core/auth.py:75
 msgid "Not connected to LDAP"
 msgstr ""
 
-#: automation_menu/core/script_discovery.py:38
-msgid "Script info missing"
-msgstr ""
-
-#: automation_menu/core/script_discovery.py:65
+#: automation_menu/core/execution_manager.py:83
 #, python-brace-format
-msgid "File not found: {error}"
+msgid "Subprocess error {error}"
 msgstr ""
 
-#: automation_menu/core/script_discovery.py:67
+#: automation_menu/core/execution_manager.py:90
 #, python-brace-format
-msgid "Could not read file: {error}"
+msgid "Unexpected error {error}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:49
-msgid " (Dev)"
-msgstr ""
-
-#: automation_menu/core/script_runner.py:64
-msgid "In development, and should only be run by its developer."
-msgstr ""
-
-#: automation_menu/core/script_runner.py:143
-msgid "Starting "
-msgstr ""
-
-#: automation_menu/core/script_runner.py:207
-msgid "Done ✅"
-msgstr ""
-
-#: automation_menu/core/script_runner.py:209
+#: automation_menu/core/execution_manager.py:98
 #, python-brace-format
-msgid "Exited with code {return_code} ❌"
+msgid "Starting '{file}'"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:216
+#: automation_menu/core/execution_manager.py:134
 #, python-brace-format
-msgid "Exception ❗: {error}"
+msgid "Termination - SubprocessError: {e}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:227
-msgid "Another script is running, only one allowed at a time."
+#: automation_menu/core/execution_manager.py:138
+#, python-brace-format
+msgid "Termination - CalledProcessError: {e}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:247
-msgid "A mail with the error message was sent to script developer."
+#: automation_menu/core/execution_manager.py:142
+#, python-brace-format
+msgid "Termination - Exception: {e}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:260
+#: automation_menu/core/execution_manager.py:172
+#: automation_menu/core/script_runner.py:267
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
 "reactivate script."
 msgstr ""
 
-#: automation_menu/ui/main_window.py:52
+#: automation_menu/core/execution_manager.py:209
+msgid "Script terminated"
+msgstr ""
+
+#: automation_menu/core/execution_manager.py:215
+msgid "Script completed successfully"
+msgstr ""
+
+#: automation_menu/core/execution_manager.py:221
+#, python-brace-format
+msgid "Script failed with exit code {err}"
+msgstr ""
+
+#: automation_menu/core/script_discovery.py:37
+msgid "Script info missing"
+msgstr ""
+
+#: automation_menu/core/script_discovery.py:64
+#, python-brace-format
+msgid "File not found: {error}"
+msgstr ""
+
+#: automation_menu/core/script_discovery.py:66
+#, python-brace-format
+msgid "Could not read file: {error}"
+msgstr ""
+
+#: automation_menu/core/script_discovery.py:120
+#, python-brace-format
+msgid "{filename} not loaded: {e}"
+msgstr ""
+
+#: automation_menu/core/script_runner.py:45
+msgid " (Dev)"
+msgstr ""
+
+#: automation_menu/core/script_runner.py:60
+msgid "In development, and should only be run by its developer."
+msgstr ""
+
+#: automation_menu/core/script_runner.py:254
+msgid "A mail with the error message was sent to script developer."
+msgstr ""
+
+#: automation_menu/ui/main_window.py:57
 msgid "Continue"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:60
+#: automation_menu/ui/main_window.py:62
+msgid "Stop script"
+msgstr ""
+
+#: automation_menu/ui/main_window.py:73
 msgid "Script output"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:68
+#: automation_menu/ui/main_window.py:85
+msgid ""
+"Some script have an active breakpoint in the code, handling this has not "
+"been implemented and these will not be available:"
+msgstr ""
+
+#: automation_menu/ui/main_window.py:89
 msgid "Script ..."
 msgstr ""
 
-#: automation_menu/ui/main_window.py:74
+#: automation_menu/ui/main_window.py:95
 msgid "Settings"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:129
+#: automation_menu/ui/main_window.py:154
 #, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
@@ -190,7 +235,7 @@ msgid "Error occured in your automation script"
 msgstr ""
 
 #: automation_menu/utils/email_handler.py:53
-msgid "See attached picture from main window"
+msgid "See attached picture of main window"
 msgstr ""
 
 #: automation_menu/utils/email_handler.py:57

@@ -50,7 +50,7 @@ def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_stat
         with open( screenshot , 'rb' ) as f:
             png_data = f.read()
         msg.add_attachment( png_data, maintype = 'image', subtype = 'png' )
-        img_included = _( 'See attached picture from main window' )
+        img_included = _( 'See attached picture of main window' )
     else:
         img_included = '&nbsp;'
 
