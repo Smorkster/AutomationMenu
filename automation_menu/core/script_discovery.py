@@ -49,7 +49,7 @@ def _extract_scriptinfo( lines: list[ str ] , si: ScriptInfo ) -> ScriptInfo:
 
     return si
 
-def read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptInfo:
+def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptInfo:
     """ Get ScriptInfo from the file """
 
     from automation_menu.utils.localization import _
@@ -60,16 +60,14 @@ def read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptIn
     try:
         with open( path, encoding = 'utf-8' ) as f:
             lines = f.readlines()
+
     except FileNotFoundError as e:
         return _( 'File not found: {error}' ).format( error = str( e ) )
+
     except Exception as e:
         return _( 'Could not read file: {error}' ).format( error = str( e ) )
 
-    si = _check_breakpoints( lines, si )
     si = _extract_scriptinfo( lines, si )
-
-    if not si.get_attr( 'Synopsis' ):
-        si.set_attr( 'Synopsis', file )
 
     # Permission logic
     ad_ok = (
@@ -82,10 +80,22 @@ def read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptIn
     )
     author_ok = (
         not hasattr( si, 'Author' ) or
-        current_user.UserId in si.Author
+        current_user.AdObject.name.value != si.get_attr( 'Author' ).replace( ' (', '(' )
+    )
+    state_ok = (
+        hasattr( si, 'State' ) and si.State in ( 'Test', 'Prod' )
     )
 
-    return si if ( ad_ok and user_ok ) or author_ok else None
+    if ( ad_ok and user_ok and state_ok ) or author_ok:
+        si = _check_breakpoints( lines, si )
+
+        if not si.get_attr( 'Synopsis' ):
+            si.set_attr( 'Synopsis', file )
+
+        return si
+
+    else:
+        return None
 
 def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
     """ Get script files and parse for any ScriptInfo 
@@ -95,7 +105,7 @@ def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
         current_user (User): User to check permissions for
 
     Returns:
-        list[ScriptInfo]: A list of available scripts
+        list[ ScriptInfo ]: A list of available scripts
     """
 
     from automation_menu.utils.localization import _
@@ -103,6 +113,7 @@ def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
     # Setup file pattern
     pattern = r'^(?!(__init__)|(GeneralTestFile)).*\.p((y)|(s1))$'
     indexed_files = []
+    scriptswithbreakpoint = []
 
     for i, filename in enumerate(
         sorted(
@@ -114,9 +125,21 @@ def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
         )
     ):
         try:
-            si = read_scriptfile( file = filename, directory = app_state.secrets.get( 'script_dir_path' ), current_user = app_state.current_user )
-            indexed_files.append( si )
+            si = _read_scriptfile( file = filename, directory = app_state.secrets.get( 'script_dir_path' ), current_user = app_state.current_user )
+
+            #if si.get_attr( 'UsingBreakpoint' ) and ( app_state.current_user.AdObject.name.value != si.get_attr( 'Author' ).replace( ' (', '(' ) ):
+            if si.get_attr( 'UsingBreakpoint' ):
+                scriptswithbreakpoint.append( si )
+            else:
+                indexed_files.append( si )
+
         except Exception as e:
             app_state.output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ) } )
             continue
+
+    if len( scriptswithbreakpoint ) > 0:
+        line = _( 'Some script have an active breakpoint in the code, handling this has not been implemented, so these will not be available:' )
+        app_state.output_queue.put( { 'line': line , 'tag': 'suite_sysinfo' } )
+        app_state.output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ) , 'tag': 'suite_sysinfo' } )
+
     return indexed_files
