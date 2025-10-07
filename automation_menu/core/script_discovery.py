@@ -80,7 +80,7 @@ def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptI
     )
     author_ok = (
         not hasattr( si, 'Author' ) or
-        current_user.AdObject.name.value != si.get_attr( 'Author' ).replace( ' (', '(' )
+        current_user.AdObject.name.value == si.get_attr( 'Author' ).replace( ' (', '(' )
     )
     state_ok = (
         hasattr( si, 'State' ) and si.State in ( 'Test', 'Prod' )
@@ -134,7 +134,7 @@ def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
                 indexed_files.append( si )
 
         except Exception as e:
-            app_state.output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ) } )
+            app_state.output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ), 'tag': 'suite_sysinfo' } )
             continue
 
     if len( scriptswithbreakpoint ) > 0:

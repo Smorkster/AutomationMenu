@@ -4,10 +4,13 @@ import subprocess
 import threading
 
 from contextlib import contextmanager
+from tkinter import Tk
 from typing import Callable, Optional
 
 from automation_menu.core.state import ApplicationState
 from automation_menu.models import ScriptInfo
+from automation_menu.utils.email_handler import report_script_error
+from automation_menu.utils.screenshot import take_screenshot
 
 
 class ScriptExecutionManager:
@@ -16,6 +19,7 @@ class ScriptExecutionManager:
         self.app_state = app_state
         self.current_runner: Optional[ 'ScriptRunner' ] = None
         self._lock = threading.Lock()
+
 
     @contextmanager
     def create_runner( self ):
@@ -43,20 +47,24 @@ class ScriptExecutionManager:
                 if self.current_runner == runner:
                     self.current_runner = None
 
+
     def is_running( self ) -> bool:
         with self._lock:
             return self.current_runner is not None
+
 
     def stop_current_script( self ):
         with self._lock:
             if self.current_runner:
                 self.current_runner.terminate()
 
+
 class ScriptRunner:
     def __init__( self, output_queue, app_state, exec_manager ):
         self._output_queue: Queue = output_queue
         self.app_state: ApplicationState = app_state
         self.script_execution_manager: ScriptExecutionManager = exec_manager
+        self.main_window = None
 
         self.current_process: Optional[ subprocess.Popen ] = None
         self._tasks = []
@@ -64,10 +72,14 @@ class ScriptRunner:
         self._in_breakpoint = False
         self._terminated = False
 
-    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable ):
+
+    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable, main_window: Tk ):
         from automation_menu.utils.localization import _
 
         self._script_info = script_info
+        self.main_window = main_window
+        line = ''
+
         try:
             self.current_process = self._create_process( script_info )
 
@@ -76,21 +88,48 @@ class ScriptRunner:
             self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ script_info.filename }_stdout' ).start()
             self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ script_info.filename }_stderr' ).start()
             self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ script_info.filename }_stdmonitor' ).start()
-            self.current_process.wait()
+            return_code = self.current_process.wait()
 
         except subprocess.SubprocessError as e:
-            self._output_queue.put( {
-                'line': _( 'Subprocess error {error}' ).format( error = str( e ) ),
-                'tag': 'suite_error',
-                'finished': True
-            } )
+            line = _( 'Subprocess error {error}' ).format( error = str( e ) )
 
         except Exception as e:
-            self._output_queue.put( {
-                'line': _( 'Unexpected error {error}' ).format( error = str( e ) ),
-                'tag': 'suite_error',
-                'finished': True
-            } )
+            line = _( 'Unexpected error {error}' ).format( error = str( e ) )
+
+        if len( line ) > 0:
+            self._collect_error_info( error = line )
+
+
+    def _collect_error_info( self, error: str ):
+        """ """
+
+        self._output_queue.put( {
+            'line': error,
+            'tag': 'suite_error',
+            'finished': True
+        } )
+        ss_path = ''
+
+        if self.app_state.settings.send_mail_on_error:
+            if self.app_state.settings.include_ss_in_error_mail:
+                ss_path = take_screenshot( root_window = self.main_window, script = self._script_info, file_name_prefix = self.app_state.secrets.get( 'error_ss_prefix' ) )
+
+            from automation_menu.utils.localization import _
+
+            try:
+                report_script_error( app_state = self.app_state, error_msg = error, script_info = self._script_info, screenshot = ss_path )
+
+                self._output_queue.put( {
+                    'line': _( 'Mail sent' ),
+                    'tag': 'suite_sysinfo'
+                } )
+
+            except Exception as e:
+                self._output_queue.put( {
+                    'line': _( 'Could not send error message to developer {e}' ).format( e = str( e ) ),
+                    'tag': 'suite_sysinfo'
+                } )
+
 
     def _create_process( self, script_info ):
         from automation_menu.utils.localization import _
@@ -118,6 +157,7 @@ class ScriptRunner:
                 stdin = asyncio.subprocess.PIPE,
                 text = True
             )
+
 
     def terminate( self ):
         if self.current_process:
@@ -157,6 +197,7 @@ class ScriptRunner:
         while True:
             try:
                 line = self.current_process.stdout.readline()
+
             except:
                 break
 
@@ -179,12 +220,16 @@ class ScriptRunner:
                     'tag': 'suite_info'
                 } )
 
+
     def _read_stderr( self ):
         """ """
+
+        from automation_menu.utils.localization import _
 
         while True:
             try:
                 line = self.current_process.stderr.readline()
+
             except:
                 break
 
@@ -197,6 +242,7 @@ class ScriptRunner:
                 'tag': 'suite_error'
             } )
 
+
     def _read_monitor_completion( self ):
         """ """
 
@@ -204,24 +250,27 @@ class ScriptRunner:
 
         return_code = self.current_process.wait()
 
-        if self._terminated:
-            self._output_queue.put( {
-                'line': _( 'Script terminated' ),
-                'tag': 'suite_sysinfo'
-            } )
-
-        elif return_code == 0:
+        if return_code == 0:
             self._output_queue.put( {
                 'line': _( 'Script completed successfully' ),
                 'tag': 'suite_success'
             } )
 
         else:
-            self._output_queue.put( {
-                    'line':_( 'Script failed with exit code {err}' ).format( err = return_code ),
-                    'tag': 'suite_error',
+            if self._terminated:
+                self._output_queue.put( {
+                    'line': _( 'Script terminated' ),
+                    'tag': 'suite_sysinfo',
                     'finished': True
-            } )
+                } )
+
+            else:
+                self._output_queue.put( {
+                        'line':_( 'Script failed with exit code {err}' ).format( err = return_code ),
+                        'tag': 'suite_sysinfo',
+                        'finished': True
+                } )
+
 
     def _is_breakpoint_line( self, line: str ) -> bool:
         """ """
@@ -229,4 +278,3 @@ class ScriptRunner:
         import re
 
         return re.search( r'^.*\((.*)\)<module>\(\)', line.lower() ) or re.search( 'At .*:{l}', line )
-

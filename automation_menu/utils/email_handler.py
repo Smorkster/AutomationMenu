@@ -47,9 +47,6 @@ def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_stat
 
     msg[ 'To' ] = ', '.join( to_list )
     if screenshot:
-        with open( screenshot , 'rb' ) as f:
-            png_data = f.read()
-        msg.add_attachment( png_data, maintype = 'image', subtype = 'png' )
         img_included = _( 'See attached picture of main window' )
     else:
         img_included = '&nbsp;'
@@ -68,11 +65,16 @@ def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_stat
         <p>{ error_title }</p>
         <p>{ error_msg }</p>
         <p>&nbsp;</p>
-        <p>&nbsp;</p>
         <p><em>{ sign }</em></p>
     </body></html>
     """
     msg.add_alternative( mail_content , subtype = 'html' )
+
+    if screenshot:
+        with open( screenshot , 'rb' ) as f:
+            png_data = f.read()
+
+        msg.add_attachment( png_data, maintype = 'image', subtype = 'png' )
 
     return msg
 
@@ -80,13 +82,19 @@ def report_script_error( app_state: ApplicationState, error_msg: str , script_in
     """ Send the composed mail to script author
 
     Args:
-        current_user (User): User running the application
+        app_state (ApplicationState): App state to take info from
         error_msg (str): Message to send to script author
         script_info (ScriptInfo): Info about script currently running
         screenshot (str): Path to screenshot to include
     """
 
-    msg = _compose( script_info = script_info, error_msg = error_msg, screenshot = screenshot, app_state = app_state )
-    server = smtplib.SMTP( Secrets.get( 'smtprelay' ) )
-    server.send_message( msg )
-    server.quit()
+    try:
+        msg = _compose( script_info = script_info, error_msg = error_msg, screenshot = screenshot, app_state = app_state )
+        server = smtplib.SMTP( Secrets.get( 'smtprelay' ) )
+        server.send_message( msg )
+        server.quit()
+
+        return True
+
+    except Exception as e:
+        raise

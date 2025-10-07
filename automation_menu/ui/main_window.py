@@ -15,6 +15,7 @@ from automation_menu.core.script_runner import ScriptMenuItem
 from automation_menu.core.state import ApplicationState
 from automation_menu.ui.custom_menu import CustomMenu
 from automation_menu.ui.async_output_controller import AsyncOutputController
+from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
 from automation_menu.utils.language_manager import LanguageManager
@@ -35,36 +36,37 @@ class AutomationMenuWindow:
         self.root = Tk()
         self.root.title( string = self.app_state.secrets.get( 'mainwindowtitle' ) )
 
+        # Setup styles
         style = ttk.Style()
         style.configure( 'Script.TLabel',
                         font = ( 'Calibri', 12, 'normal' ),
                         relief = 'flat',
-                        )
+        )
         style.configure( 'Dev.TLabel',
                         font = ( 'Calibri', 12, 'bold' ),
                         relief = 'flat',
-                        )
+        )
+        style.configure( 'TButton',
+                        font = ( 'Calibri', 12, 'normal' ),
+                        padding = ( 2, 4 )
+        )
+        style.configure( 'TLabelFrame',
+                        padding = ( 10, 5 ),
+                        width = 500
+        )
+        style.configure( 'TCheckbutton',
+                        padding = ( 10, 5 )
+        )
+        self.button_margin = {
+            'x': 5,
+            'y': 5
+        }
+
+        self.op_buttons = get_op_buttons( self.root, self )
 
         # Add tabs
         self.tabControl = ttk.Notebook( master = self.root )
         self.tabControl.grid( column = 0 , columnspan = 2 , row = 1, sticky = ( N, S, E, W ) )
-
-        # Add Op buttons
-        self.op_buttons_frame = ttk.Frame( master = self.root )
-        self.op_buttons_frame.grid( columnspan = 2, row = 2, sticky = ( S, W, E ) )
-
-        self.btnContinueBreakpoint = ttk.Button( master = self.op_buttons_frame, text = _( 'Continue' ), command = self._continue_breakpoint )
-        self.btnContinueBreakpoint.state( [ "disabled" ] )
-        self.btnContinueBreakpoint.grid( column = 1, row = 0, padx = 5, ipadx = 5, pady = 0, ipady = 10, sticky = ( E, S ) )
-        self.language_manager.add_translatable_widget( ( self.btnContinueBreakpoint, 'Continue' ) )
-
-        self.btnStopScript = ttk.Button( master = self.op_buttons_frame, text = _( 'Stop script' ), command = self._stop_script )
-        self.btnStopScript.state( [ "disabled" ] )
-        self.btnStopScript.grid( column = 0, row = 0, padx = 5, ipadx = 5, pady = 0, ipady = 10, sticky = ( E, S ) )
-        self.language_manager.add_translatable_widget( ( self.btnStopScript, 'Stop script' ) )
-
-        self.op_buttons_frame.grid_columnconfigure( 0 , weight = 0 )
-        self.op_buttons_frame.grid_columnconfigure( 1 , weight = 0 )
 
         # Create output
         self.tabOutput, self.tbOutput = get_output_tab( tabcontrol = self.tabControl )
@@ -72,21 +74,8 @@ class AutomationMenuWindow:
         self.tabControl.add( child = self.tabOutput, text = _( 'Script output' ) )
 
         # Manage output
-        self.output_controller = AsyncOutputController( output_queue = self.app_state.output_queue, text_widget = self.tbOutput , breakpoint_button = self.btnContinueBreakpoint )
+        self.output_controller = AsyncOutputController( output_queue = self.app_state.output_queue, text_widget = self.tbOutput , breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ] )
         self.output_controller.start()
-
-        # Add a custom menu
-        self.script_list = get_scripts( app_state = self.app_state )
-        scriptswithbreakpoint = [ s for s
-                                 in self.script_list
-                                 if s.get_attr( 'UsingBreakpoint' ) ]
-        if len( scriptswithbreakpoint ) > 0:
-            line = _( 'Some script have an active breakpoint in the code, handling this has not been implemented and these will not be available:' )
-            self.app_state.output_queue.put( { 'line': line , 'tag': 'suite_sysinfo' } )
-            self.app_state.output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ) , 'tag': 'suite_sysinfo' } )
-
-        self.custom_menu = CustomMenu( parent = self.root, text = _( 'Script ...' ), scripts = self.script_list , main_object = self )
-        self.language_manager.add_translatable_widget( ( self.custom_menu.menu_button, 'Script ...' ) )
 
         # Create settings
         self.tabSettings = get_settings_tab( tabcontrol = self.tabControl, settings = self.app_state.settings, main_object = self )
@@ -115,7 +104,7 @@ class AutomationMenuWindow:
         """ Reset application debug mode """
 
         self.app_state.running_automation.continue_breakpoint()
-        self.btnContinueBreakpoint.state( [ "disabled" ] )
+        self.op_buttons[ 'btnContinueBreakpoint' ].state( [ "disabled" ] )
 
     def _on_language_change( self, new_lang: str ) -> None:
         self._update_ui_text()
@@ -159,27 +148,27 @@ class AutomationMenuWindow:
     def enable_breakpoint_button( self ) -> None:
         """ Enable the breakpoint button """
 
-        self.btnContinueBreakpoint.state( [ '!disabled' ] )
+        self.op_buttons[ 'btnContinueBreakpoint' ].state( [ '!disabled' ] )
 
     def enable_stop_script_button( self ) -> None:
         """ Enable the stop script button """
 
-        self.btnStopScript.state( [ '!disabled' ] )
+        self.op_buttons[ 'btnStopScript '].state( [ '!disabled' ] )
 
     def disable_stop_script_button( self ) -> None:
         """ Disable the stop script button """
 
-        self.btnStopScript.state( [ 'disabled' ] )
+        self.op_buttons[ 'btnStopScript' ].state( [ 'disabled' ] )
 
     def enable_stop_script_button( self ) -> None:
         """ Enable the stop script button """
 
-        self.btnStopScript.state( [ '!disabled' ] )
+        self.op_buttons[ 'btnStopScript' ].state( [ '!disabled' ] )
 
     def disable_stop_script_button( self ) -> None:
         """ Disable the stop script button """
 
-        self.btnStopScript.state( [ 'disabled' ] )
+        self.op_buttons[ 'btnStopScript' ].state( [ 'disabled' ] )
 
     def on_closing( self ) -> None:
         """ Handle the window close event """
@@ -204,6 +193,21 @@ class AutomationMenuWindow:
         """
 
         pass
+
+    def set_send_mail_on_error( self, new_value: bool ) -> None:
+        """ Save setting to user_settings
+
+        Args:
+            new_value (bool): New value to save
+        """
+
+        self.app_state.settings.send_mail_on_error = new_value
+
+        if new_value:
+            self.settings_ui[ 'chbIncludeSsInErrorMail' ].config( state = 'normal' )
+
+        else:
+            self.settings_ui[ 'chbIncludeSsInErrorMail' ].config( state = 'disabled' )
 
     def set_include_ss_in_error_mail( self, new_value: bool ) -> None:
         """ Save setting to user_settings

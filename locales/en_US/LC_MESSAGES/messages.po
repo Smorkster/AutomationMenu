@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-03 13:51+0200\n"
+"POT-Creation-Date: 2025-10-07 13:14+0200\n"
 "PO-Revision-Date: 2025-09-18 15:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_US\n"
@@ -61,9 +61,8 @@ msgstr ""
 "{main_label_text}"
 
 #: automation_menu/core/auth.py:38
-#, fuzzy
 msgid "Abort"
-msgstr "Aborting"
+msgstr "Abort"
 
 #: automation_menu/core/auth.py:39
 msgid "Ok"
@@ -78,7 +77,7 @@ msgid "Error"
 msgstr "Error"
 
 #: automation_menu/core/auth.py:58
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Could not connect to AD\n"
 "{error}\n"
@@ -92,37 +91,46 @@ msgstr ""
 msgid "Not connected to LDAP"
 msgstr "Not connected to LDAP"
 
-#: automation_menu/core/execution_manager.py:83
+#: automation_menu/core/execution_manager.py:94
 #, python-brace-format
 msgid "Subprocess error {error}"
 msgstr "Subprocess error {error}"
 
-#: automation_menu/core/execution_manager.py:90
+#: automation_menu/core/execution_manager.py:97
 #, python-brace-format
 msgid "Unexpected error {error}"
 msgstr "Unexpected error {error}"
 
-#: automation_menu/core/execution_manager.py:98
+#: automation_menu/core/execution_manager.py:123
+msgid "Mail sent"
+msgstr "Mail sent"
+
+#: automation_menu/core/execution_manager.py:129
+#, python-brace-format
+msgid "Could not send error message to developer {e}"
+msgstr "Could not send error message to developer {e}"
+
+#: automation_menu/core/execution_manager.py:137
 #, python-brace-format
 msgid "Starting '{file}'"
 msgstr "Starting '{file}'"
 
-#: automation_menu/core/execution_manager.py:134
+#: automation_menu/core/execution_manager.py:174
 #, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr "Termination - SubprocessError: {e}"
 
-#: automation_menu/core/execution_manager.py:138
+#: automation_menu/core/execution_manager.py:178
 #, python-brace-format
 msgid "Termination - CalledProcessError: {e}"
 msgstr "Termination - CalledProcessError: {e}"
 
-#: automation_menu/core/execution_manager.py:142
+#: automation_menu/core/execution_manager.py:182
 #, python-brace-format
 msgid "Termination - Exception: {e}"
 msgstr "Termination - Exception: {e}"
 
-#: automation_menu/core/execution_manager.py:172
+#: automation_menu/core/execution_manager.py:213
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
@@ -131,15 +139,15 @@ msgstr ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
 "reactivate script."
 
-#: automation_menu/core/execution_manager.py:209
-msgid "Script terminated"
-msgstr "Script terminated"
-
-#: automation_menu/core/execution_manager.py:215
+#: automation_menu/core/execution_manager.py:255
 msgid "Script completed successfully"
 msgstr "Script completed successfully"
 
-#: automation_menu/core/execution_manager.py:221
+#: automation_menu/core/execution_manager.py:262
+msgid "Script terminated"
+msgstr "Script terminated"
+
+#: automation_menu/core/execution_manager.py:269
 #, python-brace-format
 msgid "Script failed with exit code {err}"
 msgstr "Script failed with exit code {err}"
@@ -148,20 +156,28 @@ msgstr "Script failed with exit code {err}"
 msgid "Script info missing"
 msgstr "Script info missing"
 
-#: automation_menu/core/script_discovery.py:64
+#: automation_menu/core/script_discovery.py:65
 #, python-brace-format
 msgid "File not found: {error}"
 msgstr "File not found: {error}"
 
-#: automation_menu/core/script_discovery.py:66
+#: automation_menu/core/script_discovery.py:68
 #, python-brace-format
 msgid "Could not read file: {error}"
 msgstr "Could not read file: {error}"
 
-#: automation_menu/core/script_discovery.py:120
+#: automation_menu/core/script_discovery.py:137
 #, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr "{filename} not loaded: {e}"
+
+#: automation_menu/core/script_discovery.py:141
+msgid ""
+"Some script have an active breakpoint in the code, handling this has not "
+"been implemented, so these will not be available:"
+msgstr ""
+"Some script have an active breakpoint in the code, handling this has not "
+"been implemented, so these will not be available:"
 
 #: automation_menu/core/script_runner.py:41
 msgid " (Dev)"
@@ -171,7 +187,7 @@ msgstr " (Dev)"
 msgid "In development, and should only be run by its developer."
 msgstr "In development, and should only be run by its developer."
 
-#: automation_menu/core/script_runner.py:86
+#: automation_menu/core/script_runner.py:88
 msgid ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
@@ -179,35 +195,15 @@ msgstr ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
 
-#: automation_menu/ui/main_window.py:56
-msgid "Continue"
-msgstr "Continue"
-
-#: automation_menu/ui/main_window.py:61
-msgid "Stop script"
-msgstr "Stop script"
-
-#: automation_menu/ui/main_window.py:72
+#: automation_menu/ui/main_window.py:74
 msgid "Script output"
 msgstr "Script output"
 
-#: automation_menu/ui/main_window.py:84
-msgid ""
-"Some script have an active breakpoint in the code, handling this has not "
-"been implemented and these will not be available:"
-msgstr ""
-"Some script have an active breakpoint in the code, handling this has not "
-"been implemented and these will not be available:"
-
-#: automation_menu/ui/main_window.py:88
-msgid "Script ..."
-msgstr "Script ..."
-
-#: automation_menu/ui/main_window.py:94
+#: automation_menu/ui/main_window.py:83
 msgid "Settings"
 msgstr "Settings"
 
-#: automation_menu/ui/main_window.py:155
+#: automation_menu/ui/main_window.py:144
 #, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
@@ -216,19 +212,35 @@ msgstr ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
 "ignored."
 
-#: automation_menu/ui/settings_tab.py:32
+#: automation_menu/ui/op_buttons.py:22
+msgid "Script ..."
+msgstr "Script ..."
+
+#: automation_menu/ui/op_buttons.py:28
+msgid "Continue"
+msgstr "Continue"
+
+#: automation_menu/ui/op_buttons.py:35
+msgid "Stop script"
+msgstr "Stop script"
+
+#: automation_menu/ui/settings_tab.py:36
+msgid "Application settings"
+msgstr "Application settings"
+
+#: automation_menu/ui/settings_tab.py:43
 msgid "Set as topmost window"
 msgstr "Set as topmost window"
 
-#: automation_menu/ui/settings_tab.py:35
+#: automation_menu/ui/settings_tab.py:46
 msgid "Shall the window be set as topmost, above all other windows"
 msgstr "Shall the window be set as topmost, above all other windows"
 
-#: automation_menu/ui/settings_tab.py:42
+#: automation_menu/ui/settings_tab.py:55
 msgid "Minimize size during script execution"
 msgstr "Minimize size during script execution"
 
-#: automation_menu/ui/settings_tab.py:45
+#: automation_menu/ui/settings_tab.py:58
 msgid ""
 "Downsize the window during script execution, trying not to be in its way."
 " This setting can be ignored in ScriptInfo-block with "
@@ -238,25 +250,37 @@ msgstr ""
 " This setting can be ignored in ScriptInfo-block with "
 "'DisableMinimizeOnRunning'."
 
-#: automation_menu/ui/settings_tab.py:52
-msgid "Include screenshot in mail when reporting error"
-msgstr "Include screenshot in mail when reporting error"
-
-#: automation_menu/ui/settings_tab.py:55
-msgid ""
-"Should the mail sent to script developer when reporting that an error "
-"occured, have a screenshot of main window attached?"
-msgstr ""
-"Should the mail sent to script developer when reporting that an error "
-"occured, have a screenshot of main window attached?"
-
-#: automation_menu/ui/settings_tab.py:65
+#: automation_menu/ui/settings_tab.py:67 automation_menu/ui/settings_tab.py:72
 msgid "Application language"
 msgstr "Application language"
 
-#: automation_menu/ui/settings_tab.py:76
+#: automation_menu/ui/settings_tab.py:83
 msgid "Language to use in the application"
 msgstr "Language to use in the application"
+
+#: automation_menu/ui/settings_tab.py:90
+msgid "Errorhandling"
+msgstr "Errorhandling"
+
+#: automation_menu/ui/settings_tab.py:97
+msgid "Send mail to developer on script error"
+msgstr "Send mail to developer on script error"
+
+#: automation_menu/ui/settings_tab.py:100
+msgid "Should an mail be sent to its developer if an error occurs in the script?"
+msgstr "Should an mail be sent to its developer if an error occurs in the script?"
+
+#: automation_menu/ui/settings_tab.py:109
+msgid "Include screenshot in mail when reporting error"
+msgstr "Include screenshot in mail when reporting error"
+
+#: automation_menu/ui/settings_tab.py:112
+msgid ""
+"Should the mail sent to script developer when reporting that an error "
+"occured, have a screenshot of main window attached?"
+msgstr ""
+"Should the mail sent to script developer when reporting that an error "
+"occured, have a screenshot of main window attached?"
 
 #: automation_menu/utils/config.py:53
 #, python-brace-format
@@ -267,35 +291,29 @@ msgstr "Writing settings error; file not found: {file_path}"
 msgid "Error occured in your automation script"
 msgstr "Error occured in your automation script"
 
-#: automation_menu/utils/email_handler.py:53
+#: automation_menu/utils/email_handler.py:50
 msgid "See attached picture of main window"
 msgstr "See attached picture from main window"
 
-#: automation_menu/utils/email_handler.py:57
+#: automation_menu/utils/email_handler.py:54
 msgid "Script error"
 msgstr "Script error"
 
-#: automation_menu/utils/email_handler.py:58
+#: automation_menu/utils/email_handler.py:55
 #, python-brace-format
 msgid "Error occured when your script <strong>{script_name}</strong> was running"
 msgstr "Error occured when your script <strong>{script_name}</strong> was running"
 
-#: automation_menu/utils/email_handler.py:59
+#: automation_menu/utils/email_handler.py:56
 #, python-brace-format
 msgid "The error occured at: {time}"
 msgstr "The error occured at: {time}"
 
-#: automation_menu/utils/email_handler.py:60
+#: automation_menu/utils/email_handler.py:57
 msgid "<strong>Error message</strong>"
 msgstr "<strong>Error message</strong>"
 
-#: automation_menu/utils/email_handler.py:61
+#: automation_menu/utils/email_handler.py:58
 msgid "This is an automatic message sent from AutomationMenu"
 msgstr "This is an automatic message sent from AutomationMenu"
-
-#~ msgid "Script timed out after 5 minutes"
-#~ msgstr "Script timed out after 5 minutes"
-
-#~ msgid "A mail with the error message was sent to script developer."
-#~ msgstr "A mail with the error message was sent to script developer."
 

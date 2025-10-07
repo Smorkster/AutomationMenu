@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-03 13:51+0200\n"
+"POT-Creation-Date: 2025-10-07 13:14+0200\n"
 "PO-Revision-Date: 2025-09-19 09:46+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv_SE\n"
@@ -91,37 +91,46 @@ msgstr ""
 msgid "Not connected to LDAP"
 msgstr "Inte ansluten till LDAP"
 
-#: automation_menu/core/execution_manager.py:83
+#: automation_menu/core/execution_manager.py:94
 #, python-brace-format
 msgid "Subprocess error {error}"
 msgstr "Fel i process {error}"
 
-#: automation_menu/core/execution_manager.py:90
+#: automation_menu/core/execution_manager.py:97
 #, python-brace-format
 msgid "Unexpected error {error}"
 msgstr "Oväntat fel {error}"
 
-#: automation_menu/core/execution_manager.py:98
+#: automation_menu/core/execution_manager.py:123
+msgid "Mail sent"
+msgstr "Mail har skickat"
+
+#: automation_menu/core/execution_manager.py:129
+#, python-brace-format
+msgid "Could not send error message to developer {e}"
+msgstr "Kunde inte skicka mail till utvecklaren {e}"
+
+#: automation_menu/core/execution_manager.py:137
 #, python-brace-format
 msgid "Starting '{file}'"
 msgstr "Startar '{file}'"
 
-#: automation_menu/core/execution_manager.py:134
+#: automation_menu/core/execution_manager.py:174
 #, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr "Tvångsavslutning - SubprocessError: {e}"
 
-#: automation_menu/core/execution_manager.py:138
+#: automation_menu/core/execution_manager.py:178
 #, python-brace-format
 msgid "Termination - CalledProcessError: {e}"
 msgstr "Tvångsavslutning - CalledProcessError: {e}"
 
-#: automation_menu/core/execution_manager.py:142
+#: automation_menu/core/execution_manager.py:182
 #, python-brace-format
 msgid "Termination - Exception: {e}"
 msgstr "Tvångsavslutning - Fel: {e}"
 
-#: automation_menu/core/execution_manager.py:172
+#: automation_menu/core/execution_manager.py:213
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
@@ -130,15 +139,15 @@ msgstr ""
 "En brytpunkt uppstod i skriptet på rad {line_nr}. Klicka på 'Fortsätt' "
 "för att fortsätta."
 
-#: automation_menu/core/execution_manager.py:209
-msgid "Script terminated"
-msgstr "Skript avslutat"
-
-#: automation_menu/core/execution_manager.py:215
+#: automation_menu/core/execution_manager.py:255
 msgid "Script completed successfully"
 msgstr "Skriptet avslutades utan problem"
 
-#: automation_menu/core/execution_manager.py:221
+#: automation_menu/core/execution_manager.py:262
+msgid "Script terminated"
+msgstr "Skript avslutat"
+
+#: automation_menu/core/execution_manager.py:269
 #, python-brace-format
 msgid "Script failed with exit code {err}"
 msgstr "Skriptet avslutades med fel kod {err}"
@@ -147,20 +156,28 @@ msgstr "Skriptet avslutades med fel kod {err}"
 msgid "Script info missing"
 msgstr "Skript info saknas"
 
-#: automation_menu/core/script_discovery.py:64
+#: automation_menu/core/script_discovery.py:65
 #, python-brace-format
 msgid "File not found: {error}"
 msgstr "Fil hittades inte: {error}"
 
-#: automation_menu/core/script_discovery.py:66
+#: automation_menu/core/script_discovery.py:68
 #, python-brace-format
 msgid "Could not read file: {error}"
 msgstr "Kunde inte läsa fil: {error}"
 
-#: automation_menu/core/script_discovery.py:120
+#: automation_menu/core/script_discovery.py:137
 #, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr "{filename} kunde inte laddas: {e}"
+
+#: automation_menu/core/script_discovery.py:141
+msgid ""
+"Some script have an active breakpoint in the code, handling this has not "
+"been implemented, so these will not be available:"
+msgstr ""
+"Vissa skript har en aktiv brytpunkt i koden, hantering för detta har inte"
+" implementerats, därför kommer dessa inte vara tillgängliga:"
 
 #: automation_menu/core/script_runner.py:41
 msgid " (Dev)"
@@ -170,43 +187,23 @@ msgstr " (Dev)"
 msgid "In development, and should only be run by its developer."
 msgstr "Under utveckling och bör bara köras av ansvarig utvecklare."
 
-#: automation_menu/core/script_runner.py:86
+#: automation_menu/core/script_runner.py:88
 msgid ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
-msgstr "
-"Skriptet använder 'DisableMinimizeOnRunning', dvs fönstret kommer"
-" inte minimeras"
+msgstr ""
+"Skriptet använder 'DisableMinimizeOnRunning', dvs fönstret kommer inte "
+"minimeras"
 
-#: automation_menu/ui/main_window.py:56
-msgid "Continue"
-msgstr "Fortsätt"
-
-#: automation_menu/ui/main_window.py:61
-msgid "Stop script"
-msgstr "Stoppa skript"
-
-#: automation_menu/ui/main_window.py:72
+#: automation_menu/ui/main_window.py:74
 msgid "Script output"
 msgstr "Utdata från skript"
 
-#: automation_menu/ui/main_window.py:84
-msgid ""
-"Some script have an active breakpoint in the code, handling this has not "
-"been implemented and these will not be available:"
-msgstr ""
-"Vissa skript har en aktiv brytpunkt i koden, hantering för detta har inte"
-" implementerats, därför kommer dessa inte vara tillgängliga:"
-
-#: automation_menu/ui/main_window.py:88
-msgid "Script ..."
-msgstr "Skript ..."
-
-#: automation_menu/ui/main_window.py:94
+#: automation_menu/ui/main_window.py:83
 msgid "Settings"
 msgstr "Inställningar"
 
-#: automation_menu/ui/main_window.py:155
+#: automation_menu/ui/main_window.py:144
 #, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
@@ -215,19 +212,35 @@ msgstr ""
 "Filen {file} har inte något ScriptInfo-block. Vissa inställningar kommer "
 "ignoreras"
 
-#: automation_menu/ui/settings_tab.py:32
+#: automation_menu/ui/op_buttons.py:22
+msgid "Script ..."
+msgstr "Skript ..."
+
+#: automation_menu/ui/op_buttons.py:28
+msgid "Continue"
+msgstr "Fortsätt"
+
+#: automation_menu/ui/op_buttons.py:35
+msgid "Stop script"
+msgstr "Stoppa skript"
+
+#: automation_menu/ui/settings_tab.py:36
+msgid "Application settings"
+msgstr "Applikationsinställningar"
+
+#: automation_menu/ui/settings_tab.py:43
 msgid "Set as topmost window"
 msgstr "Sätt som ovanför andra fönster"
 
-#: automation_menu/ui/settings_tab.py:35
+#: automation_menu/ui/settings_tab.py:46
 msgid "Shall the window be set as topmost, above all other windows"
 msgstr "Ska fönstret vara ovanför andra fönster"
 
-#: automation_menu/ui/settings_tab.py:42
+#: automation_menu/ui/settings_tab.py:55
 msgid "Minimize size during script execution"
 msgstr "Minimera storlek medan skript körs"
 
-#: automation_menu/ui/settings_tab.py:45
+#: automation_menu/ui/settings_tab.py:58
 msgid ""
 "Downsize the window during script execution, trying not to be in its way."
 " This setting can be ignored in ScriptInfo-block with "
@@ -237,25 +250,37 @@ msgstr ""
 "ivägen. Denna inställning ignoreras i ScriptInfo-blocket med "
 "'DisableMinimizeOnRunning'."
 
-#: automation_menu/ui/settings_tab.py:52
+#: automation_menu/ui/settings_tab.py:67 automation_menu/ui/settings_tab.py:72
+msgid "Application language"
+msgstr "Applikationsspråk"
+
+#: automation_menu/ui/settings_tab.py:83
+msgid "Language to use in the application"
+msgstr "Språk i applikationen"
+
+#: automation_menu/ui/settings_tab.py:90
+msgid "Errorhandling"
+msgstr "Felhantering"
+
+#: automation_menu/ui/settings_tab.py:97
+msgid "Send mail to developer on script error"
+msgstr "Skicka mail till utvecklare vid fel"
+
+#: automation_menu/ui/settings_tab.py:100
+msgid "Should an mail be sent to its developer if an error occurs in the script?"
+msgstr "Ska ett mail skickas till dess utvecklare om ett fel uppstår i skriptet?"
+
+#: automation_menu/ui/settings_tab.py:109
 msgid "Include screenshot in mail when reporting error"
 msgstr "Inkludera skärmbild i mail om felrapport"
 
-#: automation_menu/ui/settings_tab.py:55
+#: automation_menu/ui/settings_tab.py:112
 msgid ""
 "Should the mail sent to script developer when reporting that an error "
 "occured, have a screenshot of main window attached?"
 msgstr ""
 "Ska mailet som skickas till ansvarig utvecklare när fel uppstår inkludera"
 " en skärmbild av huvudfönstret?"
-
-#: automation_menu/ui/settings_tab.py:65
-msgid "Application language"
-msgstr "Applikationsspråk"
-
-#: automation_menu/ui/settings_tab.py:76
-msgid "Language to use in the application"
-msgstr "Språk i applikationen"
 
 #: automation_menu/utils/config.py:53
 #, python-brace-format
@@ -266,35 +291,29 @@ msgstr "Fel att skriva inställningar; fil kunde inte hittas: {file_path}"
 msgid "Error occured in your automation script"
 msgstr "Fel uppstod i ditt automations skript"
 
-#: automation_menu/utils/email_handler.py:53
+#: automation_menu/utils/email_handler.py:50
 msgid "See attached picture of main window"
 msgstr "Se bifogad bild av huvudfönstret"
 
-#: automation_menu/utils/email_handler.py:57
+#: automation_menu/utils/email_handler.py:54
 msgid "Script error"
 msgstr "Skriptfel"
 
-#: automation_menu/utils/email_handler.py:58
+#: automation_menu/utils/email_handler.py:55
 #, python-brace-format
 msgid "Error occured when your script <strong>{script_name}</strong> was running"
 msgstr "Fel uppstod när ditt skript <strong>{script_name}</strong> kördes"
 
-#: automation_menu/utils/email_handler.py:59
+#: automation_menu/utils/email_handler.py:56
 #, python-brace-format
 msgid "The error occured at: {time}"
 msgstr "Felet uppstod: {time}"
 
-#: automation_menu/utils/email_handler.py:60
+#: automation_menu/utils/email_handler.py:57
 msgid "<strong>Error message</strong>"
 msgstr "<strong>felmeddelande</strong>"
 
-#: automation_menu/utils/email_handler.py:61
+#: automation_menu/utils/email_handler.py:58
 msgid "This is an automatic message sent from AutomationMenu"
 msgstr "Detta är ett automatiskt meddelande från AutomationMenu"
-
-#~ msgid "Script timed out after 5 minutes"
-#~ msgstr "Skript nådde time out efter 5 minuter"
-
-#~ msgid "A mail with the error message was sent to script developer."
-#~ msgstr "Ett mail med felmeddelandet har skickats to skriptets utvecklare."
 

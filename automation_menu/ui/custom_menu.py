@@ -16,7 +16,6 @@ class CustomMenu:
             text = text,
             command = self.show_popup_menu
         )
-        self.menu_button.grid( row = 0, padx = self.main_object.button_margin[ 'x' ], pady = self.main_object.button_margin[ 'y' ], sticky = ( N, W ) )
 
         # Create popup window (initially hidden)
         self.popup = tk.Toplevel( parent )

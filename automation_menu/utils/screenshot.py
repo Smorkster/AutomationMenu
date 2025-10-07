@@ -9,14 +9,15 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-import datetime
 import os
 import tempfile
 import win32con
 import win32gui
 import win32ui
 
-from tkinter import Image, Tk
+from datetime import datetime
+from PIL import Image
+from tkinter import Tk
 from automation_menu.models import ScriptInfo
 
 def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> str:
@@ -31,9 +32,8 @@ def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> str:
     """
 
     png_path = os.path.join( tempfile.gettempdir() , f'{ os.path.basename( bmp_path ).split( '.' )[0] }.png' )
-    print( Image )
-    img = Image.open( bmp_path )
-    img.save( png_path, 'PNG' )
+    img = Image.open( fp = bmp_path )
+    img.save( fp = png_path, format = 'PNG' )
 
     if delete_bmp:
         os.remove( bmp_path )
@@ -59,7 +59,7 @@ def take_screenshot( root_window: Tk, script: ScriptInfo, file_name_prefix: str 
     dataBitMap.CreateCompatibleBitmap( dcObj, root_window.winfo_width(), root_window.winfo_height() )
     cDC.SelectObject( dataBitMap )
     cDC.BitBlt( ( 0 , 0 ) , ( root_window.winfo_width() , root_window.winfo_height() ) , dcObj , ( 0 , 0 ), win32con.SRCCOPY )
-    bmp_tempfile = os.path.join( tempfile.gettempdir(), f'{ file_name_prefix }_{ script }_{ datetime.now().strftime( '%Y-%m-%d_%H.%M.%S' ) }.bmp' )
+    bmp_tempfile = os.path.join( tempfile.gettempdir(), f'{ file_name_prefix }_{ script.filename }_{ datetime.now().strftime( '%Y-%m-%d_%H.%M.%S' ) }.bmp' )
     dataBitMap.SaveBitmapFile( cDC , bmp_tempfile )
 
     png_path = _convert_bmp_to_png( bmp_path = bmp_tempfile, delete_bmp = True )

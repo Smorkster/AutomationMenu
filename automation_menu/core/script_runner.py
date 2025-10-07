@@ -69,9 +69,10 @@ class ScriptMenuItem:
 
     def run_script( self ):
         from automation_menu.utils.localization import _
+
         def script_process_wrapper():
             with self.master_self.app_state.script_manager.create_runner() as runner:
-                runner.run_script( script_info = self.script_info, enable_stop_button_callback = self.master_self.enable_stop_script_button )
+                runner.run_script( script_info = self.script_info, enable_stop_button_callback = self.master_self.enable_stop_script_button, main_window = self.master_self.root )
 
             self.master_self.disable_stop_script_button()
 
@@ -79,6 +80,7 @@ class ScriptMenuItem:
                 self.master_self.set_min_max_on_running()
 
         self.script_menu.withdraw()
+        self.master_self.tabControl.select( 0 )
 
         if self.master_self.app_state.settings.get( 'minimize_on_running' ):
             if self.script_info.get_attr( 'DisableMinimizeOnRunning' ):
