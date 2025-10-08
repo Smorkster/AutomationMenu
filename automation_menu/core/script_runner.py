@@ -41,14 +41,16 @@ class ScriptMenuItem:
 
         if hasattr( self.script_info, 'Synopsis' ):
             self.label_text = self.script_info.Synopsis
+
         else:
             self.label_text = self.script_info.filename
 
         if hasattr( self.script_info, 'State' ) and self.script_info.State == 'Dev':
             self.label_text = self.label_text + _( ' (Dev)' )
-            style = 'Dev.TLabel'
+            style = 'DevNormal.TLabel'
+
         else:
-            style = 'Script.TLabel'
+            style = 'ScriptNormal.TLabel'
 
         self.script_button = Label( self.script_menu, text = self.label_text, style = style, borderwidth = 1 )
         self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
@@ -65,6 +67,34 @@ class ScriptMenuItem:
 
             tt = AlwaysOnTopToolTip( widget = self.script_button, msg = desc )
             self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.Description, dev ) )
+
+
+    def on_enter( self, event ):
+        """ Change label background on mouse enter
+
+        Args:
+            event: Event triggering the function
+        """
+
+        if self.script_info.get_attr( 'State' ) == 'Dev':
+            event.widget.configure( style = 'DevHover.TLabel' )
+
+        else:
+            event.widget.configure( style = 'ScriptHover.TLabel' )
+
+
+    def on_leave( self, event ):
+        """ Change label background on mouse leave
+
+        Args:
+            event: Event triggering the function
+        """
+
+        if self.script_info.get_attr( 'State' ) == 'Dev':
+            event.widget.configure( style = 'DevNormal.TLabel' )
+
+        else:
+            event.widget.configure( style = 'ScriptNormal.TLabel' )
 
 
     def continue_breakpoint( self ):

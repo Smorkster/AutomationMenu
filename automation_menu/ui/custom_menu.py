@@ -42,7 +42,7 @@ class CustomMenu:
         self.popup = tk.Toplevel( parent )
         self.popup.withdraw()  # Hide initially
         self.popup.overrideredirect( True )  # Remove window decorations
-        self.popup.config( relief = 'flat', borderwidth = 2 )
+        self.popup.config( relief = 'flat', borderwidth = 2 , highlightcolor = '#909597', highlightthickness = 2)
 
         self._create_popup_content()
 
@@ -51,7 +51,11 @@ class CustomMenu:
         """ Create the popup menu content, with tooltips """
 
         for i, script_info in enumerate( self.scripts ):
-            script_object = ScriptMenuItem( self.popup, script_info = script_info, main_object = self.main_object )
+            #script_object = ScriptMenuItem( script_menu = self.popup, script_info = script_info, main_object = self.main_object )
+            script_object = ScriptMenuItem( script_menu = self.popup, script_info = script_info, main_object = self.main_object )
+            script_object.script_button.bind( '<Enter>' , script_object.on_enter )
+            script_object.script_button.bind( '<Leave>' , script_object.on_leave )
+
             script_object.script_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
 
         self.popup.bind( '<FocusOut>', lambda e: self.popup.withdraw() )

@@ -45,13 +45,21 @@ class AutomationMenuWindow:
 
         # Setup styles
         style = ttk.Style()
-        style.configure( 'Script.TLabel',
-                        font = ( 'Calibri', 12, 'normal' ),
-                        relief = 'flat',
+        style.configure( 'ScriptHover.TLabel',
+                        background = '#c2e6f3',
+                        font = ( 'Calibri', 12, 'normal' )
         )
-        style.configure( 'Dev.TLabel',
-                        font = ( 'Calibri', 12, 'bold' ),
-                        relief = 'flat',
+        style.configure( 'ScriptNormal.TLabel',
+                        background = 'SystemButtonFace',
+                        font = ( 'Calibri', 12, 'normal' )
+        )
+        style.configure( 'DevHover.TLabel',
+                        background = '#c2e6f3',
+                        font = ( 'Calibri', 12, 'bold' )
+        )
+        style.configure( 'DevNormal.TLabel',
+                        background = 'SystemButtonFace',
+                        font = ( 'Calibri', 12, 'bold' )
         )
         style.configure( 'TButton',
                         font = ( 'Calibri', 12, 'normal' ),
@@ -168,7 +176,7 @@ class AutomationMenuWindow:
     def enable_stop_script_button( self ) -> None:
         """ Enable the stop script button """
 
-        self.op_buttons[ 'btnStopScript '].state( [ '!disabled' ] )
+        self.op_buttons[ 'btnStopScript' ].state( [ '!disabled' ] )
 
 
     def disable_stop_script_button( self ) -> None:
