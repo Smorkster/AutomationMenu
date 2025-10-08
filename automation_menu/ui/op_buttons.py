@@ -1,3 +1,13 @@
+"""
+Create a frame containing some buttons
+to manage script execution process
+
+Author: Smorkster
+GitHub:
+License: MIT
+Version: 1.0.0
+Created: 2025-09-25
+"""
 
 from tkinter import E, N, S, W, ttk
 

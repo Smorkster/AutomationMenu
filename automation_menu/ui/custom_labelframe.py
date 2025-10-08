@@ -1,4 +1,15 @@
-from tkinter import LabelFrame, ttk
+"""
+Creates a custom LabelFrame with built in support
+for mouse movement entering and leave widget boundaries
+
+Author: Smorkster
+GitHub:
+License: MIT
+Version: 1.0.0
+Created: 2025-09-25
+"""
+
+from tkinter import LabelFrame
 
 
 class CustomLabelFrame( LabelFrame ):

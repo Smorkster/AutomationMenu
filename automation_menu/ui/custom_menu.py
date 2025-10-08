@@ -1,3 +1,13 @@
+"""
+Creates a custom simple menu, based on a button and popup window
+
+Author: Smorkster
+GitHub:
+License: MIT
+Version: 1.0.0
+Created: 2025-09-25
+"""
+
 import tkinter as tk
 from tkinter import E, W, Tk, ttk
 
