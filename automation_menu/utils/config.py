@@ -12,11 +12,20 @@ import json
 
 from automation_menu.models import Settings
 
+
 def read_secrets_file( file_path: str ) -> dict:
-    """ Read secrets """
+    """ Read secrets
+
+    Args:
+        file_path (str): Path to the secrets file
+
+    Returns:
+        (dict): Dict containing secret data
+    """
 
     with open( file_path, mode = 'r', encoding = 'utf-8' ) as f:
         return json.load( f )
+
 
 def read_settingsfile( settings_file_path: str ) -> dict:
     """ Read settings from a JSON file
@@ -25,7 +34,7 @@ def read_settingsfile( settings_file_path: str ) -> dict:
         settings_file_path (str): Path to settings file
 
     Returns:
-        dict: Collection of settings from file
+        (dict): Collection of settings from file
     """
 
     try:
@@ -35,12 +44,16 @@ def read_settingsfile( settings_file_path: str ) -> dict:
     except Exception as e:
         return Settings( { 'on_top' : False, 'minimize_on_running' : False } )
 
-def write_settingsfile( settings: Settings, settings_file_path: str ):
+
+def write_settingsfile( settings: Settings, settings_file_path: str ) -> None:
     """ Write settings to JSON file
     
     Args:
         settings (Settings): Settings to write to file
         settingsfile_path (str): Path to file to write
+
+    Raises:
+        FileNotFoundError when the path is not valid
     """
 
     from automation_menu.utils.localization import _

@@ -21,8 +21,15 @@ from automation_menu.ui.settings_tab import get_settings_tab
 from automation_menu.utils.language_manager import LanguageManager
 from automation_menu.utils.config import write_settingsfile
 
+
 class AutomationMenuWindow:
     def __init__( self, app_state: ApplicationState ):
+        """ Creates the main window
+
+        Args:
+            app_state (ApplicationState): State object for various application states
+        """
+
         from automation_menu.utils.localization import _
 
         self.app_state = app_state
@@ -100,25 +107,30 @@ class AutomationMenuWindow:
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
         self.root.mainloop()
 
+
     def _continue_breakpoint( self ) -> None:
         """ Reset application debug mode """
 
         self.app_state.running_automation.continue_breakpoint()
         self.op_buttons[ 'btnContinueBreakpoint' ].state( [ "disabled" ] )
 
+
     def _on_language_change( self, new_lang: str ) -> None:
-        self._update_ui_text()
+        """ Eventhandler for when application changes by the user
+
+        Args:
+            new_lang (str): The new language to change to
+        """
 
         self.app_state.settings.current_language = new_lang
         write_settingsfile( settings = self.app_state.settings, settings_file_path = self.settings_file_path )
 
+
     def _stop_script( self ) -> None:
+        """ Eventhandler for when user clicks button stop script """
 
         self.app_state.script_manager.stop_current_script()
 
-    def _update_settings_tab_text( self ) -> None:
-        if hasattr( self, 'settings_widgets' ):
-            self.settings_widgets[ '' ]
 
     def center_screen( self ) -> None:
         """ Center main window on screen """
@@ -133,7 +145,8 @@ class AutomationMenuWindow:
         x = self.root.winfo_screenwidth() // 2 - win_width // 2
         y = self.root.winfo_screenheight() // 2 - win_height // 2
         self.root.geometry( newGeometry = f'{ width }x{ height }+{ x }+{ y }' )
- 
+
+
     def create_script_controls( self ) -> None:
         """ Create menuitems for each script and set grid information for window """
 
@@ -145,36 +158,31 @@ class AutomationMenuWindow:
                 self.app_state.output_queue.put( { 'line': line, 'tag': 'suite_sysinfo' } )
             ScriptMenuItem( script_menu = self.script_menu, script_info = scriptinfo, main_object = self )
 
+
     def enable_breakpoint_button( self ) -> None:
         """ Enable the breakpoint button """
 
         self.op_buttons[ 'btnContinueBreakpoint' ].state( [ '!disabled' ] )
+
 
     def enable_stop_script_button( self ) -> None:
         """ Enable the stop script button """
 
         self.op_buttons[ 'btnStopScript '].state( [ '!disabled' ] )
 
-    def disable_stop_script_button( self ) -> None:
-        """ Disable the stop script button """
-
-        self.op_buttons[ 'btnStopScript' ].state( [ 'disabled' ] )
-
-    def enable_stop_script_button( self ) -> None:
-        """ Enable the stop script button """
-
-        self.op_buttons[ 'btnStopScript' ].state( [ '!disabled' ] )
 
     def disable_stop_script_button( self ) -> None:
         """ Disable the stop script button """
 
         self.op_buttons[ 'btnStopScript' ].state( [ 'disabled' ] )
+
 
     def on_closing( self ) -> None:
         """ Handle the window close event """
 
         write_settingsfile( settings = self.app_state.settings, settings_file_path = self.app_state.secrets.get( 'settings_file_path' ) )
         self.root.destroy()
+
 
     def set_current_language( self, event ) -> None:
         """ Change the language in the application
@@ -186,6 +194,7 @@ class AutomationMenuWindow:
         self.app_state.settings.current_language = event.widget.get()
         self.language_manager.change_language( new_language = event.widget.get() )
 
+
     def set_display_dev( self ) -> None:
         """ Show or hide developer controls based on the checkbox state
 
@@ -194,8 +203,9 @@ class AutomationMenuWindow:
 
         pass
 
+
     def set_send_mail_on_error( self, new_value: bool ) -> None:
-        """ Save setting to user_settings
+        """ Save setting to user_settings file
 
         Args:
             new_value (bool): New value to save
@@ -209,8 +219,9 @@ class AutomationMenuWindow:
         else:
             self.settings_ui[ 'chbIncludeSsInErrorMail' ].config( state = 'disabled' )
 
+
     def set_include_ss_in_error_mail( self, new_value: bool ) -> None:
-        """ Save setting to user_settings
+        """ Save setting to user_settings file
 
         Args:
             new_value (bool): New value to save
@@ -218,14 +229,16 @@ class AutomationMenuWindow:
 
         self.app_state.settings.include_ss_in_error_mail = new_value
 
+
     def set_minimize_on_running( self, new_value: bool ) -> None:
-        """ Save setting to user_settings
+        """ Save setting to user_settings file
         
         Args:
             new_value (bool): New value to save
         """
 
         self.app_state.settings.minimize_on_running = new_value
+
 
     def set_min_max_on_running( self, old_geometry: dict = None ) -> None:
         """ Resize window during script execution
@@ -246,6 +259,7 @@ class AutomationMenuWindow:
 
         self.root.update_idletasks()
 
+
     def set_on_top( self, new_value: bool ) -> None:
         """ Save setting to user_settings and set/unset the window as top most
 
@@ -256,4 +270,3 @@ class AutomationMenuWindow:
         self.app_state.settings.on_top = new_value
         self.root.focus_force()
         self.root.attributes( '-topmost', new_value )
-

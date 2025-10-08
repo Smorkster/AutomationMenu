@@ -18,7 +18,7 @@ from automation_menu.utils.localization import change_language
 class LanguageManager:
     def __init__( self, current_language: str = 'sv_SE' ) -> None:
         """ Manage language change and GUI update
-        
+
         Args:
             current_language (str): Language currently used
         """
@@ -28,6 +28,7 @@ class LanguageManager:
         self._widgets_to_update = []
         self._current_language = current_language
         self._ = _
+
 
     def _translate( self, text: str ) -> str:
         """ Translate string
@@ -44,6 +45,7 @@ class LanguageManager:
 
         return tt
 
+
     def add_translatable_widget( self, widget: any ) -> None:
         """ Add a widget to list for later translation
 
@@ -52,6 +54,7 @@ class LanguageManager:
         """
 
         self._widgets_to_update.append( widget )
+
 
     def change_language( self, new_language: str ) -> None:
         """ Change application language and reconfigure widgets
@@ -96,6 +99,7 @@ class LanguageManager:
             except Exception as e:
                 raise e
 
+
     def update_toplevel( self, widget: tuple[ Toplevel, str ] ) -> None:
         """ Update text for Toplevel
 
@@ -106,6 +110,7 @@ class LanguageManager:
         widget[ 0 ].update_idletasks()
         pass
 
+
     def update_frame( self, widget: tuple[ Frame, str ] ) -> None:
         """ Update text for Frame
 
@@ -115,6 +120,7 @@ class LanguageManager:
 
         widget[ 0 ].update_idletasks()
         pass
+
 
     def update_menu( self, widget: tuple[ Menu, tuple[ str, ... ] ] ) -> None:
         """ Update text for Menu
@@ -130,6 +136,7 @@ class LanguageManager:
             a.entryconfigure( i+1, label = t )
             a.update_idletasks()
 
+
     def update_checkbutton( self, widget: tuple[ Checkbutton, str ] ) -> None:
         """ Update text for ttk.Checkbutton
 
@@ -138,6 +145,7 @@ class LanguageManager:
         """
 
         widget[ 0 ].config( text = self._translate( text = widget[ 1 ] ) )
+
 
     def update_notebook( self, widget: tuple[ Notebook, tuple[ str, ... ] ] ) -> None:
         """ Update text for ttk.Notebook
@@ -149,6 +157,7 @@ class LanguageManager:
         for i, t in enumerate( widget[ 1 ] ):
             widget[ 0 ].tab( i, text = self._translate( text = t ) )
 
+
     def update_button( self, widget: tuple[ Button, str ] ) -> None:
         """ Update text for ttk.Button
 
@@ -157,6 +166,7 @@ class LanguageManager:
         """
 
         widget[ 0 ].config( text = self._translate( text = widget[ 1 ] ) )
+
 
     def update_tt( self, widget: tuple[ AlwaysOnTopToolTip, str, bool ] ) -> None:
         """ Update text for AlwaysOnTopTooltip
@@ -173,6 +183,7 @@ class LanguageManager:
 
         widget[ 0 ].config( new_text = new_text )
 
+
     def update_combobox( self, widget: tuple[ Combobox, str ] ):
         """ Update combobox items
 
@@ -181,6 +192,7 @@ class LanguageManager:
         """
 
         pass
+
 
     def update_label( self, widget: tuple[ Label, str ] ):
         """ Update label text

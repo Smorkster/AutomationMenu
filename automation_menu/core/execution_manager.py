@@ -1,5 +1,6 @@
 import asyncio
 from queue import Queue
+import queue
 import subprocess
 import threading
 
@@ -14,7 +15,14 @@ from automation_menu.utils.screenshot import take_screenshot
 
 
 class ScriptExecutionManager:
-    def __init__( self, output_queue, app_state ):
+    def __init__( self, output_queue: queue.Queue, app_state: ApplicationState ) -> None:
+        """ Provides a contextmanager for running a script
+
+        Args:
+            output_queue (queue.Queue): The queue gathering script output
+            app_state (ApplicationState): General state of application
+        """
+
         self._output_queue = output_queue
         self.app_state = app_state
         self.current_runner: Optional[ 'ScriptRunner' ] = None
@@ -23,6 +31,7 @@ class ScriptExecutionManager:
 
     @contextmanager
     def create_runner( self ):
+        """ Contextmanager taking care of runner bootup and cleanup """
 
         with self._lock:
             if self.current_runner is not None:
@@ -49,11 +58,19 @@ class ScriptExecutionManager:
 
 
     def is_running( self ) -> bool:
+        """ Verify if a script is running
+
+        Returns:
+            (bool): True if a runner is currently executing
+        """
+
         with self._lock:
             return self.current_runner is not None
 
 
-    def stop_current_script( self ):
+    def stop_current_script( self ) -> None:
+        """ Stop/terminate the currently running script """
+
         with self._lock:
             if self.current_runner:
                 self.current_runner.terminate()
@@ -61,6 +78,14 @@ class ScriptExecutionManager:
 
 class ScriptRunner:
     def __init__( self, output_queue, app_state, exec_manager ):
+        """" A script runner, managing bootup, process output and termination
+
+        Args:
+            output_queue (queue.Queue): Queue for gathering output data
+            app_state (ApplicationSate): General state of application
+            exec_manager (ScriptExecutionManager): Running manager to handle context for script process
+        """
+
         self._output_queue: Queue = output_queue
         self.app_state: ApplicationState = app_state
         self.script_execution_manager: ScriptExecutionManager = exec_manager
@@ -73,7 +98,15 @@ class ScriptRunner:
         self._terminated = False
 
 
-    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable, main_window: Tk ):
+    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable, main_window: Tk ) -> None:
+        """ Start process to run selected script
+
+        Args:
+            script_info (ScriptInfo): Script info gathered from the scripts info block
+            enable_stop_button_callback (Callable): A callback function for enabling the stop script button
+            main_window (Tk): The main window
+        """
+
         from automation_menu.utils.localization import _
 
         self._script_info = script_info
@@ -88,7 +121,7 @@ class ScriptRunner:
             self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ script_info.filename }_stdout' ).start()
             self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ script_info.filename }_stderr' ).start()
             self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ script_info.filename }_stdmonitor' ).start()
-            return_code = self.current_process.wait()
+            self.current_process.wait()
 
         except subprocess.SubprocessError as e:
             line = _( 'Subprocess error {error}' ).format( error = str( e ) )
@@ -100,8 +133,12 @@ class ScriptRunner:
             self._collect_error_info( error = line )
 
 
-    def _collect_error_info( self, error: str ):
-        """ """
+    def _collect_error_info( self, error: str ) -> None:
+        """ Gather error info to send to script developer
+
+        Args:
+            error (str): Error message
+        """
 
         self._output_queue.put( {
             'line': error,
@@ -131,7 +168,12 @@ class ScriptRunner:
                 } )
 
 
-    def _create_process( self, script_info ):
+    def _create_process( self, script_info ) -> None:
+        """ Create and start a process to execute script
+
+        Args:
+            script_info (ScriptInfo): Script info gathered from the scripts info block
+        """
         from automation_menu.utils.localization import _
 
         line = _( 'Starting \'{file}\'' ).format( file = script_info.Synopsis )
@@ -159,7 +201,9 @@ class ScriptRunner:
             )
 
 
-    def terminate( self ):
+    def terminate( self ) -> None:
+        """ Force the running process to terminate """
+
         if self.current_process:
             from automation_menu.utils.localization import _
             line = ''
@@ -189,8 +233,8 @@ class ScriptRunner:
                 } )
 
 
-    def _read_stdout( self ):
-        """ """
+    def _read_stdout( self ) -> None:
+        """ Monitor standard output from running process """
 
         from automation_menu.utils.localization import _
 
@@ -221,8 +265,8 @@ class ScriptRunner:
                 } )
 
 
-    def _read_stderr( self ):
-        """ """
+    def _read_stderr( self ) -> None:
+        """ Monitor standard error output from running process """
 
         from automation_menu.utils.localization import _
 
@@ -243,8 +287,8 @@ class ScriptRunner:
             } )
 
 
-    def _read_monitor_completion( self ):
-        """ """
+    def _read_monitor_completion( self ) -> None:
+        """ Wait for script process to finish and inform when """
 
         from automation_menu.utils.localization import _
 
@@ -273,7 +317,14 @@ class ScriptRunner:
 
 
     def _is_breakpoint_line( self, line: str ) -> bool:
-        """ """
+        """ Verify if a line from the output, corresponds with a breakpoint has occured in the running script
+
+        Args:
+            line (str): Output line to check
+
+        Returns:
+            (bool): True if line corresponds with breakpoint info message
+        """
 
         import re
 

@@ -12,17 +12,18 @@ Created: 2025-09-25
 import os
 import sys
 from dynamicinputbox import dynamic_inputbox as inputbox
-from ldap3 import ALL, Connection, Server
+from ldap3 import ALL, Connection, Entry, Server
 from ldap3.core.exceptions import LDAPSocketOpenError
 from automation_menu.core.state import ApplicationState
 from automation_menu.models import Secrets
 
-def connect_to_AD( app_state: ApplicationState ) -> None :
+def connect_to_AD( app_state: ApplicationState ) -> Connection:
     """ Connect to Active Directory and return the connection object
     
     Returns:
         conn (ldap3.core.connection.Connection) - The connection setup after connecting
     """
+
     from automation_menu.utils.localization import _
 
     AD_loginattempts = 0
@@ -32,22 +33,26 @@ def connect_to_AD( app_state: ApplicationState ) -> None :
         try:
             if AD_loginattempts == 0:
                 inputbox_label_text = main_input_text
+
             else:
                 inputbox_label_text = _( 'Wrong password. Try again\n{main_label_text}' ).format( main_label_text = main_input_text )
 
             abort_string = _( 'Abort' )
             ok_string = _( 'Ok' )
             password = inputbox( message = inputbox_label_text, input = True, input_show = '*', buttons = [ ok_string, abort_string ] ).get( dictionary = True )
+
             if password.get( 'button' ) == abort_string or password.get( 'button' ) == 'Cancel':
                 inputbox( message = _( 'No password was entered. Exiting.' ) )
                 AD_loginattempts = 3
                 sys.exit()
+
             server = Server( host = app_state.secrets.get( 'ldap_server' ), get_info = ALL )
             con = Connection( server,
                                user = f'{ app_state.secrets.get( 'domain_name' ) }\\{ os.getenv( key = 'USERNAME', default = 'DefaultUser' ) }',
                                password = password.get('inputs')['Input'].get().decode(),
                                auto_bind = True
                              )
+
             if con:
                 return con
 
@@ -62,12 +67,18 @@ def connect_to_AD( app_state: ApplicationState ) -> None :
         except Exception as e:
             AD_loginattempts = AD_loginattempts + 1
 
-def get_user_adobject( id = None, app_state: ApplicationState = None ):
-    """ Get the full AD-object of the current user """
+def get_user_adobject( id = None, app_state: ApplicationState = None ) -> Entry:
+    """ Get the full AD-object of the current user
+
+    Args:
+        (entry): AD object for current user
+    """
+
     from automation_menu.utils.localization import _
 
     if id == None:
         user = os.getenv( key = 'USERNAME', default = 'DefaultUser' )
+
     else:
         user = id
 

@@ -8,11 +8,11 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-from dataclasses import dataclass, field
-from typing import Optional
-
-from ldap3.core.connection import Connection
 import queue
+
+from dataclasses import dataclass, field
+from ldap3.core.connection import Connection
+from typing import Optional
 
 @dataclass
 class ApplicationState:
@@ -26,5 +26,12 @@ class ApplicationState:
     settings: Optional[ Settings ] = None
     script_manager = None
 
+
     def is_ldap_connected( self ) -> bool:
+        """ Check if a connection to LDAP server has been established
+
+        Returns:
+            (bool): True if a connection has been created
+        """
+
         return self.ldap_connection != None

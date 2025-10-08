@@ -25,14 +25,14 @@ from automation_menu.models import Secrets, Settings, User
 from automation_menu.utils.config import read_secrets_file, read_settingsfile, write_settingsfile
 from automation_menu.utils.localization import change_language
 
+
 def main():
-    """Main entry point """
+    """ Main entry point """
 
     def save_settings( obj ):
         write_settingsfile( settings = obj, settings_file_path = app_state.secrets.get( 'settings_file_path' ) )
 
     try:
-        #global _
         app_state = ApplicationState()
         app_state.secrets = Secrets( read_secrets_file( file_path = Path( __file__ ).resolve().parent / 'secrets.json' ) )
         app_state.settings = Settings( settings_dict = read_settingsfile( Secrets.get( 'settings_file_path' ) ), save_callback = save_settings )
@@ -69,6 +69,7 @@ def main():
         )
         logging.error( str( e ) )
         sys.exit( 1 )
+
 
 if __name__ == "__main__":
     main()

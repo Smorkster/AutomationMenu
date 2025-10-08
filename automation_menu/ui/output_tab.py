@@ -9,11 +9,16 @@ Created: 2025-09-25
 """
 
 
-import queue
-
 from tkinter import E, N, S, W, Text, ttk
 
+
 def get_output_tab( tabcontrol: ttk.Notebook ) -> tuple[ ttk.Frame, Text ]:
+    """ Create a frame used as tab to display output data from script execution
+
+    Args:
+        tabcontrol (Notebook): Tabcontrol (Notebook) to place the frame in
+    """
+
     tabOutput = ttk.Frame( master = tabcontrol , padding = ( 5, 5, 5, 5 ) )
 
     output = Text( master = tabOutput, wrap = 'word', font = ( 'Calibri', 12 ) )

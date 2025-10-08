@@ -15,10 +15,17 @@ from tkinter.ttk import Label
 from automation_menu.models import ScriptInfo
 #from automation_menu.ui.main_window import AutomationMenuWindow
 
+
 class ScriptMenuItem:
 #    def __init__ ( self, script_menu: Menu, script_info: ScriptInfo, main_object: AutomationMenuWindow ):
     def __init__ ( self, script_menu: Menu, script_info: ScriptInfo, main_object ):
-        """ Object for representing a script in the menu. """
+        """ Object for representing a script in the menu
+
+        Args:
+            script_menu (Menu): Menu widget to attach menu item to
+            script_info (ScriptInfo): Information about the script
+            main_object (AutomationMenuWindow): The main window
+        """
 
         from automation_menu.utils.localization import _
 
@@ -59,6 +66,7 @@ class ScriptMenuItem:
             tt = AlwaysOnTopToolTip( widget = self.script_button, msg = desc )
             self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.Description, dev ) )
 
+
     def continue_breakpoint( self ):
         """ Continue execution of the script after hitting a breakpoint """
 
@@ -67,7 +75,10 @@ class ScriptMenuItem:
         self.master_self.btnContinueBreakpoint.after( 0, self.master_self.enable_breakpoint_button() )
         self._in_debug = False
 
+
     def run_script( self ):
+        """ Initiate script execution """
+
         from automation_menu.utils.localization import _
 
         def script_process_wrapper():

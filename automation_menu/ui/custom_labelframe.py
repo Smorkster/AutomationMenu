@@ -10,10 +10,22 @@ class CustomLabelFrame( LabelFrame ):
 
 
     def _on_enter( self, event ):
+        """ Configure LabelFrame when mouse enters widget boundaries
+        
+        Args:
+            event: The event triggering the function
+        """
+
         if isinstance( event.widget, CustomLabelFrame ):
             event.widget.config( font = ( 'Calibri', 9, 'bold' ) )
 
 
     def _on_leave( self, event ):
+        """ Configure LabelFrame when mouse leaves widget boundaries
+        
+        Args:
+            event: The event triggering the function
+        """
+
         if isinstance( event.widget, CustomLabelFrame ):
             event.widget.config( font = ( 'Calibri', 9, 'normal' ) )

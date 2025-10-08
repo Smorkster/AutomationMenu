@@ -10,15 +10,19 @@ Created: 2025-09-25
 
 import gettext
 import locale
-import os
-from pathlib import Path
 
-def get_system_locale():
+from pathlib import Path
+from typing import Callable
+
+
+def get_system_locale() -> str:
     """ Get the system locale, with fallback to English """
 
     default_localization = 'sv_SE'
+
     try:
         system_locale, _ = locale.getdefaultlocale()
+
         if system_locale is None:
             return default_localization
 
@@ -31,7 +35,8 @@ def get_system_locale():
     except ( ValueError, TypeError ):
         return default_localization
 
-def find_locales_directory():
+
+def find_locales_directory() -> str:
     """ Find the locales directory relative to this file """
 
     current_file = Path( __file__ )
@@ -46,7 +51,8 @@ def find_locales_directory():
 
     return locale_dir
 
-def setup_localization( domain = 'messages', language = None ):
+
+def setup_localization( domain = 'messages', language = None ) -> Callable:
     """
     Set up localization for the application.
 
@@ -88,7 +94,8 @@ def setup_localization( domain = 'messages', language = None ):
 
 _ = setup_localization()
 
-def change_language( language_code: str ):
+
+def change_language( language_code: str ) -> None:
     """
     Change the application language at runtime.
 
@@ -101,11 +108,12 @@ def change_language( language_code: str ):
 
     setup_localization( language = language_code )
 
-def get_available_languages():
+
+def get_available_languages() -> list[ str ]:
     """ Get list of available translation languages
-    
+
     Returns:
-        languages (List[str]): A list of available languages
+        languages (list[ str ]): A list of available languages
     """
 
     locale_dir = find_locales_directory()

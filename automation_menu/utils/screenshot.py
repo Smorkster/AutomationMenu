@@ -23,7 +23,7 @@ from automation_menu.models import ScriptInfo
 def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> str:
     """ Convert a BMP file to PNG format
 
-        Args:
+    Args:
         bmp_path (str): Path to BMP-file to convert
         delete_bmp (bool): Should the BMP-file be deleted after convertion
 
@@ -46,6 +46,7 @@ def take_screenshot( root_window: Tk, script: ScriptInfo, file_name_prefix: str 
     Args:
         root_window (Tk): TopLevel Tk widget to take screenshot of
         script (ScriptInfo): ScriptInfo about script last run
+        file_name_prefix (str): A prefix for the file name
 
     Returns:
         str: Path to the new BMP-file
@@ -71,4 +72,3 @@ def take_screenshot( root_window: Tk, script: ScriptInfo, file_name_prefix: str 
     win32gui.DeleteObject( dataBitMap.GetHandle() )
 
     return png_path
-

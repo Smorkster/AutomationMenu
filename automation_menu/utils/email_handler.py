@@ -20,6 +20,7 @@ from automation_menu.core.auth import get_user_adobject
 from automation_menu.core.state import ApplicationState
 from automation_menu.models import ScriptInfo, Secrets
 
+
 def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_state: ApplicationState ) -> EmailMessage:
     """ Compose the mail body
     
@@ -28,6 +29,9 @@ def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_stat
         error_msg (str): Message to for the mail
         screenshot (str): Path to screenshot to include in the mail
         current_user (User): User running the application
+
+    Returns:
+        msg (EmailMessage): The composed email
     """
 
     from automation_menu.utils.localization import _
@@ -46,8 +50,10 @@ def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_stat
             to_list.append( dev.mail.value )
 
     msg[ 'To' ] = ', '.join( to_list )
+
     if screenshot:
         img_included = _( 'See attached picture of main window' )
+
     else:
         img_included = '&nbsp;'
 
@@ -78,7 +84,8 @@ def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_stat
 
     return msg
 
-def report_script_error( app_state: ApplicationState, error_msg: str , script_info = None, screenshot:str = None ):
+
+def report_script_error( app_state: ApplicationState, error_msg: str , script_info = None, screenshot:str = None ) -> bool:
     """ Send the composed mail to script author
 
     Args:
@@ -86,6 +93,9 @@ def report_script_error( app_state: ApplicationState, error_msg: str , script_in
         error_msg (str): Message to send to script author
         script_info (ScriptInfo): Info about script currently running
         screenshot (str): Path to screenshot to include
+
+    Returns:
+        (bool): True if the mail was sent successfully
     """
 
     try:

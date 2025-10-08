@@ -15,42 +15,75 @@ import re
 from automation_menu.core.state import ApplicationState
 from automation_menu.models import ScriptInfo, User
 
+
 def _check_breakpoints( lines: list[ str ] , si: ScriptInfo ) -> ScriptInfo:
-    """ Check for uncommented breakpoints """
+    """ Check for uncommented breakpoints
+
+    Args:
+        lines (list[ str ]): All lines of the scriptfile
+        si (ScriptInfo): Script info gathered from the scripts info block
+
+    Returns:
+        si (ScriptInfo): ScriptInfo with possible 'UsingBreakpoint'
+    """
 
     for line in lines:
         stripped = line.lstrip()
+
         if stripped.startswith( 'breakpoint()' ) or ' breakpoint()' in stripped:
+
             if not stripped.startswith( '#' ):
                 si.add_attr( 'UsingBreakpoint', True )
+
     return si
 
+
 def _extract_scriptinfo( lines: list[ str ] , si: ScriptInfo ) -> ScriptInfo:
-    """ Re-read the entire content for block matching """
+    """ Parse the file content and extract script information
+
+    Args:
+        lines (list[ str ]): All lines of the scriptfile
+        si (ScriptInfo): Script info gathered from the scripts info block
+
+    Returns:
+        si (ScriptInfo): Script information specified in the script info block
+    """
 
     from automation_menu.utils.localization import _
 
     full_text = ''.join( lines )
     match = re.search( r'ScriptInfo\s*(.*?)\s*ScriptInfoEnd', full_text, re.DOTALL )
+
     if not match:
         si.add_attr( 'NoScriptBlock', True )
         si.add_attr( 'Description', _( 'Script info missing' ) )
+
         return si
 
     # Extract key-value pairs inside ScriptInfo block
     for p, t in re.findall( pattern = r"#\s*(\w+)(?:\s*-\s*(.+))?", string = match.group( 1 ) ):
         value = t.replace( ' ', '' )
+
         if p in ( 'RequiredAdGroups', 'AllowedUsers' ):
             si.add_attr( p, value.split( ';' ) )
+
         elif t == '':
             si.add_attr( p , True )
+
         else:
             si.add_attr( p, t )
 
     return si
 
+
 def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptInfo:
-    """ Get ScriptInfo from the file """
+    """ Call for script information gathering of specified script file
+
+    Args:
+        file (str): File name of the script
+        directory (str): Directory path containing the script
+        current_user (User): AD object for current user
+    """
 
     from automation_menu.utils.localization import _
 
@@ -97,12 +130,12 @@ def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptI
     else:
         return None
 
+
 def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
-    """ Get script files and parse for any ScriptInfo 
+    """ Get script files and parse for any ScriptInfo
     
     Args:
-        directory (str): Path to directory containing automation scripts
-        current_user (User): User to check permissions for
+        app_state (ApplicationState): General state of application
 
     Returns:
         list[ ScriptInfo ]: A list of available scripts

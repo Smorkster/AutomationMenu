@@ -16,15 +16,31 @@ from automation_menu.models import Settings
 from automation_menu.ui.custom_labelframe import CustomLabelFrame
 from automation_menu.utils import language_manager
 
+
 def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_object ) -> ttk.Frame:
+    """ Create a frame used as a tab to collect settings
+
+    Args:
+        tabcontrol (Notebook): Tabcontrol (Notebook) to place the frame in
+        settings (Settings): Collection of settings data
+        main_object (AutomationMenuWindow): Main object
+    """
+
     tabSettings = ttk.Frame( tabcontrol , padding = ( 5, 5, 5, 5 ) )
 
     _list_settings( tab = tabSettings, settings = settings, main_object = main_object )
 
     return tabSettings
 
+
 def _list_settings( tab: ttk.Frame, settings: Settings, main_object ) -> None:
-    """ Create widgets for application settings """
+    """ Create widgets for application settings
+
+    Args:
+        tab (Frame): Frame to place settings widgets in
+        settings (Settings): Collection of settings data
+        main_object (AutomationMenuWindow): Main object
+    """
 
     from automation_menu.utils.localization import _, get_available_languages
 
@@ -118,15 +134,3 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ) -> None:
         chbIncludeSsInErrorMail.config( state = 'disabled' )
 
     main_object.settings_ui[ 'chbIncludeSsInErrorMail' ] = chbIncludeSsInErrorMail
-
-# In settings_tab.py - when combobox changes
-def on_language_selection( event ):
-    new_language = event.widget.get()
-    language_manager.change_language( new_language )
-
-    """
-    self.val_chb_display_dev = BooleanVar( value = False )
-    self.chb_display_dev = ttk.Checkbutton( self.tabSettings, text = 'Visa skript i dev', variable = self.val_chb_display_dev, command = self.set_display_dev )
-    self.chb_display_dev.grid( column = 0 , row = 1, sticky = ( N, S, E, W ) )
-    """
-
