@@ -20,7 +20,7 @@ from tkinter import Tk
 from typing import Callable, Optional
 
 from automation_menu.core.state import ApplicationState
-from automation_menu.models import ScriptInfo
+from automation_menu.models import ScriptInfo, SysInstructions
 from automation_menu.utils.email_handler import report_script_error
 from automation_menu.utils.screenshot import take_screenshot
 
@@ -221,7 +221,7 @@ class ScriptRunner:
 
             try:
                 self._terminated = True
-                self._output_queue.put( 'ProcessTerminated' )
+                self._output_queue.put( SysInstructions.PROCESSTERMINATED )
                 self.current_process.kill()
                 self.current_process.wait()
 

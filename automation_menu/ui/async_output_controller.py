@@ -17,6 +17,8 @@ import tkinter as tk
 from tkinter.ttk import Button
 from typing import Optional
 
+from automation_menu.models import SysInstructions
+
 
 class AsyncOutputController:
     def __init__( self, output_queue: queue.Queue, text_widget: tk.Text, breakpoint_button: Button ):
@@ -67,16 +69,16 @@ class AsyncOutputController:
 
         while self._running:
             try:
-                message = await self.loop.run_in_executor(
+                queue_item = await self.loop.run_in_executor(
                     None,
                     self._get_queue_item
                 )
 
-                if message is None:
+                if queue_item is None:
                     break
 
-                if message != 'ProcessTerminated':
-                    processed = await self._async_process_message( message )
+                if queue_item != SysInstructions.PROCESSTERMINATED:
+                    processed = await self._async_process_message( queue_item )
 
                     self._schedule_ui_update( processed )
 
@@ -98,7 +100,7 @@ class AsyncOutputController:
             return 'timeout'
 
 
-    async def _async_process_message( self, message ) -> str | dict:
+    async def _async_process_message( self, queue_item ) -> str | dict:
         """ Process gathered queue item
 
         Args:
@@ -108,42 +110,51 @@ class AsyncOutputController:
             (dict): Message normalized to a dict
         """
 
-        if message == 'timeout':
+        if queue_item == 'timeout':
             return None
+
+        elif queue_item == SysInstructions.CLEAROUTPUT:
+            self._handle_ui_update( queue_item = queue_item )
 
         await asyncio.sleep( 0 )
 
-        return self._process_message_sync( message )
+        return self._process_queue_item( queue_item )
 
 
-    def _schedule_ui_update( self, processed_message ) -> None:
+    def _schedule_ui_update( self, processed_queue_item ) -> None:
         """ Schedule UI update with the processed message
 
         Args:
             processed_message (Any): Message to update output with
         """
 
-        if processed_message:
-            self.text_widget.after( 0, lambda: self._handle_ui_update( processed_message ) )
+        if processed_queue_item:
+            self.text_widget.after( 0, lambda: self._handle_ui_update( processed_queue_item ) )
 
 
-    def _handle_ui_update( self, queue_item: dict ) -> None:
+    def _handle_ui_update( self, queue_item: dict | str ) -> None:
         """ Do the actual UI update
 
         Args:
-            queue_item (dict)
+            queue_item (dict | str)
         """
 
-        self.text_widget.config( state = 'normal' )
-        self.text_widget.insert( 'end', queue_item[ 'line' ] + '\n', queue_item[ 'tag' ] )
-        self.text_widget.config( state = 'disabled' )
-        self.text_widget.see( 'end' )
+        if queue_item == SysInstructions.CLEAROUTPUT:
+            self.text_widget.config( state = 'normal' )
+            self.text_widget.delete( '1.0', tk.END )
+            self.text_widget.config( state = 'disabled' )
 
-        if hasattr( queue_item, 'breakpoint') and queue_item[ 'breakpoint' ]:
-            self.breakpoint_button.config( state = 'normal' )
+        else:
+            self.text_widget.config( state = 'normal' )
+            self.text_widget.insert( 'end', queue_item[ 'line' ] + '\n', queue_item[ 'tag' ] )
+            self.text_widget.config( state = 'disabled' )
+            self.text_widget.see( 'end' )
+
+            if hasattr( queue_item, 'breakpoint') and queue_item[ 'breakpoint' ]:
+                self.breakpoint_button.config( state = 'normal' )
 
 
-    def _process_message_sync( self, message: str | dict ) -> dict:
+    def _process_queue_item( self, queue_item: str | dict ) -> dict:
         """ Normalize message to a dict
 
         Args:
@@ -159,11 +170,11 @@ class AsyncOutputController:
         match_ps = re.search( r'^entering debug mode', output[ 'line' ].lower() )
         """
 
-        if isinstance( message, str ):
+        if isinstance( queue_item, str ):
             return {
-                'line': message.rstrip(),
+                'line': queue_item.rstrip(),
                 'tag': 'suite_info'
             }
 
         else:
-            return message
+            return queue_item

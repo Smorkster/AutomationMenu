@@ -8,6 +8,8 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+import datetime
+from enum import Enum
 import json
 from pathlib import Path
 from typing import Callable
@@ -18,6 +20,11 @@ import re
 import ldap3.abstract
 import ldap3.abstract.entry
 
+class SysInstructions( Enum ):
+    CLEAROUTPUT = 'SI_ClearOutput'
+    PROCESSTERMINATED = 'SI_ProcessTerminated'
+
+
 class User:
     """ Class to hold user information from Active Directory """
     def __init__( self, ad_object: ldap3.abstract.entry.Entry = None ):
@@ -25,6 +32,7 @@ class User:
 
         self.UserId:str = os.getenv( key = 'USERNAME' ,default = 'DefaultUser' )
         self.AdObject: ldap3.abstract.entry.Entry = ad_object
+
 
     def member_of( self, group_to_check: str ) -> bool:
         """ Check if the user is a member of a specific group """
@@ -35,6 +43,7 @@ class User:
 
         return False
 
+
 class ScriptInfo:
     """ Class to hold information about a script """
     def __init__( self, filename: str, directory: str ):
@@ -43,28 +52,56 @@ class ScriptInfo:
         self.filename = filename
         self.fullpath = directory.joinpath( filename )
 
+
     def add_attr( self, attr_name: str, attr_val: any ) -> None:
         """ Add an attribute to the ScriptInfo object """
 
         setattr( self, attr_name, attr_val )
+
 
     def set_attr( self, attr_name: str, attr_val:any, append: bool = False ) -> None:
         """ Append a value to an existing attribute or create it if it doesn't exist """
 
         if ( not hasattr( self, attr_name ) ):
             self.add_attr( attr_name, attr_val )
+
         elif append:
             setattr( self, attr_name, getattr( self, attr_name ) + attr_val )
+
         else:
             setattr( self, attr_name, attr_val )
+
 
     def get_attr( self, attr_name: str ) -> any:
         """ Get the value of an attribute if it exists, otherwise return None """
 
         if hasattr( self, attr_name ):
             return getattr( self, attr_name )
+
         else:
             None
+
+
+class ExecHistory:
+    """ Class to hold script execution history """
+    def __init__( self, script_info: ScriptInfo = None, output: list[ str ] = None ):
+        self.script_info = script_info
+        self.output = output
+        self.start = None
+        self.end = None
+
+
+    def add_start( self, time: datetime ):
+        self.start = time
+
+
+    def add_end( self, time: datetime ):
+        self.end = time
+
+
+    def append_output( self, item ):
+        self.output.append( item )
+
 
 class Settings:
     """ Class to hold application settings """
@@ -76,6 +113,7 @@ class Settings:
         self._include_ss_in_error_mail = settings_dict.get( 'include_ss_in_error_mail', False )
         self._current_language = settings_dict.get( 'current_language', 'sv_SE' )
 
+
     def to_json( self ) -> dict:
         """ Convert settings to a JSON-serializable dictionary """
 
@@ -84,11 +122,13 @@ class Settings:
              if not callable( self.__dict__[ k ] ) }
         return json.dumps( d, indent = 2 )
 
+
     @property
     def current_language( self ):
         """ Property function to get 'current_language' """
 
         return self.get( 'current_language' )
+
 
     @current_language.setter
     def current_language( self, value: bool ):
@@ -98,12 +138,13 @@ class Settings:
         if self._save_callback:
             self._save_callback( self )
 
+
     @property
     def send_mail_on_error( self ):
-        """ Property function to get 'send_mail_on_error'
-        """
+        """ Property function to get 'send_mail_on_error' """
 
         return self.get( 'send_mail_on_error' )
+
 
     @send_mail_on_error.setter
     def send_mail_on_error( self, value: bool ):
@@ -114,15 +155,17 @@ class Settings:
         """
 
         self._send_mail_on_error = value
+
         if self._save_callback:
             self._save_callback( self )
 
+
     @property
     def include_ss_in_error_mail( self ):
-        """ Property function to get 'on_top'
-        """
+        """ Property function to get 'on_top' """
 
         return self.get( 'include_ss_in_error_mail' )
+
 
     @include_ss_in_error_mail.setter
     def include_ss_in_error_mail( self, value: bool ):
@@ -136,11 +179,13 @@ class Settings:
         if self._save_callback:
             self._save_callback( self )
 
+
     @property
     def minimize_on_running( self ):
         """ Property function to get 'on_top' """
 
         return self.get( 'minimize_on_running' )
+
 
     @minimize_on_running.setter
     def minimize_on_running( self, value: bool ):
@@ -150,11 +195,13 @@ class Settings:
         if self._save_callback:
             self._save_callback( self )
 
+
     @property
     def on_top( self ):
         """ Property function to get 'on_top' """
 
         return self.get( 'on_top' )
+
 
     @on_top.setter
     def on_top( self, value: bool ):
@@ -164,6 +211,7 @@ class Settings:
         if self._save_callback:
             self._save_callback( self )
 
+
     def get( self, key: str ) -> any:
         """ Get attribute with corrected name
 
@@ -172,6 +220,7 @@ class Settings:
         """
 
         return getattr( self, f'_{ key }' )
+
 
 class Secrets:
     secret_dict = {}
@@ -186,6 +235,7 @@ class Secrets:
         Secrets.secret_dict[ 'settings_file_path' ] = os.path.expanduser( os.path.join( '~', new_dict[ 'settings_file_name' ] ) )
         Secrets.secret_dict[ 'smtprelay' ] = new_dict[ 'smtprelay' ]
         Secrets.secret_dict[ 'domain_name' ] = new_dict[ 'domain_name' ]
+
 
     @staticmethod
     def get( key: str ) -> str:

@@ -12,7 +12,7 @@ Created: 2025-09-25
 import threading
 from tkinter import Menu
 from tkinter.ttk import Label
-from automation_menu.models import ScriptInfo
+from automation_menu.models import ScriptInfo, SysInstructions
 #from automation_menu.ui.main_window import AutomationMenuWindow
 
 
@@ -122,6 +122,7 @@ class ScriptMenuItem:
 
         self.script_menu.withdraw()
         self.master_self.tabControl.select( 0 )
+        self.master_self.app_state.output_queue.put( SysInstructions.CLEAROUTPUT )
 
         if self.master_self.app_state.settings.get( 'minimize_on_running' ):
             if self.script_info.get_attr( 'DisableMinimizeOnRunning' ):
