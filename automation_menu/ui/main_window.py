@@ -10,11 +10,10 @@ Created: 2025-09-25
 
 from tkinter import E, N, S, W, Tk, ttk
 
-from automation_menu.core.script_discovery import get_scripts
 from automation_menu.core.script_runner import ScriptMenuItem
 from automation_menu.core.state import ApplicationState
-from automation_menu.ui.custom_menu import CustomMenu
 from automation_menu.ui.async_output_controller import AsyncOutputController
+from automation_menu.ui.history_tab import get_history_tab
 from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
@@ -93,17 +92,18 @@ class AutomationMenuWindow:
         self.output_controller.start()
 
         # Create settings
-        self.tabSettings = get_settings_tab( tabcontrol = self.tabControl, settings = self.app_state.settings, main_object = self )
+        self.tabSettings = get_settings_tab( tabcontrol = self.tabControl, settings = self.app_state.settings, main_self = self )
         self.tabSettings.grid( sticky = ( N, S, E, W ) )
         self.tabControl.add( child = self.tabSettings, text = _( 'Settings' ) )
 
-        self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings' ) ) )
+        # Create history tab
+        self.tabHistory = get_history_tab( tabcontrol = self.tabControl, history_list = None, main_self = self )
+        self.tabControl.add( child = self.tabHistory, text = _( 'Execution history' ) )
+
+        self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )
 
         self.center_screen()
 
-        self.tabOutput.columnconfigure( index = 0, weight = 1 )
-        self.tabOutput.columnconfigure( index = 1, weight = 0 )
-        self.tabOutput.rowconfigure( index = 0, weight = 1 )
         self.root.columnconfigure( index = 0, weight = 1 )
         self.root.columnconfigure( index = 1, weight = 0 )
         self.root.rowconfigure( index = 0, weight = 0 )

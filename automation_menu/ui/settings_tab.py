@@ -14,10 +14,9 @@ from tkinter import E, N, W, BooleanVar, StringVar, ttk
 
 from automation_menu.models import Settings
 from automation_menu.ui.custom_labelframe import CustomLabelFrame
-from automation_menu.utils import language_manager
 
 
-def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_object ) -> ttk.Frame:
+def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_self ) -> ttk.Frame:
     """ Create a frame used as a tab to collect settings
 
     Args:
@@ -28,7 +27,7 @@ def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_object 
 
     tabSettings = ttk.Frame( tabcontrol , padding = ( 5, 5, 5, 5 ) )
 
-    _list_settings( tab = tabSettings, settings = settings, main_object = main_object )
+    _list_settings( tab = tabSettings, settings = settings, main_object = main_self )
 
     return tabSettings
 

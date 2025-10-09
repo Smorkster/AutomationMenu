@@ -20,6 +20,8 @@ def get_output_tab( tabcontrol: ttk.Notebook ) -> tuple[ ttk.Frame, Text ]:
     """
 
     tabOutput = ttk.Frame( master = tabcontrol , padding = ( 5, 5, 5, 5 ) )
+    tabOutput.columnconfigure( index = 0, weight = 1 )
+    tabOutput.rowconfigure( index = 0, weight = 1 )
 
     output = Text( master = tabOutput, wrap = 'word', font = ( 'Calibri', 12 ) )
     output.config( state = 'disabled' )
