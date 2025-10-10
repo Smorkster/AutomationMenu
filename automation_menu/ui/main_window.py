@@ -13,7 +13,6 @@ from tkinter import E, N, S, W, Tk, ttk
 from automation_menu.core.script_runner import ScriptMenuItem
 from automation_menu.core.state import ApplicationState
 from automation_menu.ui.async_output_controller import AsyncOutputController
-from automation_menu.ui.history_tab import get_history_tab
 from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
@@ -71,6 +70,9 @@ class AutomationMenuWindow:
         style.configure( 'TCheckbutton',
                         padding = ( 10, 5 )
         )
+        style.configure( 'History.TText',
+                        font = ( 'Calibri', 12, 'normal' )
+        )
         self.button_margin = {
             'x': 5,
             'y': 5
@@ -88,7 +90,11 @@ class AutomationMenuWindow:
         self.tabControl.add( child = self.tabOutput, text = _( 'Script output' ) )
 
         # Manage output
-        self.output_controller = AsyncOutputController( output_queue = self.app_state.output_queue, text_widget = self.tbOutput , breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ] )
+        self.output_controller = AsyncOutputController(
+                                    output_queue = self.app_state.output_queue,
+                                    text_widget = self.tbOutput ,
+                                    breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ],
+                                    history_manager = self.app_state.history_manager )
         self.output_controller.start()
 
         # Create settings
@@ -97,7 +103,7 @@ class AutomationMenuWindow:
         self.tabControl.add( child = self.tabSettings, text = _( 'Settings' ) )
 
         # Create history tab
-        self.tabHistory = get_history_tab( tabcontrol = self.tabControl, history_list = None, main_self = self )
+        self.tabHistory = self.app_state.history_manager.get_history_tab( tabcontrol = self.tabControl, main_self = self )
         self.tabControl.add( child = self.tabHistory, text = _( 'Execution history' ) )
 
         self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )

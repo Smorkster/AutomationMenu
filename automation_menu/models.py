@@ -84,22 +84,28 @@ class ScriptInfo:
 
 class ExecHistory:
     """ Class to hold script execution history """
-    def __init__( self, script_info: ScriptInfo = None, output: list[ str ] = None ):
+    def __init__( self, script_info: ScriptInfo = None ):
         self.script_info = script_info
-        self.output = output
-        self.start = None
+        self.output = []
+        self.start = datetime.datetime.now()
         self.end = None
 
 
-    def add_start( self, time: datetime ):
-        self.start = time
-
-
-    def add_end( self, time: datetime ):
+    def add_end( self, time: datetime.datetime ):
+        """ Set datetime when execution ended
+        
+        Args:
+            time (datetime.datetime): Execution finished
+        """
         self.end = time
 
 
-    def append_output( self, item ):
+    def append_output( self, item: dict[ datetime.datetime, str ] ):
+        """ Add new item to output
+
+        Args:
+            item (dict[ datetime.datetime, str ]): Dict item with datetime and string from output
+        """
         self.output.append( item )
 
 

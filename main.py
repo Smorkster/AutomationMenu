@@ -15,6 +15,8 @@ import sys
 
 from pathlib import Path
 
+from automation_menu.ui.history_manager import HistoryManager
+
 # Add the project root to Python path if needed
 project_root = Path( __file__ ).parent.parent
 sys.path.insert( 0, str( project_root ) )
@@ -34,6 +36,7 @@ def main():
 
     try:
         app_state = ApplicationState()
+        app_state.history_manager = HistoryManager()
         app_state.secrets = Secrets( read_secrets_file( file_path = Path( __file__ ).resolve().parent / 'secrets.json' ) )
         app_state.settings = Settings( settings_dict = read_settingsfile( Secrets.get( 'settings_file_path' ) ), save_callback = save_settings )
 

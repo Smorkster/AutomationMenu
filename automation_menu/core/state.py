@@ -14,11 +14,14 @@ from dataclasses import dataclass, field
 from ldap3.core.connection import Connection
 from typing import Optional
 
+from automation_menu.ui.history_manager import HistoryManager
+
 @dataclass
 class ApplicationState:
     from automation_menu.models import Secrets, Settings, User
 
     current_user: Optional[ User ] = None
+    history_manager: HistoryManager = None
     ldap_connection: Optional[ Connection ] = None
     output_queue: queue.Queue = field( default_factory = queue.Queue )
     running_automation = None

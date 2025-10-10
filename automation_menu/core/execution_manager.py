@@ -20,7 +20,7 @@ from tkinter import Tk
 from typing import Callable, Optional
 
 from automation_menu.core.state import ApplicationState
-from automation_menu.models import ScriptInfo, SysInstructions
+from automation_menu.models import ExecHistory, ScriptInfo, SysInstructions
 from automation_menu.utils.email_handler import report_script_error
 from automation_menu.utils.screenshot import take_screenshot
 
@@ -58,7 +58,8 @@ class ScriptExecutionManager:
             self._output_queue.put( {
                 'line': 'Exception ❗: {error}'.format( error = str( e ) ),
                 'tag': 'suite_error',
-                'finished': True
+                'finished': True,
+                'exec_item': runner._exec_item
             } )
             raise
 
@@ -125,13 +126,13 @@ class ScriptRunner:
         line = ''
 
         try:
-            self.current_process = self._create_process( script_info )
+            self.current_process = self._create_process()
 
             enable_stop_button_callback()
 
-            self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ script_info.filename }_stdout' ).start()
-            self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ script_info.filename }_stderr' ).start()
-            self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ script_info.filename }_stdmonitor' ).start()
+            self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ self._script_info.filename }_stdout' ).start()
+            self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()
+            self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
             self.current_process.wait()
 
         except subprocess.SubprocessError as e:
@@ -154,7 +155,8 @@ class ScriptRunner:
         self._output_queue.put( {
             'line': error,
             'tag': 'suite_error',
-            'finished': True
+            'finished': True,
+            'exec_item': self._exec_item
         } )
         ss_path = ''
 
@@ -169,42 +171,43 @@ class ScriptRunner:
 
                 self._output_queue.put( {
                     'line': _( 'Mail sent' ),
-                    'tag': 'suite_sysinfo'
+                    'tag': 'suite_sysinfo',
+                    'exec_item': self._exec_item
                 } )
 
             except Exception as e:
                 self._output_queue.put( {
                     'line': _( 'Could not send error message to developer {e}' ).format( e = str( e ) ),
-                    'tag': 'suite_sysinfo'
+                    'tag': 'suite_sysinfo',
+                    'exec_item': self._exec_item
                 } )
 
 
-    def _create_process( self, script_info ) -> None:
-        """ Create and start a process to execute script
+    def _create_process( self ) -> None:
+        """ Create and start a process to execute script """
 
-        Args:
-            script_info (ScriptInfo): Script info gathered from the scripts info block
-        """
         from automation_menu.utils.localization import _
 
-        line = _( 'Starting \'{file}\'' ).format( file = script_info.Synopsis )
+        self._exec_item = ExecHistory( script_info = self._script_info )
+        line = _( 'Starting \'{file}\'' ).format( file = self._script_info.Synopsis )
         self._output_queue.put( {
             'line': line,
-            'tag': 'suite_sysinfo'
+            'tag': 'suite_sysinfo',
+            'exec_item': self._exec_item
         } )
 
-        if script_info.filename.endswith( '.py' ):
+        if self._script_info.filename.endswith( '.py' ):
             return subprocess.Popen(
-                args = [ 'python', str( script_info.fullpath ) ],
+                args = [ 'python', str( self._script_info.fullpath ) ],
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,
                 text = True
             )
 
-        elif script_info.filename.endswith( '.ps1' ):
+        elif self._script_info.filename.endswith( '.ps1' ):
             return subprocess.Popen(
-                args = [ 'powershell.exe', str( script_info.fullpath ) ],
+                args = [ 'powershell.exe', str( self._script_info.fullpath ) ],
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,
@@ -240,7 +243,8 @@ class ScriptRunner:
             if len( line ) > 0:
                 self._output_queue.put( {
                     'line': line,
-                    'tag': 'suite_error'
+                    'tag': 'suite_error',
+                    'exec_item': self._exec_item
                 } )
 
 
@@ -267,12 +271,14 @@ class ScriptRunner:
                 self._output_queue.put( {
                     'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr ),
                     'tag': 'suite_sysinfo',
-                    'breakpoint': True
+                    'breakpoint': True,
+                    'exec_item': self._exec_item
                 } )
             else:
                 self._output_queue.put( {
                     'line': line_str.rstrip(),
-                    'tag': 'suite_info'
+                    'tag': 'suite_info',
+                    'exec_item': self._exec_item
                 } )
 
 
@@ -294,7 +300,8 @@ class ScriptRunner:
             line_str = line.decode() if isinstance( line, bytes ) else line
             self._output_queue.put( {
                 'line': line_str.rstrip(),
-                'tag': 'suite_error'
+                'tag': 'suite_error',
+                'exec_item': self._exec_item
             } )
 
 
@@ -308,7 +315,9 @@ class ScriptRunner:
         if return_code == 0:
             self._output_queue.put( {
                 'line': _( 'Script completed successfully' ),
-                'tag': 'suite_success'
+                'tag': 'suite_success',
+                'finished': True,
+                'exec_item': self._exec_item
             } )
 
         else:
@@ -316,14 +325,16 @@ class ScriptRunner:
                 self._output_queue.put( {
                     'line': _( 'Script terminated' ),
                     'tag': 'suite_sysinfo',
-                    'finished': True
+                    'finished': True,
+                    'exec_item': self._exec_item
                 } )
 
             else:
                 self._output_queue.put( {
                         'line':_( 'Script failed with exit code {err}' ).format( err = return_code ),
                         'tag': 'suite_sysinfo',
-                        'finished': True
+                        'finished': True,
+                        'exec_item': self._exec_item
                 } )
 
 

@@ -9,6 +9,7 @@ Created: 2025-09-25
 """
 
 import asyncio
+from datetime import datetime
 import logging
 import queue
 import threading
@@ -18,10 +19,11 @@ from tkinter.ttk import Button
 from typing import Optional
 
 from automation_menu.models import SysInstructions
+from automation_menu.ui.history_manager import HistoryManager
 
 
 class AsyncOutputController:
-    def __init__( self, output_queue: queue.Queue, text_widget: tk.Text, breakpoint_button: Button ):
+    def __init__( self, output_queue: queue.Queue, text_widget: tk.Text, breakpoint_button: Button, history_manager: HistoryManager ):
         """ Controller for output queue
         
         Args:
@@ -30,6 +32,7 @@ class AsyncOutputController:
             breakpoint_button (Button): The button to return execution after breakpoint in script
        """
 
+        self.history_manager = history_manager
         self.output_queue = output_queue
         self.text_widget = text_widget
         self.breakpoint_button = breakpoint_button
@@ -41,7 +44,7 @@ class AsyncOutputController:
 
 
     def start( self ) -> None:
-        """ Start thread to begin execution """
+        """ Start thread to parse queue """
 
         if not self._running:
             self._running = True
@@ -78,7 +81,7 @@ class AsyncOutputController:
                     break
 
                 if queue_item != SysInstructions.PROCESSTERMINATED:
-                    processed = await self._async_process_message( queue_item )
+                    processed = await self._async_process_queue_item( queue_item )
 
                     self._schedule_ui_update( processed )
 
@@ -100,7 +103,7 @@ class AsyncOutputController:
             return 'timeout'
 
 
-    async def _async_process_message( self, queue_item ) -> str | dict:
+    async def _async_process_queue_item( self, queue_item ) -> str | dict:
         """ Process gathered queue item
 
         Args:
@@ -118,7 +121,7 @@ class AsyncOutputController:
 
         await asyncio.sleep( 0 )
 
-        return self._process_queue_item( queue_item )
+        return self._normalize_queue_item( queue_item )
 
 
     def _schedule_ui_update( self, processed_queue_item ) -> None:
@@ -150,11 +153,21 @@ class AsyncOutputController:
             self.text_widget.config( state = 'disabled' )
             self.text_widget.see( 'end' )
 
-            if hasattr( queue_item, 'breakpoint') and queue_item[ 'breakpoint' ]:
+            if queue_item[ 'tag' ] != 'suite_sysinfo':
+                queue_item[ 'exec_item' ].append_output( {
+                    'datetime': datetime.now(),
+                    'output': queue_item[ 'line' ]
+                } )
+
+            if queue_item.get( 'breakpoint' ):
                 self.breakpoint_button.config( state = 'normal' )
 
+            elif queue_item.get( 'finished' ):
+                queue_item[ 'exec_item' ].end = datetime.now()
+                self.history_manager.add_history_item( queue_item[ 'exec_item' ] )
 
-    def _process_queue_item( self, queue_item: str | dict ) -> dict:
+
+    def _normalize_queue_item( self, queue_item: str | dict ) -> dict:
         """ Normalize message to a dict
 
         Args:
@@ -166,7 +179,7 @@ class AsyncOutputController:
 
         """
         TODO
-        match_py = re.search( r'^.*\((.*)\)<module>\(\)', output[ 'line' ].lower() )
+        match_py = re.search( r'^.*((.*))<module>()', output[ 'line' ].lower() )
         match_ps = re.search( r'^entering debug mode', output[ 'line' ].lower() )
         """
 
