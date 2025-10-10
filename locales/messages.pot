@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-08 08:56+0200\n"
+"POT-Creation-Date: 2025-10-10 11:45+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: main.py:54
+#: main.py:57
 msgid "Application interrupted by user"
 msgstr ""
 
-#: main.py:64
+#: main.py:67
 #, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
@@ -31,7 +31,7 @@ msgid ""
 "The application will now exit."
 msgstr ""
 
-#: main.py:66
+#: main.py:69
 msgid "Application Error"
 msgstr ""
 
@@ -77,61 +77,61 @@ msgstr ""
 msgid "Not connected to LDAP"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:127
+#: automation_menu/core/execution_manager.py:139
 #, python-brace-format
 msgid "Subprocess error {error}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:130
+#: automation_menu/core/execution_manager.py:142
 #, python-brace-format
 msgid "Unexpected error {error}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:160
+#: automation_menu/core/execution_manager.py:173
 msgid "Mail sent"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:166
+#: automation_menu/core/execution_manager.py:180
 #, python-brace-format
 msgid "Could not send error message to developer {e}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:179
+#: automation_menu/core/execution_manager.py:192
 #, python-brace-format
 msgid "Starting '{file}'"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:218
+#: automation_menu/core/execution_manager.py:232
 #, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:222
+#: automation_menu/core/execution_manager.py:236
 #, python-brace-format
 msgid "Termination - CalledProcessError: {e}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:226
+#: automation_menu/core/execution_manager.py:240
 #, python-brace-format
 msgid "Termination - Exception: {e}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:257
+#: automation_menu/core/execution_manager.py:272
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
 "reactivate script."
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:299
+#: automation_menu/core/execution_manager.py:317
 msgid "Script completed successfully"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:306
+#: automation_menu/core/execution_manager.py:326
 msgid "Script terminated"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:313
+#: automation_menu/core/execution_manager.py:334
 #, python-brace-format
 msgid "Script failed with exit code {err}"
 msgstr ""
@@ -161,95 +161,140 @@ msgid ""
 "been implemented, so these will not be available:"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:48
+#: automation_menu/core/script_runner.py:49
 msgid " (Dev)"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:63
+#: automation_menu/core/script_runner.py:65
 msgid "In development, and should only be run by its developer."
 msgstr ""
 
-#: automation_menu/core/script_runner.py:99
+#: automation_menu/core/script_runner.py:130
 msgid ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
 msgstr ""
 
-#: automation_menu/ui/main_window.py:81
-msgid "Script output"
+#: automation_menu/ui/history_manager.py:33
+#, python-brace-format
+msgid "{d} d"
+msgstr ""
+
+#: automation_menu/ui/history_manager.py:36
+#, python-brace-format
+msgid "{h} h"
+msgstr ""
+
+#: automation_menu/ui/history_manager.py:39
+#, python-brace-format
+msgid "{m} m"
+msgstr ""
+
+#: automation_menu/ui/history_manager.py:42
+#, python-brace-format
+msgid "{s} s"
+msgstr ""
+
+#: automation_menu/ui/history_manager.py:102
+#: automation_menu/ui/history_manager.py:118
+msgid "Started"
+msgstr ""
+
+#: automation_menu/ui/history_manager.py:104
+msgid "Name"
+msgstr ""
+
+#: automation_menu/ui/history_manager.py:125
+msgid "Ended"
+msgstr ""
+
+#: automation_menu/ui/history_manager.py:132
+msgid "Duration"
+msgstr ""
+
+#: automation_menu/ui/history_manager.py:139
+msgid "Generated output"
 msgstr ""
 
 #: automation_menu/ui/main_window.py:90
+msgid "Script output"
+msgstr ""
+
+#: automation_menu/ui/main_window.py:103
 msgid "Settings"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:157
+#: automation_menu/ui/main_window.py:107
+msgid "Execution history"
+msgstr ""
+
+#: automation_menu/ui/main_window.py:171
 #, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
 "ignored."
 msgstr ""
 
-#: automation_menu/ui/op_buttons.py:27
+#: automation_menu/ui/op_buttons.py:37
 msgid "Script ..."
 msgstr ""
 
-#: automation_menu/ui/op_buttons.py:33
+#: automation_menu/ui/op_buttons.py:43
 msgid "Continue"
 msgstr ""
 
-#: automation_menu/ui/op_buttons.py:40
+#: automation_menu/ui/op_buttons.py:50
 msgid "Stop script"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:52
+#: automation_menu/ui/settings_tab.py:51
 msgid "Application settings"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:59
+#: automation_menu/ui/settings_tab.py:58
 msgid "Set as topmost window"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:62
+#: automation_menu/ui/settings_tab.py:61
 msgid "Shall the window be set as topmost, above all other windows"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:71
+#: automation_menu/ui/settings_tab.py:70
 msgid "Minimize size during script execution"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:74
+#: automation_menu/ui/settings_tab.py:73
 msgid ""
 "Downsize the window during script execution, trying not to be in its way."
 " This setting can be ignored in ScriptInfo-block with "
 "'DisableMinimizeOnRunning'."
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:83 automation_menu/ui/settings_tab.py:88
+#: automation_menu/ui/settings_tab.py:82 automation_menu/ui/settings_tab.py:87
 msgid "Application language"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:99
+#: automation_menu/ui/settings_tab.py:98
 msgid "Language to use in the application"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:106
+#: automation_menu/ui/settings_tab.py:105
 msgid "Errorhandling"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:113
+#: automation_menu/ui/settings_tab.py:112
 msgid "Send mail to developer on script error"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:116
+#: automation_menu/ui/settings_tab.py:115
 msgid "Should an mail be sent to its developer if an error occurs in the script?"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:125
+#: automation_menu/ui/settings_tab.py:124
 msgid "Include screenshot in mail when reporting error"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:128
+#: automation_menu/ui/settings_tab.py:127
 msgid ""
 "Should the mail sent to script developer when reporting that an error "
 "occured, have a screenshot of main window attached?"

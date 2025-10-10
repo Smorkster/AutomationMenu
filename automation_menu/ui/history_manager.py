@@ -33,7 +33,7 @@ class HistoryManager:
             text_parts.append( _( '{d} d' ).format( d = days ) )
 
         if hours > 0:
-            text_parts.append( _( '{h} t' ).format( h = hours ) )
+            text_parts.append( _( '{h} h' ).format( h = hours ) )
 
         if minutes > 0:
             text_parts.append( _( '{m} m' ).format( m = minutes ) )
