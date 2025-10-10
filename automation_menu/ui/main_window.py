@@ -70,8 +70,8 @@ class AutomationMenuWindow:
         style.configure( 'TCheckbutton',
                         padding = ( 10, 5 )
         )
-        style.configure( 'History.TText',
-                        font = ( 'Calibri', 12, 'normal' )
+        style.configure( 'History.TLabel',
+                        font = ( 'Calibri', 12, 'bold' )
         )
         self.button_margin = {
             'x': 5,
