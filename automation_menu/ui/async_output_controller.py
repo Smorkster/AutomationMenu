@@ -48,7 +48,27 @@ class AsyncOutputController:
 
         if not self._running:
             self._running = True
-            threading.Thread( target = self._run_async_loop, daemon = True ).start()
+            self._loop_thread = threading.Thread( target = self._run_async_loop, daemon = True )
+            self._loop_thread.start()
+
+
+    def closedown( self ) -> None:
+        """ Close asyncio """
+
+        self._running = False
+
+        if self.loop.is_running():
+            self._loop_thread.join( timeout = 3 )
+            self.loop.stop()
+            self.loop.close()
+
+
+    async def _shutdown( self ):
+        tasks = [ t for t in asyncio.all_tasks( self.loop ) if t is not asyncio.current_task() ]
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather( *tasks, return_exceptions = True )
+        self.loop.stop()
 
 
     def _run_async_loop( self ) -> None:
@@ -68,7 +88,7 @@ class AsyncOutputController:
 
 
     async def _async_processor( self ) -> None:
-        """ Loop to handle queue inserted """
+        """ Loop to handle queue insertion """
 
         while self._running:
             try:

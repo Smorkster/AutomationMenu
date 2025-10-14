@@ -195,6 +195,10 @@ class AutomationMenuWindow:
         """ Handle the window close event """
 
         write_settingsfile( settings = self.app_state.settings, settings_file_path = self.app_state.secrets.get( 'settings_file_path' ) )
+
+        if hasattr( self, 'output_controller' ):
+            self.output_controller.closedown()
+
         self.root.destroy()
 
 
