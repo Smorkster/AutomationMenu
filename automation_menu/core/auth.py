@@ -15,7 +15,6 @@ from dynamicinputbox import dynamic_inputbox as inputbox
 from ldap3 import ALL, Connection, Entry, Server
 from ldap3.core.exceptions import LDAPSocketOpenError
 from automation_menu.core.state import ApplicationState
-from automation_menu.models import Secrets
 
 def connect_to_AD( app_state: ApplicationState ) -> Connection:
     """ Connect to Active Directory and return the connection object
@@ -86,7 +85,7 @@ def get_user_adobject( id = None, app_state: ApplicationState = None ) -> Entry:
         raise ConnectionError( _( 'Not connected to LDAP' ) )
 
     app_state.ldap_connection.search(
-        search_base = Secrets.get( 'ldap_search_base' ),
+        search_base = app_state.secrets.get( 'ldap_search_base' ),
         search_filter = f'(sAMAccountName={ user })',
         attributes = [ '*' ]
     )

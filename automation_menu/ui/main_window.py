@@ -8,7 +8,6 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-from os import abort
 from tkinter import E, N, S, W, Tk, messagebox, ttk
 
 from automation_menu.core.script_runner import ScriptMenuItem

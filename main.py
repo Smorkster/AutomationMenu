@@ -15,8 +15,6 @@ import sys
 
 from pathlib import Path
 
-from automation_menu.ui.history_manager import HistoryManager
-
 # Add the project root to Python path if needed
 project_root = Path( __file__ ).parent.parent
 sys.path.insert( 0, str( project_root ) )
@@ -24,6 +22,7 @@ sys.path.insert( 0, str( project_root ) )
 from automation_menu.core.execution_manager import ScriptExecutionManager
 from automation_menu.core.state import ApplicationState
 from automation_menu.models import Secrets, Settings, User
+from automation_menu.ui.history_manager import HistoryManager
 from automation_menu.utils.config import read_secrets_file, read_settingsfile, write_settingsfile
 from automation_menu.utils.localization import change_language
 
@@ -38,7 +37,7 @@ def main():
         app_state = ApplicationState()
         app_state.history_manager = HistoryManager()
         app_state.secrets = Secrets( read_secrets_file( file_path = Path( __file__ ).resolve().parent / 'secrets.json' ) )
-        app_state.settings = Settings( settings_dict = read_settingsfile( Secrets.get( 'settings_file_path' ) ), save_callback = save_settings )
+        app_state.settings = Settings( settings_dict = read_settingsfile( app_state.secrets.get( 'settings_file_path' ) ), save_callback = save_settings )
 
         change_language( language_code = app_state.settings.current_language )
 

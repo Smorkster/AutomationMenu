@@ -18,6 +18,7 @@ import win32ui
 from datetime import datetime
 from PIL import Image
 from tkinter import Tk
+
 from automation_menu.models import ScriptInfo
 
 def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> str:

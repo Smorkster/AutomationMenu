@@ -8,11 +8,11 @@ Version: 1.0
 Created: 2025-10-08
 """
 
-from cgitb import text
 from datetime import timedelta
 from tkinter import END, N, S, W, E, Text, ttk
 
 from automation_menu.models import ExecHistory
+
 #from automation_menu.ui.main_window import AutomationMenuWindow
 
 class HistoryManager:
