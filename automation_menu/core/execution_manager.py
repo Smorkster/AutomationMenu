@@ -133,7 +133,7 @@ class ScriptRunner:
             self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ self._script_info.filename }_stdout' ).start()
             self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()
             self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
-            self.current_process.wait()
+            return_code = self.current_process.wait()
 
         except subprocess.SubprocessError as e:
             line = _( 'Subprocess error {error}' ).format( error = str( e ) )
@@ -141,7 +141,7 @@ class ScriptRunner:
         except Exception as e:
             line = _( 'Unexpected error {error}' ).format( error = str( e ) )
 
-        if len( line ) > 0:
+        if len( line ) > 0 or return_code != 0:
             self._collect_error_info( error = line )
 
 

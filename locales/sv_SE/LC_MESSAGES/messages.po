@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-16 08:56+0200\n"
+"POT-Creation-Date: 2025-10-16 10:55+0200\n"
 "PO-Revision-Date: 2025-09-19 09:46+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv_SE\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: main.py:57
+#: main.py:56
 msgid "Application interrupted by user"
 msgstr "Applikation avbryten av användare"
 
-#: main.py:67
+#: main.py:66
 #, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
@@ -37,11 +37,11 @@ msgstr ""
 "\n"
 "Applikationen avslutas"
 
-#: main.py:69
+#: main.py:68
 msgid "Application Error"
 msgstr "Applikationsfel"
 
-#: automation_menu/core/auth.py:30
+#: automation_menu/core/auth.py:29
 msgid ""
 "Enter password for AD-domain\n"
 "P.S.\n"
@@ -51,7 +51,7 @@ msgstr ""
 "P.S.\n"
 "Lösenordet kommer inte sparas"
 
-#: automation_menu/core/auth.py:38
+#: automation_menu/core/auth.py:37
 #, python-brace-format
 msgid ""
 "Wrong password. Try again\n"
@@ -60,23 +60,23 @@ msgstr ""
 "Felaktigt lösenord. Försök igen\n"
 "{main_label_text}"
 
-#: automation_menu/core/auth.py:40
+#: automation_menu/core/auth.py:39
 msgid "Abort"
 msgstr "Avbryt"
 
-#: automation_menu/core/auth.py:41
+#: automation_menu/core/auth.py:40
 msgid "Ok"
 msgstr "Ok"
 
-#: automation_menu/core/auth.py:45
+#: automation_menu/core/auth.py:44
 msgid "No password was entered. Exiting."
 msgstr "Inget lösenord gavs. Avslutar."
 
-#: automation_menu/core/auth.py:63
+#: automation_menu/core/auth.py:62
 msgid "Error"
 msgstr "Fel"
 
-#: automation_menu/core/auth.py:63
+#: automation_menu/core/auth.py:62
 #, python-brace-format
 msgid ""
 "Could not connect to AD\n"
@@ -87,7 +87,7 @@ msgstr ""
 "{error}\n"
 "Avslutar"
 
-#: automation_menu/core/auth.py:86
+#: automation_menu/core/auth.py:85
 msgid "Not connected to LDAP"
 msgstr "Inte ansluten till LDAP"
 
@@ -103,7 +103,7 @@ msgstr "Oväntat fel {error}"
 
 #: automation_menu/core/execution_manager.py:173
 msgid "Mail sent"
-msgstr "Mail har skickat"
+msgstr "Mail har skickats"
 
 #: automation_menu/core/execution_manager.py:180
 #, python-brace-format
@@ -237,31 +237,31 @@ msgstr "Varaktighet"
 msgid "Generated output"
 msgstr "Utdata från skript"
 
-#: automation_menu/ui/main_window.py:92
+#: automation_menu/ui/main_window.py:91
 msgid "Script output"
 msgstr "Utdata från skript"
 
-#: automation_menu/ui/main_window.py:105
+#: automation_menu/ui/main_window.py:104
 msgid "Settings"
 msgstr "Inställningar"
 
-#: automation_menu/ui/main_window.py:109
+#: automation_menu/ui/main_window.py:108
 msgid "Execution history"
 msgstr "Kör historik"
 
-#: automation_menu/ui/main_window.py:132
+#: automation_menu/ui/main_window.py:131
 msgid ""
 "There is a script running. Do you want to terminate the script process "
 "before closing the application?"
 msgstr ""
-"Ett skript körs fortfarande. Vill du tvinga avslutning av skriptet "
-"innan applikationen avslutas?"
+"Ett skript körs fortfarande. Vill du tvinga avslutning av skriptet innan "
+"applikationen avslutas?"
 
-#: automation_menu/ui/main_window.py:134
+#: automation_menu/ui/main_window.py:133
 msgid "Script still runnning"
 msgstr "Skript arbetar"
 
-#: automation_menu/ui/main_window.py:191
+#: automation_menu/ui/main_window.py:190
 #, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
@@ -369,7 +369,7 @@ msgstr "Felet uppstod: {time}"
 
 #: automation_menu/utils/email_handler.py:63
 msgid "<strong>Error message</strong>"
-msgstr "<strong>felmeddelande</strong>"
+msgstr "<strong>Felmeddelande</strong>"
 
 #: automation_menu/utils/email_handler.py:64
 msgid "This is an automatic message sent from AutomationMenu"
