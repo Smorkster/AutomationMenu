@@ -8,7 +8,8 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-from tkinter import E, N, S, W, Tk, ttk
+from os import abort
+from tkinter import E, N, S, W, Tk, messagebox, ttk
 
 from automation_menu.core.script_runner import ScriptMenuItem
 from automation_menu.core.state import ApplicationState
@@ -35,6 +36,7 @@ class AutomationMenuWindow:
         self.dev_controls = []
         self.widgets = {}
         self.old_window_geometry = {}
+        self._close_confirmed = False
         self.language_manager = LanguageManager( current_language = self.app_state.settings.current_language )
 
         # Create main GUI
@@ -122,6 +124,24 @@ class AutomationMenuWindow:
         self.root.mainloop()
 
 
+    def _confirm_close_process( self ) -> bool:
+        """ Should the running script be terminated before closing application """
+
+        from automation_menu.utils.localization import _
+
+        line = _( 'There is a script running. Do you want to terminate the script process before closing the application?' )
+        answ = messagebox.askyesno(
+            title = _( 'Script still runnning' ),
+            message = line,
+            parent = self.root
+        )
+
+        if answ:
+            self._stop_script()
+
+        return answ
+
+
     def _continue_breakpoint( self ) -> None:
         """ Reset application debug mode """
 
@@ -192,7 +212,11 @@ class AutomationMenuWindow:
 
 
     def on_closing( self ) -> None:
-        """ Handle the window close event """
+        """ Window close event. Handle if a script is still running """
+
+        if not self._close_confirmed and self.app_state.script_manager.is_running():
+            if not self._confirm_close_process():
+                return
 
         write_settingsfile( settings = self.app_state.settings, settings_file_path = self.app_state.secrets.get( 'settings_file_path' ) )
 
