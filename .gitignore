@@ -43,3 +43,5 @@ Thumbs.db
 Script/*
 secrets.json
 *.mo
+*AutomationLog.txt
+.gitignore

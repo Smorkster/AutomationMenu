@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-10 11:45+0200\n"
+"POT-Creation-Date: 2025-10-16 08:56+0200\n"
 "PO-Revision-Date: 2025-09-19 09:46+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv_SE\n"
@@ -237,19 +237,31 @@ msgstr "Varaktighet"
 msgid "Generated output"
 msgstr "Utdata från skript"
 
-#: automation_menu/ui/main_window.py:90
+#: automation_menu/ui/main_window.py:92
 msgid "Script output"
 msgstr "Utdata från skript"
 
-#: automation_menu/ui/main_window.py:103
+#: automation_menu/ui/main_window.py:105
 msgid "Settings"
 msgstr "Inställningar"
 
-#: automation_menu/ui/main_window.py:107
+#: automation_menu/ui/main_window.py:109
 msgid "Execution history"
 msgstr "Kör historik"
 
-#: automation_menu/ui/main_window.py:171
+#: automation_menu/ui/main_window.py:132
+msgid ""
+"There is a script running. Do you want to terminate the script process "
+"before closing the application?"
+msgstr ""
+"Ett skript körs fortfarande. Vill du tvinga avslutning av skriptet "
+"innan applikationen avslutas?"
+
+#: automation_menu/ui/main_window.py:134
+msgid "Script still runnning"
+msgstr "Skript arbetar"
+
+#: automation_menu/ui/main_window.py:191
 #, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
