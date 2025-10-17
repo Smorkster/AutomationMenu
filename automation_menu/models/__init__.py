@@ -2,8 +2,8 @@
 Data models for the automation menu application.
 """
 
-#from .script import ScriptMetadata, ScriptParameter, ScriptInfo
 from .exechistory import ExecHistory
+from .script import ScriptMetadata, ScriptInputParameter
 from .scriptinfo import ScriptInfo
 from .secrets import Secrets
 from .settings import Settings
@@ -12,7 +12,7 @@ from .user import User
 
 __all__ = [
     'ScriptMetadata',
-    'ScriptParameter',
+    'ScriptInputParameter',
     'ScriptInfo',
     'User',
     'Settings',

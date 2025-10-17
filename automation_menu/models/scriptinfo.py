@@ -1,3 +1,5 @@
+
+
 class ScriptInfo:
     """ Class to hold information about a script """
     def __init__( self, filename: str, directory: str ):
@@ -5,6 +7,7 @@ class ScriptInfo:
 
         self.filename = filename
         self.fullpath = directory.joinpath( filename )
+        self.scriptmeta = None
 
 
     def add_attr( self, attr_name: str, attr_val: any ) -> None:

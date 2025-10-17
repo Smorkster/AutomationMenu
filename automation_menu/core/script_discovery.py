@@ -14,9 +14,55 @@ import re
 
 from automation_menu.core.state import ApplicationState
 from automation_menu.models import ScriptInfo, User
+from automation_menu.models.script import ScriptInputParameter, ScriptState
+from automation_menu.utils.docstring_parser import extract_script_metadata
+from automation_menu.utils.scriptinfo_block_parser import scriptinfo_block_parser
 
 
-def _check_breakpoints( lines: list[ str ] , si: ScriptInfo ) -> ScriptInfo:
+def _add_scriptinfo_meta( si: ScriptInfo, metadata: dict ) -> ScriptInfo:
+    """ """
+
+    def _parse_list( list_name ):
+        """ """
+        list_values = metadata.get( list_name, '' )
+
+        if isinstance( list_values, list ):
+            return list_values
+
+        else:
+            if not list_values:
+                return []
+
+            return [ item.strip() for item in re.split( r'[,;]', list_values ) if item.strip() ]
+
+    from automation_menu.utils.localization import _
+
+    si.add_attr( 'Synopsis', metadata.get( 'synopsis', si.filename ) )
+    si.add_attr( 'Author', metadata.get( 'author', _( 'Unknown' ) ) )
+    si.add_attr( 'Description', metadata.get( 'description', '' ) )
+
+    state_value: str = metadata.get( 'state', 'DEV' )
+
+    try:
+        state = ScriptState[ state_value.upper() ]
+
+    except KeyError:
+        state = ScriptState.DEV
+
+    si.add_attr( 'State', state )
+
+    si.add_attr( 'RequiredAdGroups', _parse_list( 'required_ad_groups' ) )
+    si.add_attr( 'AllowedUsers', _parse_list( 'allowed_users' ) )
+
+    script_input_parameters = _parse_parameters( metadata )
+
+    if len( script_input_parameters ) > 0:
+        si.add_attr( 'InputParameters', script_input_parameters )
+
+    return si
+
+
+def _check_breakpoints( si: ScriptInfo ) -> ScriptInfo:
     """ Check for uncommented breakpoints
 
     Args:
@@ -26,6 +72,9 @@ def _check_breakpoints( lines: list[ str ] , si: ScriptInfo ) -> ScriptInfo:
     Returns:
         si (ScriptInfo): ScriptInfo with possible 'UsingBreakpoint'
     """
+
+    with open( si.fullpath, 'r', encoding = 'utf-8' ) as f:
+        lines = f.readlines()
 
     for line in lines:
         stripped = line.lstrip()
@@ -38,42 +87,37 @@ def _check_breakpoints( lines: list[ str ] , si: ScriptInfo ) -> ScriptInfo:
     return si
 
 
-def _extract_scriptinfo( lines: list[ str ] , si: ScriptInfo ) -> ScriptInfo:
-    """ Parse the file content and extract script information
+def _parse_parameters( metadata: dict ) -> list[ ScriptInputParameter ]:
+    """ Extract script input parameters
 
-    Args:
-        lines (list[ str ]): All lines of the scriptfile
-        si (ScriptInfo): Script info gathered from the scripts info block
-
-    Returns:
-        si (ScriptInfo): Script information specified in the script info block
+    Looks for fields like:
+    :param name: description
+    :param param_with_default: description (default: value)
+    :param required_param: description (required)
     """
 
-    from automation_menu.utils.localization import _
+    parameters = []
 
-    full_text = ''.join( lines )
-    match = re.search( r'ScriptInfo\s*(.*?)\s*ScriptInfoEnd', full_text, re.DOTALL )
+    for key, value in metadata.items():
+        if key.startswith( 'param ' ):
+            param_name = key[ 6 : ].strip()
 
-    if not match:
-        si.add_attr( 'NoScriptBlock', True )
-        si.add_attr( 'Description', _( 'Script info missing' ) )
+            default_match = re.search( r'\(default:\s*([^)]+)\)', value, re.IGNORECASE )
+            default_value = default_match.group( 1 ).strip() if default_match else None
 
-        return si
+            required_match = re.search( r'\(required\)', value, re.IGNORECASE ) != None
 
-    # Extract key-value pairs inside ScriptInfo block
-    for p, t in re.findall( pattern = r"#\s*(\w+)(?:\s*-\s*(.+))?", string = match.group( 1 ) ):
-        value = t.replace( ' ', '' )
+            description = re.sub( r'\s*\(default:[^)]+\)', '', re.sub( r'\s*\(required\)', '', value.strip() ).strip() )
 
-        if p in ( 'RequiredAdGroups', 'AllowedUsers' ):
-            si.add_attr( p, value.split( ';' ) )
+            parameters.append( ScriptInputParameter(
+                name = param_name,
+                type = 'str',
+                required = required_match,
+                default = default_value,
+                description = description
+            ) )
 
-        elif t == '':
-            si.add_attr( p , True )
-
-        else:
-            si.add_attr( p, t )
-
-    return si
+    return parameters
 
 
 def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptInfo:
@@ -91,8 +135,8 @@ def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptI
     path = os.path.join( directory, file )
 
     try:
-        with open( path, encoding = 'utf-8' ) as f:
-            lines = f.readlines()
+        with open( path, 'r', encoding = 'utf-8' ) as f:
+            f.read( 1 )
 
     except FileNotFoundError as e:
         return _( 'File not found: {error}' ).format( error = str( e ) )
@@ -100,18 +144,27 @@ def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptI
     except Exception as e:
         return _( 'Could not read file: {error}' ).format( error = str( e ) )
 
-    si = _extract_scriptinfo( lines, si )
+    metadata = scriptinfo_block_parser( si )
+
+    if not metadata:
+        try:
+            metadata = extract_script_metadata( si )
+
+        except:
+            raise
+
+    si = _add_scriptinfo_meta( si, metadata )
 
     # Permission logic
-    ad_ok = (
-        not hasattr( si, 'RequiredAdGroups' ) or
+    requiredadgroups_ok = (
+        len( si.get_attr( 'RequiredAdGroups' ) ) == 0 or
         any( current_user.member_of( g ) for g in si.RequiredAdGroups )
     )
-    user_ok = (
+    allowedusers_ok = (
         not hasattr( si, 'AllowedUsers' ) or
-        current_user.UserId in si.AllowedUsers
+        current_user.UserId in si.AllowedUsers if len( si.AllowedUsers ) > 0 else True
     )
-    author_ok = (
+    is_author_ok = (
         not hasattr( si, 'Author' ) or
         current_user.AdObject.name.value == si.get_attr( 'Author' ).replace( ' (', '(' )
     )
@@ -119,11 +172,8 @@ def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptI
         hasattr( si, 'State' ) and si.State in ( 'Test', 'Prod' )
     )
 
-    if ( ad_ok and user_ok and state_ok ) or author_ok:
-        si = _check_breakpoints( lines, si )
-
-        if not si.get_attr( 'Synopsis' ):
-            si.set_attr( 'Synopsis', file )
+    if ( requiredadgroups_ok and allowedusers_ok and state_ok ) or is_author_ok:
+        si = _check_breakpoints( si )
 
         return si
 
@@ -160,11 +210,12 @@ def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
         try:
             si = _read_scriptfile( file = filename, directory = app_state.secrets.get( 'script_dir_path' ), current_user = app_state.current_user )
 
-            #if si.get_attr( 'UsingBreakpoint' ) and ( app_state.current_user.AdObject.name.value != si.get_attr( 'Author' ).replace( ' (', '(' ) ):
-            if si.get_attr( 'UsingBreakpoint' ):
-                scriptswithbreakpoint.append( si )
-            else:
-                indexed_files.append( si )
+            if si:
+                #if si.get_attr( 'UsingBreakpoint' ) and ( app_state.current_user.AdObject.name.value != si.get_attr( 'Author' ).replace( ' (', '(' ) ):
+                if si.get_attr( 'UsingBreakpoint' ):
+                    scriptswithbreakpoint.append( si )
+                else:
+                    indexed_files.append( si )
 
         except Exception as e:
             app_state.output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ), 'tag': 'suite_sysinfo' } )
@@ -176,3 +227,7 @@ def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
         app_state.output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ) , 'tag': 'suite_sysinfo' } )
 
     return indexed_files
+
+
+if __name__ == '__main__':
+    _read_scriptfile(  )
