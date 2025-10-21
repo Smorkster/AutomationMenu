@@ -22,6 +22,7 @@ def get_op_buttons( main_root, main_self ):
         main_root (Tk): Main window
         main_self (AutomationMenuWindow): Main object
     """
+
     from automation_menu.utils.localization import _
 
     widgets = {}

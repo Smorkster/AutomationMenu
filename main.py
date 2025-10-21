@@ -51,7 +51,7 @@ def main():
         # Launch the main application window
         from automation_menu.ui.main_window import AutomationMenuWindow
         from automation_menu.utils.localization import _
-        AutomationMenuWindow( app_state )
+        main_self = AutomationMenuWindow( app_state )
 
     except KeyboardInterrupt:
         print( _( 'Application interrupted by user' ) )

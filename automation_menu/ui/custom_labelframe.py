@@ -14,6 +14,8 @@ from tkinter import LabelFrame
 
 class CustomLabelFrame( LabelFrame ):
     def __init__( self, *args, **kwargs ):
+        """ A labelframe with custom behavior on mouse movement """
+
         super().__init__( *args, **kwargs )
 
         self.bind( '<Enter>', self._on_enter )

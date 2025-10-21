@@ -35,6 +35,9 @@ def read_settingsfile( settings_file_path: str ) -> dict:
 
     Returns:
         (dict): Collection of settings from file
+
+    Raises:
+        On reading exception, a default settings object is returned
     """
 
     try:
@@ -42,7 +45,7 @@ def read_settingsfile( settings_file_path: str ) -> dict:
             return json.load( f )
 
     except Exception as e:
-        return Settings( { 'on_top' : False, 'minimize_on_running' : False } )
+        return { 'on_top' : False, 'minimize_on_running' : False }
 
 
 def write_settingsfile( settings: Settings, settings_file_path: str ) -> None:
