@@ -1,13 +1,22 @@
 
+from dataclasses import dataclass
+from pathlib import Path
 
+from automation_menu.models.scriptmetadata import ScriptMetadata
+
+
+@dataclass
 class ScriptInfo:
     """ Class to hold information about a script """
-    def __init__( self, filename: str, directory: str ):
-        """ Initialize ScriptInfo with filename and directory """
+    filename: str
+    fullpath: Path
+    scriptmeta: ScriptMetadata = None
 
-        self.filename = filename
-        self.fullpath = directory.joinpath( filename )
-        self.scriptmeta = None
+
+    def __getattr__( self, name ):
+        """ Assure that retreival of none existing attribute does not generate an exception """
+
+        return None
 
 
     def add_attr( self, attr_name: str, attr_val: any ) -> None:
@@ -32,10 +41,14 @@ class ScriptInfo:
     def get_attr( self, attr_name: str ) -> any:
         """ Get the value of an attribute if it exists, otherwise return None """
 
-        if hasattr( self, attr_name ):
+        if attr_name in [ 'filename', 'fullpath' ]:
             return getattr( self, attr_name )
 
         else:
-            None
+            if hasattr( self.scriptmeta, attr_name ):
+                return getattr( self.scriptmeta, attr_name )
+
+            else:
+                return None
 
 

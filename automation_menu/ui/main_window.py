@@ -10,9 +10,11 @@ Created: 2025-09-25
 
 from tkinter import E, N, S, W, Tk, messagebox, ttk
 
-from automation_menu.core.script_runner import ScriptMenuItem
+from automation_menu.core.script_menu_item import ScriptMenuItem
 from automation_menu.core.state import ApplicationState
+from automation_menu.models.enums import OutputStyleTags
 from automation_menu.ui.async_output_controller import AsyncOutputController
+from automation_menu.ui.config_ui_style import set_ui_style
 from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
@@ -44,36 +46,7 @@ class AutomationMenuWindow:
 
         # Setup styles
         style = ttk.Style()
-        style.configure( 'ScriptHover.TLabel',
-                        background = '#c2e6f3',
-                        font = ( 'Calibri', 12, 'normal' )
-        )
-        style.configure( 'ScriptNormal.TLabel',
-                        background = 'SystemButtonFace',
-                        font = ( 'Calibri', 12, 'normal' )
-        )
-        style.configure( 'DevHover.TLabel',
-                        background = '#c2e6f3',
-                        font = ( 'Calibri', 12, 'bold' )
-        )
-        style.configure( 'DevNormal.TLabel',
-                        background = 'SystemButtonFace',
-                        font = ( 'Calibri', 12, 'bold' )
-        )
-        style.configure( 'TButton',
-                        font = ( 'Calibri', 12, 'normal' ),
-                        padding = ( 2, 4 )
-        )
-        style.configure( 'TLabelFrame',
-                        padding = ( 10, 5 ),
-                        width = 500
-        )
-        style.configure( 'TCheckbutton',
-                        padding = ( 10, 5 )
-        )
-        style.configure( 'History.TLabel',
-                        font = ( 'Calibri', 12, 'bold' )
-        )
+
         self.button_margin = {
             'x': 5,
             'y': 5
@@ -109,6 +82,7 @@ class AutomationMenuWindow:
 
         self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )
 
+        set_ui_style( style = style, main_self = self )
         self.center_screen()
 
         self.root.columnconfigure( index = 0, weight = 1 )
@@ -188,7 +162,7 @@ class AutomationMenuWindow:
         for scriptinfo in sorted( self.indexed_files , key = lambda script: getattr( script, 'Synopsis', getattr( script, 'filename', '' ) ).lower() ):
             if hasattr( scriptinfo, 'NoScriptBlock' ):
                 line = _( 'File {file} does not contain a ScriptInfo-block. Some settings will be ignored.' ).format( file = scriptinfo.fullpath )
-                self.app_state.output_queue.put( { 'line': line, 'tag': 'suite_sysinfo' } )
+                self.app_state.output_queue.put( { 'line': line, 'tag': OutputStyleTags.SYSWARNING } )
             ScriptMenuItem( script_menu = self.script_menu, script_info = scriptinfo, main_object = self )
 
 

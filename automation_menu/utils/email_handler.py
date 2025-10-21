@@ -43,8 +43,8 @@ def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_stat
                             domain = f'{ app_state.current_user.AdObject.mail.value.split( '@' )[1] }' )
     to_list = [ app_state.secrets.get( 'main_error_mail' ) ]
 
-    if script_info.Author != None:
-        get_dev_id = re.search( r'.*\((\w{4})\)$', script_info.Author, re.DOTALL )
+    if script_info.get_attr( 'Author' ) != None:
+        get_dev_id = re.search( r'.*\((\w{4})\)$', script_info.get_attr( 'Author' ), re.DOTALL )
         dev = get_user_adobject( id = get_dev_id.group( 1 ), app_state = app_state )
         if dev.mail.value != '':
             to_list.append( dev.mail.value )
@@ -58,7 +58,7 @@ def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_stat
         img_included = '&nbsp;'
 
     header = _( 'Script error' )
-    text1 = _( 'Error occured when your script ''<strong>{script_name}</strong>'' was running' ).format( script_name = script_info.filename )
+    text1 = _( 'Error occured when your script ''<strong>{script_name}</strong>'' was running' ).format( script_name = script_info.get_attr( 'filename' ) )
     text2 = _( 'The error occured at: {time}' ).format( time = datetime.now().strftime( '%Y-%m-%d %H:%M:%S' ) )
     error_title = _( '<strong>Error message</strong>' )
     sign = _( 'This is an automatic message sent from AutomationMenu' )
@@ -107,4 +107,4 @@ def report_script_error( app_state: ApplicationState, error_msg: str , script_in
         return True
 
     except Exception as e:
-        raise
+        raise e

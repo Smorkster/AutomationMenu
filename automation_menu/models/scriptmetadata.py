@@ -1,24 +1,18 @@
+"""
+Model for various meta data, specifying script permissions,
+definition and more.
+
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+Version: 1.0
+Created: 2025-10-17
+"""
+
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional, Union
 
-
-class ScriptState( Enum ):
-    """ Valid script states """
-    DEV = 'Dev'
-    TEST = 'Test'
-    PROD = 'Prod'
-
-
-@dataclass
-class ScriptInputParameter:
-    """ Represents a single input parameter """
-
-    name: str
-    type: Union[ str , int, bool ]
-    required: bool = True
-    default: Optional[ str ] = None
-    description: str = ''
+from automation_menu.models.enums import ScriptState
+from automation_menu.models.scriptinputparameter import ScriptInputParameter
 
 
 @dataclass
@@ -39,14 +33,10 @@ class ScriptMetadata:
     allowed_users: list[ str ] = field( default_factory = list )
 
     # Parameters
-    parameters: list[ ScriptInputParameter ] = field( default_factory = list )
+    script_input_parameters: list[ ScriptInputParameter ] = field( default_factory = list )
 
     # UI behavior flags
     disable_minimize_on_running: bool = False
-
-    # Internal, not settable in ScriptInfo
-    filename: str = field( default = '', init = False )
-    fullpath: str = field( default = '', init = False )
 
 
     def __post_init__( self ):
@@ -59,10 +49,10 @@ class ScriptMetadata:
             raise ValueError( 'Author is required' )
 
 
-    def has_parameters( self ) -> bool:
+    def has_input_parameters( self ) -> bool:
         """ Check if script accepts parameters """
 
-        return len( self.parameters ) > 0
+        return len( self.script_input_parameters ) > 0
 
 
     def requires_permission_check(self) -> bool:

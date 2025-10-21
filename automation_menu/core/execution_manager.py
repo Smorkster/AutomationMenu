@@ -21,6 +21,7 @@ from typing import Callable, Optional
 
 from automation_menu.core.state import ApplicationState
 from automation_menu.models import ExecHistory, ScriptInfo, SysInstructions
+from automation_menu.models.enums import OutputStyleTags
 from automation_menu.utils.email_handler import report_script_error
 from automation_menu.utils.screenshot import take_screenshot
 
@@ -57,7 +58,7 @@ class ScriptExecutionManager:
         except Exception as e:
             self._output_queue.put( {
                 'line': 'Exception ❗: {error}'.format( error = str( e ) ),
-                'tag': 'suite_error',
+                'tag': OutputStyleTags.SYSERROR,
                 'finished': True,
                 'exec_item': runner._exec_item
             } )
@@ -154,7 +155,7 @@ class ScriptRunner:
 
         self._output_queue.put( {
             'line': error,
-            'tag': 'suite_error',
+            'tag': OutputStyleTags.SYSERROR,
             'finished': True,
             'exec_item': self._exec_item
         } )
@@ -162,7 +163,7 @@ class ScriptRunner:
 
         if self.app_state.settings.send_mail_on_error:
             if self.app_state.settings.include_ss_in_error_mail:
-                ss_path = take_screenshot( root_window = self.main_window, script = self._script_info, file_name_prefix = self.app_state.secrets.get( 'error_ss_prefix' ) )
+                ss_path = take_screenshot( root_window = self.main_window, script_info = self._script_info, file_name_prefix = self.app_state.secrets.get( 'error_ss_prefix' ) )
 
             from automation_menu.utils.localization import _
 
@@ -171,14 +172,14 @@ class ScriptRunner:
 
                 self._output_queue.put( {
                     'line': _( 'Mail sent' ),
-                    'tag': 'suite_sysinfo',
+                    'tag': OutputStyleTags.SYSINFO,
                     'exec_item': self._exec_item
                 } )
 
             except Exception as e:
                 self._output_queue.put( {
                     'line': _( 'Could not send error message to developer {e}' ).format( e = str( e ) ),
-                    'tag': 'suite_sysinfo',
+                    'tag': OutputStyleTags.SYSERROR,
                     'exec_item': self._exec_item
                 } )
 
@@ -189,25 +190,25 @@ class ScriptRunner:
         from automation_menu.utils.localization import _
 
         self._exec_item = ExecHistory( script_info = self._script_info )
-        line = _( 'Starting \'{file}\'' ).format( file = self._script_info.Synopsis )
+        line = _( 'Starting \'{file}\'' ).format( file = self._script_info.get_attr( 'synopsis' ) )
         self._output_queue.put( {
             'line': line,
-            'tag': 'suite_sysinfo',
+            'tag': OutputStyleTags.SYSINFO,
             'exec_item': self._exec_item
         } )
 
-        if self._script_info.filename.endswith( '.py' ):
+        if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
             return subprocess.Popen(
-                args = [ 'python', str( self._script_info.fullpath ) ],
+                args = [ 'python', str( self._script_info.get_attr( 'fullpath' ) ) ],
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,
                 text = True
             )
 
-        elif self._script_info.filename.endswith( '.ps1' ):
+        elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
             return subprocess.Popen(
-                args = [ 'powershell.exe', str( self._script_info.fullpath ) ],
+                args = [ 'powershell.exe', str( self._script_info.get_attr( 'fullpath' ) ) ],
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,
@@ -243,7 +244,7 @@ class ScriptRunner:
             if len( line ) > 0:
                 self._output_queue.put( {
                     'line': line,
-                    'tag': 'suite_error',
+                    'tag': OutputStyleTags.SYSERROR,
                     'exec_item': self._exec_item
                 } )
 
@@ -270,14 +271,14 @@ class ScriptRunner:
                 self._in_breakpoint = True
                 self._output_queue.put( {
                     'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr ),
-                    'tag': 'suite_sysinfo',
+                    'tag': OutputStyleTags.SYSINFO,
                     'breakpoint': True,
                     'exec_item': self._exec_item
                 } )
             else:
                 self._output_queue.put( {
                     'line': line_str.rstrip(),
-                    'tag': 'suite_info',
+                    'tag': OutputStyleTags.INFO,
                     'exec_item': self._exec_item
                 } )
 
@@ -300,7 +301,7 @@ class ScriptRunner:
             line_str = line.decode() if isinstance( line, bytes ) else line
             self._output_queue.put( {
                 'line': line_str.rstrip(),
-                'tag': 'suite_error',
+                'tag': OutputStyleTags.ERROR,
                 'exec_item': self._exec_item
             } )
 
@@ -315,7 +316,7 @@ class ScriptRunner:
         if return_code == 0:
             self._output_queue.put( {
                 'line': _( 'Script completed successfully' ),
-                'tag': 'suite_success',
+                'tag': OutputStyleTags.SUCCESS,
                 'finished': True,
                 'exec_item': self._exec_item
             } )
@@ -324,7 +325,7 @@ class ScriptRunner:
             if self._terminated:
                 self._output_queue.put( {
                     'line': _( 'Script terminated' ),
-                    'tag': 'suite_sysinfo',
+                    'tag': OutputStyleTags.SYSINFO,
                     'finished': True,
                     'exec_item': self._exec_item
                 } )
@@ -332,7 +333,7 @@ class ScriptRunner:
             else:
                 self._output_queue.put( {
                         'line':_( 'Script failed with exit code {err}' ).format( err = return_code ),
-                        'tag': 'suite_sysinfo',
+                        'tag': OutputStyleTags.SYSERROR,
                         'finished': True,
                         'exec_item': self._exec_item
                 } )

@@ -11,7 +11,7 @@ Created: 2025-09-25
 import tkinter as tk
 from tkinter import E, W, Tk, ttk
 
-from automation_menu.core.script_runner import ScriptMenuItem
+from automation_menu.core.script_menu_item import ScriptMenuItem
 from automation_menu.models import ScriptInfo
 
 
