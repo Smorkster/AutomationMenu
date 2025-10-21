@@ -169,11 +169,11 @@ class AsyncOutputController:
 
         else:
             self.text_widget.config( state = 'normal' )
-            self.text_widget.insert( 'end', queue_item[ 'line' ] + '\n', queue_item[ 'tag' ] )
+            self.text_widget.insert( 'end', queue_item[ 'line' ] + '\n', queue_item[ 'tag' ].value )
             self.text_widget.config( state = 'disabled' )
             self.text_widget.see( 'end' )
 
-            if queue_item[ 'tag' ] != 'suite_sysinfo':
+            if not queue_item[ 'tag' ].name.startswith( 'SYS' ):
                 queue_item[ 'exec_item' ].append_output( {
                     'datetime': datetime.now(),
                     'output': queue_item[ 'line' ]

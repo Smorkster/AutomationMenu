@@ -13,6 +13,7 @@ import threading
 from tkinter import Menu
 from tkinter.ttk import Label
 from automation_menu.models import ScriptInfo, SysInstructions
+from automation_menu.models.enums import OutputStyleTags, ScriptState
 #from automation_menu.ui.main_window import AutomationMenuWindow
 
 
@@ -31,7 +32,7 @@ class ScriptMenuItem:
 
         self.script_menu = script_menu
         self.script_info = script_info
-        self.script_path = script_info.fullpath
+        self.script_path = script_info.get_attr( 'fullpath' )
         self.master_self = main_object
         self.master_self.app_state.running_automation = self
         self.process = None
@@ -39,13 +40,13 @@ class ScriptMenuItem:
         self._in_debug = False
         style = 'TButton'
 
-        if hasattr( self.script_info, 'Synopsis' ):
-            self.label_text = self.script_info.Synopsis
+        if self.script_info.get_attr( 'synopsis' ):
+            self.label_text = self.script_info.get_attr( 'synopsis' )
 
         else:
-            self.label_text = self.script_info.filename
+            self.label_text = self.script_info.get_attr( 'filename' )
 
-        if hasattr( self.script_info, 'State' ) and self.script_info.State == 'Dev':
+        if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
             self.label_text = self.label_text + _( ' (Dev)' )
             style = 'DevNormal.TLabel'
 
@@ -56,17 +57,18 @@ class ScriptMenuItem:
         self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
 
         # Add tooltip to this button
-        if hasattr( self.script_info, 'Description' ):
+        if self.script_info.get_attr( 'Description' ):
             from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 
             desc = self.script_info.get_attr( 'Description' )
             dev = False
-            if self.script_info.get_attr( 'State' ) == 'Dev':
+
+            if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
                 desc += f'\n\n{ _( 'In development, and should only be run by its developer.' ) }'
                 dev = True
 
             tt = AlwaysOnTopToolTip( widget = self.script_button, msg = desc )
-            self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.Description, dev ) )
+            self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'Description' ), dev ) )
 
 
     def on_enter( self, event ):
@@ -76,7 +78,7 @@ class ScriptMenuItem:
             event: Event triggering the function
         """
 
-        if self.script_info.get_attr( 'State' ) == 'Dev':
+        if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
             event.widget.configure( style = 'DevHover.TLabel' )
 
         else:
@@ -90,7 +92,7 @@ class ScriptMenuItem:
             event: Event triggering the function
         """
 
-        if self.script_info.get_attr( 'State' ) == 'Dev':
+        if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
             event.widget.configure( style = 'DevNormal.TLabel' )
 
         else:
@@ -112,12 +114,14 @@ class ScriptMenuItem:
         from automation_menu.utils.localization import _
 
         def script_process_wrapper():
+            """ Wrapper to execute script from separate thread """
+
             with self.master_self.app_state.script_manager.create_runner() as runner:
                 runner.run_script( script_info = self.script_info, enable_stop_button_callback = self.master_self.enable_stop_script_button, main_window = self.master_self.root )
 
             self.master_self.disable_stop_script_button()
 
-            if self.master_self.app_state.settings.get( 'minimize_on_running' ) and not self.script_info.get_attr( 'DisableMinimizeOnRunning' ):
+            if self.master_self.app_state.settings.get( 'minimize_on_running' ) and not self.script_info.get_attr( 'disable_minimize_on_running' ):
                 self.master_self.set_min_max_on_running()
 
         self.script_menu.withdraw()
@@ -125,10 +129,10 @@ class ScriptMenuItem:
         self.master_self.app_state.output_queue.put( SysInstructions.CLEAROUTPUT )
 
         if self.master_self.app_state.settings.get( 'minimize_on_running' ):
-            if self.script_info.get_attr( 'DisableMinimizeOnRunning' ):
+            if self.script_info.get_attr( 'disable_minimize_on_running' ):
                 self.master_self.app_state.output_queue.put( {
                     'line': _( 'The script has \'DisableMinimizeOnRunning\', meaning the window will not be minimized.' ),
-                    'tag': 'suite_sysinfo'
+                    'tag': OutputStyleTags.SYSINFO
                 } )
 
             else:

@@ -27,12 +27,6 @@ def get_output_tab( tabcontrol: ttk.Notebook ) -> tuple[ ttk.Frame, Text ]:
     output.config( state = 'disabled' )
     output.grid( column = 0, row = 0, sticky = ( N, S, E, W ) )
 
-    output.tag_config( tagName = 'suite_error', foreground = 'Red', font = ( 'Arial', 12, 'bold' ) )
-    output.tag_config( tagName = 'suite_info', foreground = 'Blue', font = ( 'Arial', 12 , 'bold' ) )
-    output.tag_config( tagName = 'suite_success', foreground = 'Green', font = ( 'Arial', 12 , 'bold' ) )
-    output.tag_config( tagName = 'suite_sysinfo', foreground = 'Black', font = ( 'Arial', 12, 'italic' ) )
-    output.tag_config( tagName = 'suite_warning', foreground = 'Orange', font = ( 'Arial', 12 ) )
-
     scrollbar = ttk.Scrollbar( master = tabOutput, orient='vertical', command = output.yview )
     scrollbar.grid( column = 1, row = 0, sticky = ( N , S , E ) )
     output.config( yscrollcommand = scrollbar.set )

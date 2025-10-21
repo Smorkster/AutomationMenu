@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-16 10:55+0200\n"
+"POT-Creation-Date: 2025-10-17 14:50+0200\n"
 "PO-Revision-Date: 2025-09-18 15:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_US\n"
@@ -152,26 +152,26 @@ msgstr "Script terminated"
 msgid "Script failed with exit code {err}"
 msgstr "Script failed with exit code {err}"
 
-#: automation_menu/core/script_discovery.py:59
-msgid "Script info missing"
-msgstr "Script info missing"
+#: automation_menu/core/script_discovery.py:41
+msgid "Unknown"
+msgstr "Unknown"
 
-#: automation_menu/core/script_discovery.py:98
+#: automation_menu/core/script_discovery.py:142
 #, python-brace-format
 msgid "File not found: {error}"
 msgstr "File not found: {error}"
 
-#: automation_menu/core/script_discovery.py:101
+#: automation_menu/core/script_discovery.py:145
 #, python-brace-format
 msgid "Could not read file: {error}"
 msgstr "Could not read file: {error}"
 
-#: automation_menu/core/script_discovery.py:170
+#: automation_menu/core/script_discovery.py:221
 #, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr "{filename} not loaded: {e}"
 
-#: automation_menu/core/script_discovery.py:174
+#: automation_menu/core/script_discovery.py:225
 msgid ""
 "Some script have an active breakpoint in the code, handling this has not "
 "been implemented, so these will not be available:"

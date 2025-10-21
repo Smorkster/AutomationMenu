@@ -23,7 +23,6 @@ class ExecHistory:
 
     def add_end( self, time: datetime ):
         """ Set datetime when execution ended
-
         Args:
             time (datetime.datetime): Execution finished
         """

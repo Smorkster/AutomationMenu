@@ -8,19 +8,27 @@ Version: 1.0
 Created: 2025-10-08
 """
 
-from cgitb import text
 from datetime import timedelta
 from tkinter import END, N, S, W, E, Text, ttk
 
 from automation_menu.models import ExecHistory
+
 #from automation_menu.ui.main_window import AutomationMenuWindow
 
 class HistoryManager:
     def __init__( self ):
+        """ Manage execution history items UI widgets for display """
         self._historylist = []
 
 
     def _format_duration( self, duration: timedelta ):
+        """ Format duration of script execution
+        Current format is: x d x h x m x s
+        Meanin days, hours, minutes, seconds
+
+        Args:
+            duration (timedelta): Time difference between start and finish
+        """
 
         from automation_menu.utils.localization import _
 
@@ -43,8 +51,9 @@ class HistoryManager:
 
         return " ".join( text_parts )
 
+
     def _history_item_selected( self, event ):
-        """ """
+        """ Eventhandler for when tree item has been selected """
 
         from automation_menu.utils.localization import _
         id = event.widget.selection()[ 0 ]
@@ -77,18 +86,29 @@ class HistoryManager:
 
 
     def add_history_item( self, item: ExecHistory ):
-        """ """
+        """ Adds a new item to the treewidget, and history list
+
+        Args:
+            item (ExecHistory): Execution history to add
+        """
+
         tree_id = self.history_tree.insert( parent = '',
                                  index = 0,
                                  text = f'{ item.start.strftime( '%m / %d : %H:%M:%S' ) }',
-                                 values = ( item.script_info.filename  )
+                                 values = ( item.script_info.get_attr( 'filename' ) )
                                 )
+
         self._historylist.append( { 'id': tree_id, 'item': item } )
 
 
     #def get_history_tab( tabcontrol: ttk.Notebook, history_list: list[ ExecHistory ], main_self: AutomationMenuWindow ):
     def get_history_tab( self, tabcontrol: ttk.Notebook, main_self ):
-        """  """
+        """ Creates the widgets to display execution history
+
+        Args:
+            tabcontrol (ttk.Notebook): A notebook widget to attach the widgets to
+            main_self (AutomationMenuWindow): Main window, and object, to make language manager available
+        """
 
         from automation_menu.utils.localization import _
 
