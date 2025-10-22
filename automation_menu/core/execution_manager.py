@@ -134,7 +134,6 @@ class ScriptRunner:
             self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ self._script_info.filename }_stdout' ).start()
             self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()
             self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
-            return_code = self.current_process.wait()
 
         except subprocess.SubprocessError as e:
             line = _( 'Subprocess error {error}' ).format( error = str( e ) )
@@ -142,7 +141,7 @@ class ScriptRunner:
         except Exception as e:
             line = _( 'Unexpected error {error}' ).format( error = str( e ) )
 
-        if len( line ) > 0 or return_code != 0:
+        if len( line ) > 0:
             self._collect_error_info( error = line )
 
 
@@ -227,7 +226,6 @@ class ScriptRunner:
                 self._terminated = True
                 self._output_queue.put( SysInstructions.PROCESSTERMINATED )
                 self.current_process.kill()
-                self.current_process.wait()
 
             except subprocess.SubprocessError as e:
                 line = _( 'Termination - SubprocessError: {e}' ).format( e = str( e ) )
@@ -312,8 +310,18 @@ class ScriptRunner:
         from automation_menu.utils.localization import _
 
         return_code = self.current_process.wait()
+        self._exec_item.set_exit_code( exit_code = return_code )
 
-        if return_code == 0:
+        if self._terminated:
+            self._exec_item.set_terminated()
+            self._output_queue.put( {
+                'line': _( 'Script terminated' ),
+                'tag': OutputStyleTags.SYSINFO,
+                'finished': True,
+                'exec_item': self._exec_item
+            } )
+
+        elif return_code == 0:
             self._output_queue.put( {
                 'line': _( 'Script completed successfully' ),
                 'tag': OutputStyleTags.SUCCESS,
@@ -322,21 +330,12 @@ class ScriptRunner:
             } )
 
         else:
-            if self._terminated:
-                self._output_queue.put( {
-                    'line': _( 'Script terminated' ),
-                    'tag': OutputStyleTags.SYSINFO,
+            self._output_queue.put( {
+                    'line':_( 'Script failed with exit code {err}' ).format( err = return_code ),
+                    'tag': OutputStyleTags.SYSERROR,
                     'finished': True,
                     'exec_item': self._exec_item
-                } )
-
-            else:
-                self._output_queue.put( {
-                        'line':_( 'Script failed with exit code {err}' ).format( err = return_code ),
-                        'tag': OutputStyleTags.SYSERROR,
-                        'finished': True,
-                        'exec_item': self._exec_item
-                } )
+            } )
 
 
     def _is_breakpoint_line( self, line: str ) -> bool:
