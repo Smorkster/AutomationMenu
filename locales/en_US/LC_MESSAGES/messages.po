@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-17 14:50+0200\n"
+"POT-Creation-Date: 2025-10-22 13:08+0200\n"
 "PO-Revision-Date: 2025-09-18 15:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_US\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: main.py:56
+#: main.py:60
 msgid "Application interrupted by user"
 msgstr "Application interrupted by user"
 
-#: main.py:66
+#: main.py:70
 #, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
@@ -37,7 +37,7 @@ msgstr ""
 "\n"
 "The application will now exit."
 
-#: main.py:68
+#: main.py:72
 msgid "Application Error"
 msgstr "Application Error"
 
@@ -91,46 +91,46 @@ msgstr ""
 msgid "Not connected to LDAP"
 msgstr "Not connected to LDAP"
 
-#: automation_menu/core/execution_manager.py:139
+#: automation_menu/core/execution_manager.py:140
 #, python-brace-format
 msgid "Subprocess error {error}"
 msgstr "Subprocess error {error}"
 
-#: automation_menu/core/execution_manager.py:142
+#: automation_menu/core/execution_manager.py:143
 #, python-brace-format
 msgid "Unexpected error {error}"
 msgstr "Unexpected error {error}"
 
-#: automation_menu/core/execution_manager.py:173
+#: automation_menu/core/execution_manager.py:174
 msgid "Mail sent"
 msgstr "Mail sent"
 
-#: automation_menu/core/execution_manager.py:180
+#: automation_menu/core/execution_manager.py:181
 #, python-brace-format
 msgid "Could not send error message to developer {e}"
 msgstr "Could not send error message to developer {e}"
 
-#: automation_menu/core/execution_manager.py:192
+#: automation_menu/core/execution_manager.py:193
 #, python-brace-format
 msgid "Starting '{file}'"
 msgstr "Starting '{file}'"
 
-#: automation_menu/core/execution_manager.py:232
+#: automation_menu/core/execution_manager.py:233
 #, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr "Termination - SubprocessError: {e}"
 
-#: automation_menu/core/execution_manager.py:236
+#: automation_menu/core/execution_manager.py:237
 #, python-brace-format
 msgid "Termination - CalledProcessError: {e}"
 msgstr "Termination - CalledProcessError: {e}"
 
-#: automation_menu/core/execution_manager.py:240
+#: automation_menu/core/execution_manager.py:241
 #, python-brace-format
 msgid "Termination - Exception: {e}"
 msgstr "Termination - Exception: {e}"
 
-#: automation_menu/core/execution_manager.py:272
+#: automation_menu/core/execution_manager.py:273
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
@@ -139,39 +139,75 @@ msgstr ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
 "reactivate script."
 
-#: automation_menu/core/execution_manager.py:317
+#: automation_menu/core/execution_manager.py:318
 msgid "Script completed successfully"
 msgstr "Script completed successfully"
 
-#: automation_menu/core/execution_manager.py:326
+#: automation_menu/core/execution_manager.py:327
 msgid "Script terminated"
 msgstr "Script terminated"
 
-#: automation_menu/core/execution_manager.py:334
+#: automation_menu/core/execution_manager.py:335
 #, python-brace-format
 msgid "Script failed with exit code {err}"
 msgstr "Script failed with exit code {err}"
 
-#: automation_menu/core/script_discovery.py:41
-msgid "Unknown"
-msgstr "Unknown"
+#: automation_menu/core/script_menu_item.py:50
+msgid " (Dev)"
+msgstr " (Dev)"
 
-#: automation_menu/core/script_discovery.py:142
+#: automation_menu/core/script_menu_item.py:67
+msgid "In development, and should only be run by its developer."
+msgstr "In development, and should only be run by its developer."
+
+#: automation_menu/core/script_menu_item.py:134
+msgid ""
+"The script has 'DisableMinimizeOnRunning', meaning the window will not be"
+" minimized."
+msgstr ""
+"The script has 'DisableMinimizeOnRunning', meaning the window will not be"
+" minimized."
+
+#: automation_menu/filehandling/exec_history_handler.py:42
+#, python-brace-format
+msgid "Writing execution history error; file not found: {file_path}"
+msgstr "Writing execution history error; file not found: {file_path}"
+
+#: automation_menu/filehandling/script_discovery.py:67
 #, python-brace-format
 msgid "File not found: {error}"
 msgstr "File not found: {error}"
 
-#: automation_menu/core/script_discovery.py:145
+#: automation_menu/filehandling/script_discovery.py:70
 #, python-brace-format
 msgid "Could not read file: {error}"
 msgstr "Could not read file: {error}"
 
-#: automation_menu/core/script_discovery.py:221
+#: automation_menu/filehandling/script_discovery.py:79
+msgid "No valid ScriptInfo was found in the script"
+msgstr "No valid ScriptInfo was found in the script"
+
+#: automation_menu/filehandling/script_discovery.py:151
+#, python-brace-format
+msgid "ScriptInfo contained fields that are not valid, or are misspelled: {names}"
+msgstr "ScriptInfo contained fields that are not valid, or are misspelled: {names}"
+
+#: automation_menu/filehandling/script_discovery.py:154
+#, python-brace-format
+msgid "ScriptInfo contained values that are not valid, or are misspelled: {names}"
+msgstr "ScriptInfo contained values that are not valid, or are misspelled: {names}"
+
+#: automation_menu/filehandling/script_discovery.py:157
+#, python-brace-format
+msgid "Parsing ScriptInfo generated error for these fields: {names}"
+msgstr "Parsing ScriptInfo generated error for these fields: {names}"
+
+#: automation_menu/filehandling/script_discovery.py:168
 #, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr "{filename} not loaded: {e}"
 
-#: automation_menu/core/script_discovery.py:225
+#: automation_menu/filehandling/script_discovery.py:172
 msgid ""
 "Some script have an active breakpoint in the code, handling this has not "
 "been implemented, so these will not be available:"
@@ -179,77 +215,66 @@ msgstr ""
 "Some script have an active breakpoint in the code, handling this has not "
 "been implemented, so these will not be available:"
 
-#: automation_menu/core/script_runner.py:49
-msgid " (Dev)"
-msgstr " (Dev)"
+#: automation_menu/filehandling/settings_handler.py:55
+#, python-brace-format
+msgid "Writing settings error; file not found: {file_path}"
+msgstr "Writing settings error; file not found: {file_path}"
 
-#: automation_menu/core/script_runner.py:65
-msgid "In development, and should only be run by its developer."
-msgstr "In development, and should only be run by its developer."
-
-#: automation_menu/core/script_runner.py:130
-msgid ""
-"The script has 'DisableMinimizeOnRunning', meaning the window will not be"
-" minimized."
-msgstr ""
-"The script has 'DisableMinimizeOnRunning', meaning the window will not be"
-" minimized."
-
-#: automation_menu/ui/history_manager.py:33
+#: automation_menu/ui/history_manager.py:41
 #, python-brace-format
 msgid "{d} d"
 msgstr "{d} d"
 
-#: automation_menu/ui/history_manager.py:36
+#: automation_menu/ui/history_manager.py:44
 #, fuzzy, python-brace-format
 msgid "{h} h"
 msgstr "{h} h"
 
-#: automation_menu/ui/history_manager.py:39
+#: automation_menu/ui/history_manager.py:47
 #, python-brace-format
 msgid "{m} m"
 msgstr "{m} m"
 
-#: automation_menu/ui/history_manager.py:42
+#: automation_menu/ui/history_manager.py:50
 #, python-brace-format
 msgid "{s} s"
 msgstr "{s} s"
 
-#: automation_menu/ui/history_manager.py:102
-#: automation_menu/ui/history_manager.py:118
+#: automation_menu/ui/history_manager.py:134
+#: automation_menu/ui/history_manager.py:150
 msgid "Started"
 msgstr "Started"
 
-#: automation_menu/ui/history_manager.py:104
+#: automation_menu/ui/history_manager.py:136
 msgid "Name"
 msgstr "Name"
 
-#: automation_menu/ui/history_manager.py:125
+#: automation_menu/ui/history_manager.py:157
 msgid "Ended"
 msgstr "Ended"
 
-#: automation_menu/ui/history_manager.py:132
+#: automation_menu/ui/history_manager.py:164
 msgid "Duration"
 msgstr "Duration"
 
-#: automation_menu/ui/history_manager.py:139
+#: automation_menu/ui/history_manager.py:171
 #, fuzzy
 msgid "Generated output"
 msgstr "Generated output"
 
-#: automation_menu/ui/main_window.py:91
+#: automation_menu/ui/main_window.py:64
 msgid "Script output"
 msgstr "Script output"
 
-#: automation_menu/ui/main_window.py:104
+#: automation_menu/ui/main_window.py:77
 msgid "Settings"
 msgstr "Settings"
 
-#: automation_menu/ui/main_window.py:108
+#: automation_menu/ui/main_window.py:81
 msgid "Execution history"
 msgstr "Execution history"
 
-#: automation_menu/ui/main_window.py:131
+#: automation_menu/ui/main_window.py:105
 msgid ""
 "There is a script running. Do you want to terminate the script process "
 "before closing the application?"
@@ -257,11 +282,11 @@ msgstr ""
 "There is a script running. Do you want to terminate the script process "
 "before closing the application?"
 
-#: automation_menu/ui/main_window.py:133
+#: automation_menu/ui/main_window.py:107
 msgid "Script still runnning"
 msgstr "Script still runnning"
 
-#: automation_menu/ui/main_window.py:190
+#: automation_menu/ui/main_window.py:164
 #, python-brace-format
 msgid ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
@@ -270,15 +295,15 @@ msgstr ""
 "File {file} does not contain a ScriptInfo-block. Some settings will be "
 "ignored."
 
-#: automation_menu/ui/op_buttons.py:37
+#: automation_menu/ui/op_buttons.py:38
 msgid "Script ..."
 msgstr "Script ..."
 
-#: automation_menu/ui/op_buttons.py:43
+#: automation_menu/ui/op_buttons.py:44
 msgid "Continue"
 msgstr "Continue"
 
-#: automation_menu/ui/op_buttons.py:50
+#: automation_menu/ui/op_buttons.py:51
 msgid "Stop script"
 msgstr "Stop script"
 
@@ -339,11 +364,6 @@ msgid ""
 msgstr ""
 "Should the mail sent to script developer when reporting that an error "
 "occured, have a screenshot of main window attached?"
-
-#: automation_menu/utils/config.py:66
-#, python-brace-format
-msgid "Writing settings error; file not found: {file_path}"
-msgstr "Writing settings error; file not found: {file_path}"
 
 #: automation_menu/utils/email_handler.py:40
 msgid "Error occured in your automation script"
