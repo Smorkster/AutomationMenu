@@ -81,7 +81,7 @@ class HistoryManager:
         self.item_output.config( state = 'normal' )
         self.item_output.delete( '1.0', END )
         for o in item.output:
-            self.item_output.insert( 'end', f'{ o[ 'datetime' ].strftime( '%H:%M:%S' ) }: { o[ 'output' ] }\n' )
+            self.item_output.insert( 'end', f'{ str( o ) }\n' )
         self.item_output.config( state = 'disabled' )
 
 

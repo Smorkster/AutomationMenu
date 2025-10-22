@@ -22,6 +22,12 @@ class Output:
         return str( { 'time': str( self.out_time ), 'output': self.output } )
 
 
+    def __str__( self ) -> str:
+        """ Custom string conversion """
+
+        return f'{ self.out_time.strftime( '%H:%M:%S' ) }: { self.output }'
+
+
 class ExecHistory:
     def __init__( self, script_info = None ):
         """ Class to hold script execution history """
