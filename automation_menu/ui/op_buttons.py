@@ -11,7 +11,7 @@ Created: 2025-09-25
 
 from tkinter import E, N, S, W, ttk
 
-from automation_menu.core.script_discovery import get_scripts
+from automation_menu.filehandling.script_discovery import get_scripts
 from automation_menu.ui.custom_menu import CustomMenu
 
 

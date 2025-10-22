@@ -8,7 +8,18 @@ Version: 1.0
 Created: 2025-10-17
 """
 
+from dataclasses import dataclass
 from datetime import datetime
+
+@dataclass
+class Output:
+    out_time: datetime
+    output: str
+
+    def __repr__( self ) -> str:
+        """ Custom representation """
+
+        return str( { 'time': str( self.out_time ), 'output': self.output } )
 
 
 class ExecHistory:
@@ -21,11 +32,23 @@ class ExecHistory:
         self.end = None
 
 
+    def __repr__( self ) -> str:
+        """ Custom representation """
+
+        return str( {
+            'ScriptInfo': self.script_info.filename,
+            'start': str( self.start ),
+            'end': str( self.end ),
+            'script_output': ';'.join( [ repr( o ) for o in self.output ] )
+            } )
+
+
     def add_end( self, time: datetime ):
         """ Set datetime when execution ended
         Args:
             time (datetime.datetime): Execution finished
         """
+
         self.end = time
 
 
@@ -35,5 +58,6 @@ class ExecHistory:
         Args:
             item (dict[ datetime.datetime, str ]): Dict item with datetime and string from output
         """
-        self.output.append( item )
+
+        self.output.append( Output( **item ) )
 

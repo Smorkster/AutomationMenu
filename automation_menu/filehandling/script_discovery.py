@@ -40,7 +40,7 @@ def _check_breakpoints( script_info: ScriptInfo ) -> ScriptInfo:
         if stripped.startswith( 'breakpoint()' ) or ' breakpoint()' in stripped:
 
             if not stripped.startswith( '#' ):
-                script_info.add_attr( 'UsingBreakpoint', True )
+                script_info.add_attr( 'using_breakpoint', True )
 
     return script_info
 
@@ -157,7 +157,7 @@ def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
                 raise ValueError( _( 'Parsing ScriptInfo generated error for these fields: {names}' ).format( names = ', '.join( warnings[ 'other' ] ) ) )
 
             if script_info:
-                #if si.UsingBreakpoint and ( app_state.current_user.AdObject.name.value != si.get_attr( 'Author' ).replace( ' (', '(' ) ):
+                #if script_info.get_attr( 'using_breakpoint' ) and ( app_state.current_user.AdObject.name.value != script_info.get_attr( 'Author' ).replace( ' (', '(' ) ):
                 if script_info.get_attr( 'using_breakpoint' ):
                     scriptswithbreakpoint.append( script_info )
 

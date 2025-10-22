@@ -19,7 +19,7 @@ from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
 from automation_menu.utils.language_manager import LanguageManager
-from automation_menu.utils.config import write_settingsfile
+from automation_menu.filehandling.settings_handler import write_settingsfile
 
 
 class AutomationMenuWindow:

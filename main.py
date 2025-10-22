@@ -21,9 +21,11 @@ sys.path.insert( 0, str( project_root ) )
 
 from automation_menu.core.execution_manager import ScriptExecutionManager
 from automation_menu.core.state import ApplicationState
+from automation_menu.filehandling.exec_history_handler import write_exec_history
+from automation_menu.filehandling.secrets_handler import read_secrets_file
 from automation_menu.models import Secrets, Settings, User
 from automation_menu.ui.history_manager import HistoryManager
-from automation_menu.utils.config import read_secrets_file, read_settingsfile, write_settingsfile
+from automation_menu.filehandling.settings_handler import read_settingsfile, write_settingsfile
 from automation_menu.utils.localization import change_language
 
 
@@ -50,7 +52,9 @@ def main():
         # Launch the main application window
         from automation_menu.ui.main_window import AutomationMenuWindow
         from automation_menu.utils.localization import _
-        main_self = AutomationMenuWindow( app_state )
+        AutomationMenuWindow( app_state )
+
+        write_exec_history( exec_items = app_state.history_manager.get_history_string_repr() , root_dir = Path( __file__ ).resolve().parent )
 
     except KeyboardInterrupt:
         print( _( 'Application interrupted by user' ) )

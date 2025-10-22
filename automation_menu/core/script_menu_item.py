@@ -57,10 +57,10 @@ class ScriptMenuItem:
         self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
 
         # Add tooltip to this button
-        if self.script_info.get_attr( 'Description' ):
+        if self.script_info.get_attr( 'description' ):
             from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 
-            desc = self.script_info.get_attr( 'Description' )
+            desc = self.script_info.get_attr( 'description' )
             dev = False
 
             if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
@@ -68,7 +68,7 @@ class ScriptMenuItem:
                 dev = True
 
             tt = AlwaysOnTopToolTip( widget = self.script_button, msg = desc )
-            self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'Description' ), dev ) )
+            self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev ) )
 
 
     def on_enter( self, event ):

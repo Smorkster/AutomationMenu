@@ -175,7 +175,7 @@ class AsyncOutputController:
 
             if not queue_item[ 'tag' ].name.startswith( 'SYS' ):
                 queue_item[ 'exec_item' ].append_output( {
-                    'datetime': datetime.now(),
+                    'out_time': datetime.now(),
                     'output': queue_item[ 'line' ]
                 } )
 
