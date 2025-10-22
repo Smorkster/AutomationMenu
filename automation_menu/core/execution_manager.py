@@ -19,7 +19,7 @@ from contextlib import contextmanager
 from tkinter import Tk
 from typing import Callable, Optional
 
-from automation_menu.core.state import ApplicationState
+from automation_menu.core.application_state import ApplicationState
 from automation_menu.models import ExecHistory, ScriptInfo, SysInstructions
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.utils.email_handler import report_script_error

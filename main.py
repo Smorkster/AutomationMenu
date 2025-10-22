@@ -20,7 +20,7 @@ project_root = Path( __file__ ).parent.parent
 sys.path.insert( 0, str( project_root ) )
 
 from automation_menu.core.execution_manager import ScriptExecutionManager
-from automation_menu.core.state import ApplicationState
+from automation_menu.core.application_state import ApplicationState
 from automation_menu.filehandling.exec_history_handler import write_exec_history
 from automation_menu.filehandling.secrets_handler import read_secrets_file
 from automation_menu.models import Secrets, Settings, User

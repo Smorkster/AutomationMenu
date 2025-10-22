@@ -11,7 +11,7 @@ Created: 2025-09-25
 from tkinter import E, N, S, W, Tk, messagebox, ttk
 
 from automation_menu.core.script_menu_item import ScriptMenuItem
-from automation_menu.core.state import ApplicationState
+from automation_menu.core.application_state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.config_ui_style import set_ui_style

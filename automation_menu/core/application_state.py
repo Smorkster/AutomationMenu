@@ -18,15 +18,17 @@ from automation_menu.ui.history_manager import HistoryManager
 
 @dataclass
 class ApplicationState:
+    """ State vault for application data and managers """
     from automation_menu.models import Secrets, Settings, User
 
     current_user: Optional[ User ] = None
-    history_manager: HistoryManager = None
     ldap_connection: Optional[ Connection ] = None
     output_queue: queue.Queue = field( default_factory = queue.Queue )
     running_automation = None
     secrets: Optional[ Secrets ] = None
     settings: Optional[ Settings ] = None
+
+    history_manager: HistoryManager = None
     script_manager = None
 
 

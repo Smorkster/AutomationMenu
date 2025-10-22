@@ -14,7 +14,7 @@ import sys
 from dynamicinputbox import dynamic_inputbox as inputbox
 from ldap3 import ALL, Connection, Entry, Server
 from ldap3.core.exceptions import LDAPSocketOpenError
-from automation_menu.core.state import ApplicationState
+from automation_menu.core.application_state import ApplicationState
 
 def connect_to_AD( app_state: ApplicationState ) -> Connection:
     """ Connect to Active Directory and return the connection object

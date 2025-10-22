@@ -17,7 +17,7 @@ from email.headerregistry import Address
 from email.message import EmailMessage
 
 from automation_menu.core.auth import get_user_adobject
-from automation_menu.core.state import ApplicationState
+from automation_menu.core.application_state import ApplicationState
 from automation_menu.models import ScriptInfo
 
 

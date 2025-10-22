@@ -12,7 +12,7 @@ Created: 2025-09-25
 import os
 import re
 
-from automation_menu.core.state import ApplicationState
+from automation_menu.core.application_state import ApplicationState
 from automation_menu.models import ScriptInfo, User
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.models.scriptmetadata import ScriptMetadata
