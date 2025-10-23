@@ -9,12 +9,12 @@ Created: 2025-09-25
 """
 
 import asyncio
-from datetime import datetime
 import logging
 import queue
 import threading
 import tkinter as tk
 
+from datetime import datetime
 from tkinter.ttk import Button
 from typing import Optional
 
@@ -64,15 +64,19 @@ class AsyncOutputController:
 
 
     async def _shutdown( self ):
+        """ Gather and cancel all tasks and stop the async loop """
+
         tasks = [ t for t in asyncio.all_tasks( self.loop ) if t is not asyncio.current_task() ]
+
         for task in tasks:
             task.cancel()
+
         await asyncio.gather( *tasks, return_exceptions = True )
         self.loop.stop()
 
 
     def _run_async_loop( self ) -> None:
-        """"  """
+        """" Startup the async loop """
 
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop( self.loop )

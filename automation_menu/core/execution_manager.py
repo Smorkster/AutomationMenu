@@ -10,12 +10,13 @@ Created: 2025-09-25
 """
 
 import asyncio
-from queue import Queue
 import queue
 import subprocess
 import threading
 
 from contextlib import contextmanager
+from psutil import NoSuchProcess
+from queue import Queue
 from tkinter import Tk
 from typing import Callable, Optional
 
@@ -37,8 +38,9 @@ class ScriptExecutionManager:
 
         self._output_queue = output_queue
         self.app_state = app_state
-        self.current_runner: Optional[ 'ScriptRunner' ] = None
+        self.current_runner: ScriptRunner = None
         self._lock = threading.Lock()
+        self._paused = False
 
 
     @contextmanager
@@ -70,6 +72,12 @@ class ScriptExecutionManager:
                     self.current_runner = None
 
 
+    def is_paused( self ) -> bool:
+        """ Check if current script is paused """
+
+        return self._paused
+
+
     def is_running( self ) -> bool:
         """ Verify if a script is running
 
@@ -78,7 +86,37 @@ class ScriptExecutionManager:
         """
 
         with self._lock:
-            return self.current_runner is not None
+            return self.current_runner is not None and not self._paused
+
+
+    def pause_current_script( self ) -> None:
+        """ Pause the currently running script """
+
+        import psutil
+
+        try:
+            psutil.Process( pid = self.current_runner.current_process.pid ).suspend()
+            self._paused = True
+
+            return True
+
+        except NoSuchProcess as e:
+            return False
+
+
+    def resume_current_script( self ) -> None:
+        """ Resume execution of current script """
+
+        import psutil
+
+        try:
+            psutil.Process( pid = self.current_runner.current_process.pid ).resume()
+            self._paused = False
+
+            return True
+
+        except NoSuchProcess as e:
+            return False
 
 
     def stop_current_script( self ) -> None:
@@ -105,13 +143,19 @@ class ScriptRunner:
         self.main_window = None
 
         self.current_process: Optional[ subprocess.Popen ] = None
+        self._is_paused = False
         self._tasks = []
         self._script_info = None
         self._in_breakpoint = False
         self._terminated = False
 
 
-    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable, main_window: Tk ) -> None:
+    def is_paused( self ) -> bool:
+        """  """
+
+        return self._is_paused
+
+    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable, main_window: Tk, enable_pause_button_callback: Callable ) -> None:
         """ Start process to run selected script
 
         Args:
@@ -130,6 +174,7 @@ class ScriptRunner:
             self.current_process = self._create_process()
 
             enable_stop_button_callback()
+            enable_pause_button_callback()
 
             self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ self._script_info.filename }_stdout' ).start()
             self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()

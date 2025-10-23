@@ -133,8 +133,26 @@ class AutomationMenuWindow:
         write_settingsfile( settings = self.app_state.settings, settings_file_path = self.settings_file_path )
 
 
+    def _pause_resume_script( self ) -> None:
+        """ Pause script execution """
+
+        from automation_menu.utils.localization import _
+
+        if self.app_state.script_manager.is_paused():
+            if self.app_state.script_manager.resume_current_script():
+                self.app_state.output_queue.put( { 'line': _( 'Process was resumed' ), 'tag': OutputStyleTags.SYSINFO } )
+                self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
+
+
+        else:
+            if self.app_state.script_manager.pause_current_script():
+                self.app_state.output_queue.put( { 'line': _( 'Process was paused' ), 'tag': OutputStyleTags.SYSINFO } )
+                self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Resume' ) )
+
+
     def _stop_script( self ) -> None:
         """ Eventhandler for when user clicks button stop script """
+
 
         self.app_state.script_manager.stop_current_script()
 
@@ -154,22 +172,22 @@ class AutomationMenuWindow:
         self.root.geometry( newGeometry = f'{ width }x{ height }+{ x }+{ y }' )
 
 
-    def create_script_controls( self ) -> None:
-        """ Create menuitems for each script and set grid information for window """
-
-        from automation_menu.utils.localization import _
-
-        for scriptinfo in sorted( self.indexed_files , key = lambda script: getattr( script, 'Synopsis', getattr( script, 'filename', '' ) ).lower() ):
-            if hasattr( scriptinfo, 'NoScriptBlock' ):
-                line = _( 'File {file} does not contain a ScriptInfo-block. Some settings will be ignored.' ).format( file = scriptinfo.fullpath )
-                self.app_state.output_queue.put( { 'line': line, 'tag': OutputStyleTags.SYSWARNING } )
-            ScriptMenuItem( script_menu = self.script_menu, script_info = scriptinfo, main_object = self )
-
-
     def enable_breakpoint_button( self ) -> None:
         """ Enable the breakpoint button """
 
         self.op_buttons[ 'btnContinueBreakpoint' ].state( [ '!disabled' ] )
+
+
+    def enable_pause_script_button( self ) -> None:
+        """ Enable the stop script button """
+
+        self.op_buttons[ 'btnPauseResumeScript' ].state( [ '!disabled' ] )
+
+
+    def disable_pause_script_button( self ) -> None:
+        """ Enable the stop script button """
+
+        self.op_buttons[ 'btnPauseResumeScript' ].state( [ 'disabled' ] )
 
 
     def enable_stop_script_button( self ) -> None:
