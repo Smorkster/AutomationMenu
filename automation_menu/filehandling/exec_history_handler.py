@@ -32,7 +32,7 @@ def write_exec_history( exec_items: str, root_dir: str ):
         with open( file_path, mode = 'a', encoding = 'utf-8' ) as f:
             output_history_item = {
                 'user': os.getenv( key = 'USERNAME', default = 'DefaultUser' ),
-                'exec_output': exec_items.replace( '\\', '' )
+                'exec_output': exec_items
             }
 
             f.write( '\n' )

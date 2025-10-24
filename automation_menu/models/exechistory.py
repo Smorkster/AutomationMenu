@@ -10,6 +10,9 @@ Created: 2025-10-17
 
 from dataclasses import dataclass
 from datetime import datetime
+import json
+
+#from automation_menu.models import scriptinfo
 
 @dataclass
 class Output:
@@ -29,6 +32,7 @@ class Output:
 
 
 class ExecHistory:
+    #def __init__( self, script_info: scriptinfo.ScriptInfo = None ):
     def __init__( self, script_info = None ):
         """ Class to hold script execution history """
 
@@ -36,20 +40,30 @@ class ExecHistory:
         self.output = []
         self.start = datetime.now()
         self.end = None
+        self.exit_code = None
+        self.was_terminated = False
 
 
     def __repr__( self ) -> str:
         """ Custom representation """
 
-        return str( {
-            'ScriptInfo': self.script_info.filename,
-            'start': str( self.start ),
-            'end': str( self.end ),
+        repr_str = {
+            'script': {
+                    'script': self.script_info.filename,
+                    'author': self.script_info.scriptmeta.author
+                },
+            'execution': {
+                'start': str( self.start ),
+                'end': str( self.end ),
+                'return_code': self.exit_code,
+                'was_terminated': self.was_terminated
+            },
             'script_output': ';'.join( [ repr( o ) for o in self.output ] )
-            } )
+            }
+        return json.dumps( repr_str )
 
 
-    def add_end( self, time: datetime ):
+    def add_end( self, time: datetime ) -> None:
         """ Set datetime when execution ended
         Args:
             time (datetime.datetime): Execution finished
@@ -58,7 +72,7 @@ class ExecHistory:
         self.end = time
 
 
-    def append_output( self, item: dict[ datetime, str ] ):
+    def append_output( self, item: dict[ datetime, str ] ) -> None:
         """ Add new item to output
 
         Args:
@@ -67,3 +81,18 @@ class ExecHistory:
 
         self.output.append( Output( **item ) )
 
+
+    def set_exit_code( self, exit_code: int ) -> None:
+        """ Set return code from finished script execution
+
+        Args:
+            return_code (int): Return code from script execution
+        """
+
+        self.exit_code = exit_code
+
+
+    def set_terminated( self ) -> None:
+        """ Set flag that execution was manually terminated """
+
+        self.was_terminated = True

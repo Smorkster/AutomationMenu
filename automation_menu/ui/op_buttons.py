@@ -55,8 +55,16 @@ def get_op_buttons( main_root, main_self ):
 
     widgets[ 'btnStopScript' ] = btnStopScript
 
+    btnPauseResumeScript = ttk.Button( master = op_buttons_frame, text = _( 'Pause script' ), command = main_self._pause_resume_script )
+    btnPauseResumeScript.state( [ "disabled" ] )
+    btnPauseResumeScript.grid( column = 3, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
+    main_self.language_manager.add_translatable_widget( ( btnPauseResumeScript, 'Pause script' ) )
+
+    widgets[ 'btnPauseResumeScript' ] = btnPauseResumeScript
+
     op_buttons_frame.grid_columnconfigure( 0 , weight = 0 )
     op_buttons_frame.grid_columnconfigure( 1 , weight = 0 )
     op_buttons_frame.grid_columnconfigure( 2 , weight = 0 )
+    op_buttons_frame.grid_columnconfigure( 3 , weight = 0 )
 
     return widgets

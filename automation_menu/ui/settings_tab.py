@@ -13,7 +13,6 @@ from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 from tkinter import E, N, W, BooleanVar, StringVar, ttk
 
 from automation_menu.models import Settings
-from automation_menu.ui.custom_labelframe import CustomLabelFrame
 
 
 def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_self ) -> ttk.Frame:
@@ -48,7 +47,8 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ) -> None:
 
     ######################
     # Application settings
-    app_settings_group =  CustomLabelFrame( tab, text = _( 'Application settings' ) )
+    app_settings_group_title = ttk.Label( text=_( 'Application settings' ), style = 'LabelFrameTitle.TLabel' )
+    app_settings_group = ttk.LabelFrame( master = tab, labelwidget = app_settings_group_title )
     app_settings_group.grid( column = 0, row = 0, sticky = ( N, W, E ) )
     app_settings_group.rowconfigure( index = 0, weight = 0 )
     app_settings_group.rowconfigure( index = 1, weight = 0 )
@@ -79,17 +79,18 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ) -> None:
 
     ######################
     # Application language
-    language_frame = CustomLabelFrame( tab, text = _( 'Application language' ) )
-    language_frame.grid( column = 0 , row = 1, sticky = ( N, W, E ) )
-    language_frame.columnconfigure( index = 0, weight = 0 )
-    language_frame.columnconfigure( index = 1, weight = 0 )
+    language_group_title = ttk.Label( text = _( 'Application language' ), style = 'LabelFrameTitle.TLabel' )
+    language_group = ttk.LabelFrame( master = tab, labelwidget = language_group_title )
+    language_group.grid( column = 0 , row = 1, sticky = ( N, W, E ) )
+    language_group.columnconfigure( index = 0, weight = 0 )
+    language_group.columnconfigure( index = 1, weight = 0 )
 
-    lblCurrentLanguageTitle = ttk.Label( language_frame, text = _( 'Application language' ), padding = ( 5, 10 ) )
+    lblCurrentLanguageTitle = ttk.Label( language_group, text = _( 'Application language' ), padding = ( 5, 10 ) )
     lblCurrentLanguageTitle.grid( column = 0, row = 0, sticky = ( N, W ) )
     main_object.language_manager.add_translatable_widget( ( lblCurrentLanguageTitle, 'Application language' ) )
 
     val_cmb_current_language = StringVar( value = settings.get( 'current_language' ) )
-    cmbCurrentLanguage = ttk.Combobox( master = language_frame,
+    cmbCurrentLanguage = ttk.Combobox( master = language_group,
                                        values = get_available_languages(),
                                        textvariable = val_cmb_current_language.get )
     cmbCurrentLanguage.bind( '<<ComboboxSelected>>', main_object.set_current_language )
@@ -102,7 +103,8 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ) -> None:
 
     ###############
     # Errorhandling
-    error_group = CustomLabelFrame( tab, text = _( 'Errorhandling' ) )
+    error_group_title = ttk.Label( text = _( 'Errorhandling' ), style = 'LabelFrameTitle.TLabel' )
+    error_group = ttk.LabelFrame( tab, labelwidget = error_group_title )
     error_group.grid( column = 0, row = 2, sticky = ( N, W, E ) )
     error_group.rowconfigure( index = 0, weight = 0 )
     error_group.rowconfigure( index = 1, weight = 0 )

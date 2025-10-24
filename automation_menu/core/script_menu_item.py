@@ -117,9 +117,10 @@ class ScriptMenuItem:
             """ Wrapper to execute script from separate thread """
 
             with self.master_self.app_state.script_manager.create_runner() as runner:
-                runner.run_script( script_info = self.script_info, enable_stop_button_callback = self.master_self.enable_stop_script_button, main_window = self.master_self.root )
+                runner.run_script( script_info = self.script_info, main_window = self.master_self.root, enable_stop_button_callback = self.master_self.enable_stop_script_button, enable_pause_button_callback = self.master_self.enable_pause_script_button, stop_pause_button_blinking_callback = self.master_self.stop_pause_button_blinking )
 
             self.master_self.disable_stop_script_button()
+            self.master_self.disable_pause_script_button()
 
             if self.master_self.app_state.settings.get( 'minimize_on_running' ) and not self.script_info.get_attr( 'disable_minimize_on_running' ):
                 self.master_self.set_min_max_on_running()
