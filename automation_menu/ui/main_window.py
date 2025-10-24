@@ -10,11 +10,10 @@ Created: 2025-09-25
 
 from tkinter import E, N, S, W, Tk, messagebox, ttk
 
-from automation_menu.core.script_menu_item import ScriptMenuItem
 from automation_menu.core.state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.ui.async_output_controller import AsyncOutputController
-from automation_menu.ui.config_ui_style import set_ui_style
+from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
 from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
@@ -37,6 +36,9 @@ class AutomationMenuWindow:
         self.dev_controls = []
         self.widgets = {}
         self.old_window_geometry = {}
+        self._blink_active = False
+        self._blink_job = None
+        self._blink_state = False
         self._close_confirmed = False
         self.language_manager = LanguageManager( current_language = self.app_state.settings.current_language )
 
@@ -46,6 +48,7 @@ class AutomationMenuWindow:
 
         # Setup styles
         style = ttk.Style()
+        set_ui_style( style = style, main_window = self.root )
 
         self.button_margin = {
             'x': 5,
@@ -62,6 +65,8 @@ class AutomationMenuWindow:
         self.tabOutput, self.tbOutput = get_output_tab( tabcontrol = self.tabControl )
         self.tabOutput.grid( sticky = ( N, S, E, W ) )
         self.tabControl.add( child = self.tabOutput, text = _( 'Script output' ) )
+
+        set_output_styles( self.tbOutput )
 
         # Manage output
         self.output_controller = AsyncOutputController(
@@ -82,7 +87,6 @@ class AutomationMenuWindow:
 
         self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )
 
-        set_ui_style( style = style, main_self = self )
         self.center_screen()
 
         self.root.columnconfigure( index = 0, weight = 1 )
@@ -143,18 +147,47 @@ class AutomationMenuWindow:
                 self.app_state.output_queue.put( { 'line': _( 'Process was resumed' ), 'tag': OutputStyleTags.SYSINFO } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
 
+                self._blink_active = False
+                self.stop_pause_button_blinking()
 
         else:
             if self.app_state.script_manager.pause_current_script():
                 self.app_state.output_queue.put( { 'line': _( 'Process was paused' ), 'tag': OutputStyleTags.SYSINFO } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Resume' ) )
+                self._blink_active = True
+                self._pause_button_blinking()
+
+
+    def _pause_button_blinking( self ):
+        """ """
+
+        if not self._blink_active:
+            return
+
+        button = self.op_buttons[ 'btnPauseResumeScript' ]
+        self._blink_state = not self._blink_state
+
+        self.root.after( 100, lambda: button.config( style = 'BlinkBg.TButton' if self._blink_state else 'TButton' ) )
+        self.root.update_idletasks()
+
+        self._blink_job = self.root.after( 600, self._pause_button_blinking )
+
+
+    def stop_pause_button_blinking( self ):
+        """ """
+
+        self._blink_active = False
+
+        if self._blink_job:
+            self.root.after_cancel( self._blink_job )
+            self._blink_job = None
 
 
     def _stop_script( self ) -> None:
         """ Eventhandler for when user clicks button stop script """
 
-
         self.app_state.script_manager.stop_current_script()
+        self.stop_pause_button_blinking()
 
 
     def center_screen( self ) -> None:
@@ -187,7 +220,10 @@ class AutomationMenuWindow:
     def disable_pause_script_button( self ) -> None:
         """ Enable the stop script button """
 
+        from automation_menu.utils.localization import _
+
         self.op_buttons[ 'btnPauseResumeScript' ].state( [ 'disabled' ] )
+        self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
 
 
     def enable_stop_script_button( self ) -> None:
@@ -200,6 +236,7 @@ class AutomationMenuWindow:
         """ Disable the stop script button """
 
         self.op_buttons[ 'btnStopScript' ].state( [ 'disabled' ] )
+        self._pause_button_blinking()
 
 
     def on_closing( self ) -> None:

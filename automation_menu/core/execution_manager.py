@@ -155,7 +155,7 @@ class ScriptRunner:
 
         return self._is_paused
 
-    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable, main_window: Tk, enable_pause_button_callback: Callable ) -> None:
+    def run_script( self, script_info: ScriptInfo, main_window: Tk, enable_stop_button_callback: Callable, enable_pause_button_callback: Callable, stop_pause_button_blinking_callback: Callable ) -> None:
         """ Start process to run selected script
 
         Args:
@@ -185,6 +185,9 @@ class ScriptRunner:
 
         except Exception as e:
             line = _( 'Unexpected error {error}' ).format( error = str( e ) )
+
+        finally:
+            stop_pause_button_blinking_callback()
 
         if len( line ) > 0:
             self._collect_error_info( error = line )
