@@ -54,7 +54,10 @@ def main():
         from automation_menu.utils.localization import _
         AutomationMenuWindow( app_state )
 
-        write_exec_history( exec_items = app_state.history_manager.get_history_string_repr() , root_dir = Path( __file__ ).resolve().parent )
+        write_exec_history(
+            exec_items = app_state.history_manager.get_history_list(),
+            root_dir = Path( __file__ ).resolve().parent
+        )
 
     except KeyboardInterrupt:
         print( _( 'Application interrupted by user' ) )

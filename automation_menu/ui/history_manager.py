@@ -101,16 +101,10 @@ class HistoryManager:
         self._historylist.append( { 'id': tree_id, 'item': item } )
 
 
-    def get_history_string_repr( self ) -> str:
+    def get_history_list( self ) -> str:
         """ Summarize execution history list to a string"""
 
-        repr_list = []
-        for item in self._historylist:
-            repr_list.append( {
-                repr( item[ 'item' ] )
-            } )
-
-        return repr( repr_list )
+        return [ item[ 'item' ].to_dict() for item in self._historylist ]
 
 
     #def get_history_tab( tabcontrol: ttk.Notebook, history_list: list[ ExecHistory ], main_self: AutomationMenuWindow ):

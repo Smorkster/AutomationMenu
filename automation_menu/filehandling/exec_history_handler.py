@@ -1,6 +1,8 @@
 
-from datetime import datetime
+import json
 import os
+
+from datetime import datetime
 from pathlib import Path
 
 
@@ -22,7 +24,7 @@ def write_exec_history( exec_items: str, root_dir: str ):
     if not folder_path.exists():
         folder_path.mkdir( parents = True, exist_ok = True )
 
-    file_path = Path.joinpath( folder_path, 'ExecHistory.json' )
+    file_path = Path.joinpath( folder_path, 'ExecHistory.jsonl' )
 
     if not file_path.exists():
         with open( file_path, 'w' ) as f:
@@ -30,13 +32,15 @@ def write_exec_history( exec_items: str, root_dir: str ):
 
     try:
         with open( file_path, mode = 'a', encoding = 'utf-8' ) as f:
-            output_history_item = {
-                'user': os.getenv( key = 'USERNAME', default = 'DefaultUser' ),
-                'exec_output': exec_items
-            }
+            for item in exec_items:
+                log_entry = {
+                    'timestamp': datetime.now().isoformat(),
+                    'user': os.getenv( key = 'USERNAME', default = 'DefaultUser' ),
+                    'execution': item
+                }
 
-            f.write( '\n' )
-            f.write( str( output_history_item ) )
+                f.write( json.dumps( log_entry ) )
+                f.write( '\n')
 
     except FileNotFoundError as e:
         raise FileNotFoundError( _( 'Writing execution history error; file not found: {file_path}' ).format( file_path = file_path ) ) from e

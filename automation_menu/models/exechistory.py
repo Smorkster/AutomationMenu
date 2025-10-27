@@ -96,3 +96,26 @@ class ExecHistory:
         """ Set flag that execution was manually terminated """
 
         self.was_terminated = True
+
+
+    def to_dict( self ) -> dict:
+        """ Convert object to dict """
+
+        return {
+            'script': {
+                'filename': self.script_info.filename,
+                'author': self.script_info.scriptmeta.author
+            },
+            'execution': {
+                'start': self.start.isoformat(),
+                'end': self.end.isoformat() if self.end else None,
+                'exit_code': self.exit_code
+            },
+            'output': [
+                {
+                    'time': o.out_time.isoformat(),
+                    'message': o.output
+                }
+                for o in self.output
+            ]
+        }
