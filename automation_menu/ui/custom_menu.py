@@ -42,23 +42,33 @@ class CustomMenu:
         self.popup = tk.Toplevel( parent )
         self.popup.withdraw()  # Hide initially
         self.popup.overrideredirect( True )  # Remove window decorations
-        self.popup.config( relief = 'flat', borderwidth = 2 , highlightcolor = '#909597', highlightthickness = 2)
+        self.popup.config( relief = 'flat', borderwidth = 2 , highlightcolor = '#909597', highlightthickness = 2 )
+
+        self.popup.bind( '<Escape>', self.hide_popup_menu )
+        self.popup.bind( '<FocusOut>', self.hide_popup_menu )
+        self.popup.bind( '<Button-1>', self._check_click_outside )
 
         self._create_popup_content()
+
+
+    def _check_click_outside( self, event ):
+        """ Check if click was outside popup bounds """
+
+        widget = event.widget.winfo_containing( event.x_root, event.y_root )
+
+        if widget not in [ self.popup ] + list( self.popup.winfo_children() ):
+            self._hide_menu()
 
 
     def _create_popup_content( self ):
         """ Create the popup menu content, with tooltips """
 
         for i, script_info in enumerate( self.scripts ):
-            #script_object = ScriptMenuItem( script_menu = self.popup, script_info = script_info, main_object = self.main_object )
             script_object = ScriptMenuItem( script_menu = self.popup, script_info = script_info, main_object = self.main_object )
             script_object.script_button.bind( '<Enter>' , script_object.on_enter )
             script_object.script_button.bind( '<Leave>' , script_object.on_leave )
 
             script_object.script_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
-
-        self.popup.bind( '<FocusOut>', lambda e: self.popup.withdraw() )
 
 
     def show_popup_menu( self ):
@@ -80,7 +90,8 @@ class CustomMenu:
             self._visible = True
 
 
-    def hide_popup_menu( self ) -> None:
+    def hide_popup_menu( self, *args ) -> None:
         """ Hide the popup menu """
 
         self.popup.withdraw()
+        self._visible = False

@@ -116,6 +116,9 @@ class AutomationMenuWindow:
         self.root.rowconfigure( index = 2, weight = 0 )
         self.root.rowconfigure( index = 3, weight = 0 )
 
+        # Shortcuts bindings
+        self.root.bind( '<Control-m>', self._open_script_menu )
+
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
         self.center_screen()
         self.root.focus()
@@ -145,6 +148,12 @@ class AutomationMenuWindow:
 
         self.app_state.running_automation.continue_breakpoint()
         self.op_buttons[ 'btnContinueBreakpoint' ].state( [ "disabled" ] )
+
+
+    def _open_script_menu( self, event = None ) -> None:
+        """ Open script menu with shortcut """
+
+        self.op_buttons[ 'script_menu' ].show_popup_menu()
 
 
     def _on_language_change( self, new_lang: str ) -> None:

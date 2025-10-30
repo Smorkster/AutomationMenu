@@ -58,7 +58,7 @@ def set_ui_style( style: ttk.Style ):
     )
     style.configure( 'TLabel',
                     font = ( 'Calibri', 10, 'normal' ),
-                    padding = ( 5, 5 )
+                    padding = ( 2, 2 )
     )
 
     ################
