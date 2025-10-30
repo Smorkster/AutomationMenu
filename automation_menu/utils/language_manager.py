@@ -179,7 +179,7 @@ class LanguageManager:
             new_text = '{desc}\n\n{dev}'.format( desc = widget[1], dev = self._translate( 'In development, and should only be run by its developer.' ) )
 
         else:
-            new_text = widget[ 1 ]
+            new_text = self._translate( widget[ 1 ] )
 
         widget[ 0 ].config( new_text = new_text )
 
