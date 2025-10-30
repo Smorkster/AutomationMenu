@@ -118,9 +118,11 @@ class ScriptMenuItem:
 
             with self.master_self.app_state.script_manager.create_runner() as runner:
                 runner.run_script( script_info = self.script_info,
-                                   enable_stop_button_callback = self.master_self.enable_stop_script_button,
                                    main_window = self.master_self.root,
-                                   api_callbacks = self.master_self.api_callbacks
+                                   api_callbacks = self.master_self.api_callbacks,
+                                   enable_stop_button_callback = self.master_self.enable_stop_script_button,
+                                   enable_pause_button_callback = self.master_self.enable_pause_script_button,
+                                   stop_pause_button_blinking_callback = self.master_self.stop_pause_button_blinking
                                  )
 
             self.master_self.disable_stop_script_button()

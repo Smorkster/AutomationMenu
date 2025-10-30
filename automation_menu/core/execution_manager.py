@@ -21,6 +21,8 @@ from queue import Queue
 from tkinter import Tk
 from typing import Callable, Optional
 
+from psutil import NoSuchProcess
+
 from automation_menu.core.application_state import ApplicationState
 from automation_menu.models import ExecHistory, ScriptInfo, SysInstructions
 from automation_menu.models.enums import OutputStyleTags
@@ -101,7 +103,7 @@ class ScriptExecutionManager:
 
             return True
 
-        except NoSuchProcess as e:
+        except NoSuchProcess:
             return False
 
 
@@ -116,7 +118,7 @@ class ScriptExecutionManager:
 
             return True
 
-        except NoSuchProcess as e:
+        except NoSuchProcess:
             return False
 
 
@@ -144,20 +146,29 @@ class ScriptRunner:
         self.main_window = None
 
         self.current_process: Optional[ subprocess.Popen ] = None
-        self._is_paused = False
         self._tasks = []
         self._script_info = None
         self._in_breakpoint = False
         self._terminated = False
 
-    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable, main_window: Tk, api_callbacks: dict ) -> None:
+
+    def run_script( self,
+                    script_info: ScriptInfo,
+                    main_window: Tk,
+                    api_callbacks: dict,
+                    enable_stop_button_callback: Callable,
+                    enable_pause_button_callback: Callable,
+                    stop_pause_button_blinking_callback: Callable
+                  ) -> None:
         """ Start process to run selected script
 
         Args:
             script_info (ScriptInfo): Script info gathered from the scripts info block
-            enable_stop_button_callback (Callable): A callback function for enabling the stop script button
             main_window (Tk): The main window
             api_callbacks (dict): Dictionary for API callbacks
+            enable_stop_button_callback (Callable): A callback function for enabling the stop script button
+            enable_pause_button_callback (Callable): A callback function for enabling the pause/resume script button
+            stop_pause_button_blinking_callback (Callable): A callback function for stopping any current button blinking
         """
 
         from automation_menu.utils.localization import _
@@ -390,6 +401,7 @@ class ScriptRunner:
         self.api_callbacks[ 'update_progress' ]( 0 )
         self.api_callbacks[ 'hide_progress' ]()
         self.api_callbacks[ 'clear_status' ]()
+        self.script_execution_manager._paused = False
 
 
     def _is_breakpoint_line( self, line: str ) -> bool:

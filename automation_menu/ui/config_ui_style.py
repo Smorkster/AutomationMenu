@@ -1,13 +1,12 @@
 
-from tkinter import Tk, ttk
+from tkinter import ttk
 
 
-def set_ui_style( style: ttk.Style, main_window: Tk ):
+def set_ui_style( style: ttk.Style ):
     """ 
-    
+
     Args:
         style (ttk.Style): Main style to set
-        main_self (AutomationMenuWindow): Main UI object to set
     """
 
     style.theme_use( 'clam' )
@@ -28,8 +27,8 @@ def set_ui_style( style: ttk.Style, main_window: Tk ):
                               ( 'active', 'lightblue' ) ],
                 padding = [ ( 'selected', ( 25, 1.5 ) ),
                            ( 'active', ( 25, 1.5 ) ),
-                           ( '!selected', ( 25, 1.5 ) ) ]
-                #foreground = [ ( 'selected', 'white' ), ( 'active', 'black' ) ]
+                           ( '!selected', ( 25, 1.5 ) ) ],
+                foreground = [ ( 'selected', 'white' ), ( 'active', 'black' ) ]
     )
 
     ###############

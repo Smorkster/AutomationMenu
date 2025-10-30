@@ -54,7 +54,7 @@ class AutomationMenuWindow:
 
         # Setup styles
         style = ttk.Style()
-        set_ui_style( style = style, main_window = self.root )
+        set_ui_style( style = style )
 
         self.button_margin = {
             'x': 5,
@@ -108,9 +108,6 @@ class AutomationMenuWindow:
 
         # Create statusbar
         self.status_widgets = get_statusbar( master_root = self.root )
-
-        # Style the UI
-        set_ui_style( style = style, main_self = self )
 
         self.root.columnconfigure( index = 0, weight = 1 )
         self.root.columnconfigure( index = 1, weight = 0 )
@@ -197,16 +194,6 @@ class AutomationMenuWindow:
         self._blink_job = self.root.after( 600, self._pause_button_blinking )
 
 
-    def stop_pause_button_blinking( self ):
-        """ """
-
-        self._blink_active = False
-
-        if self._blink_job:
-            self.root.after_cancel( self._blink_job )
-            self._blink_job = None
-
-
     def _stop_script( self ) -> None:
         """ Eventhandler for when user clicks button stop script """
 
@@ -227,40 +214,6 @@ class AutomationMenuWindow:
         x = self.root.winfo_screenwidth() // 2 - win_width // 2
         y = self.root.winfo_screenheight() // 2 - win_height // 2
         self.root.geometry( newGeometry = f'{ width }x{ height }+{ x }+{ y }' )
-
-
-    def enable_breakpoint_button( self ) -> None:
-        """ Enable the breakpoint button """
-
-        self.op_buttons[ 'btnContinueBreakpoint' ].state( [ '!disabled' ] )
-
-
-    def enable_pause_script_button( self ) -> None:
-        """ Enable the stop script button """
-
-        self.op_buttons[ 'btnPauseResumeScript' ].state( [ '!disabled' ] )
-
-
-    def disable_pause_script_button( self ) -> None:
-        """ Enable the stop script button """
-
-        from automation_menu.utils.localization import _
-
-        self.op_buttons[ 'btnPauseResumeScript' ].state( [ 'disabled' ] )
-        self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
-
-
-    def enable_stop_script_button( self ) -> None:
-        """ Enable the stop script button """
-
-        self.op_buttons[ 'btnStopScript' ].state( [ '!disabled' ] )
-
-
-    def disable_stop_script_button( self ) -> None:
-        """ Disable the stop script button """
-
-        self.op_buttons[ 'btnStopScript' ].state( [ 'disabled' ] )
-        self._pause_button_blinking()
 
 
     def on_closing( self ) -> None:
@@ -364,6 +317,52 @@ class AutomationMenuWindow:
         self.app_state.settings.on_top = new_value
         self.root.focus_force()
         self.root.attributes( '-topmost', new_value )
+
+
+    # region Button ops
+    def enable_breakpoint_button( self ) -> None:
+        """ Enable the breakpoint button """
+
+        self.op_buttons[ 'btnContinueBreakpoint' ].state( [ '!disabled' ] )
+
+
+    def enable_pause_script_button( self ) -> None:
+        """ Enable the stop script button """
+
+        self.op_buttons[ 'btnPauseResumeScript' ].state( [ '!disabled' ] )
+
+
+    def disable_pause_script_button( self ) -> None:
+        """ Enable the stop script button """
+
+        from automation_menu.utils.localization import _
+
+        self.op_buttons[ 'btnPauseResumeScript' ].state( [ 'disabled' ] )
+        self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
+
+
+    def enable_stop_script_button( self ) -> None:
+        """ Enable the stop script button """
+
+        self.op_buttons[ 'btnStopScript' ].state( [ '!disabled' ] )
+
+
+    def disable_stop_script_button( self ) -> None:
+        """ Disable the stop script button """
+
+        self.op_buttons[ 'btnStopScript' ].state( [ 'disabled' ] )
+        self._pause_button_blinking()
+
+
+    def stop_pause_button_blinking( self ):
+        """ """
+
+        self._blink_active = False
+
+        if self._blink_job:
+            self.root.after_cancel( self._blink_job )
+            self._blink_job = None
+    # endregion
 
 
     # region Progressbar API callbacks
