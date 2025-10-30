@@ -22,6 +22,7 @@ from tkinter import Tk
 from typing import Callable, Optional
 
 from psutil import NoSuchProcess
+import psutil
 
 from automation_menu.core.application_state import ApplicationState
 from automation_menu.models import ExecHistory, ScriptInfo, SysInstructions
@@ -306,6 +307,16 @@ class ScriptRunner:
     def terminate( self ) -> None:
         """ Force the running process to terminate """
 
+        def _process_reaper( p: subprocess.Popen ):
+            """ """
+
+            children = psutil.Process( p.pid ).children( recursive = True )
+            for child in children:
+                child.kill()  # Kill children too!
+
+            p.kill()
+
+
         if self.current_process:
             from automation_menu.utils.localization import _
             line = ''
@@ -313,19 +324,19 @@ class ScriptRunner:
             try:
                 self._terminated = True
                 self._output_queue.put( SysInstructions.PROCESSTERMINATED )
-                self.current_process.kill()
+                _process_reaper( self.current_process )
 
             except subprocess.SubprocessError as e:
                 line = _( 'Termination - SubprocessError: {e}' ).format( e = str( e ) )
-                self.current_process.kill()
+                _process_reaper( self.current_process )
 
             except subprocess.CalledProcessError:
                 line = _( 'Termination - CalledProcessError: {e}' ).format( e = str( e ) )
-                self.current_process.kill()
+                _process_reaper( self.current_process )
 
-            except:
+            except Exception as e:
                 line = _( 'Termination - Exception: {e}' ).format( e = str( e ) )
-                self.current_process.kill()
+                _process_reaper( self.current_process )
 
             if len( line ) > 0:
                 self._output_queue.put( {
