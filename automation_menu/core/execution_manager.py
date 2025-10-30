@@ -98,9 +98,24 @@ class ScriptExecutionManager:
         import psutil
 
         try:
-            psutil.Process( pid = self.current_runner.current_process.pid ).suspend()
-            self._paused = True
+            pid = self.current_runner.current_process.pid
+            process = psutil.Process( pid )
 
+            print( f'DEBUG: Process status before: { process.status() }')
+
+            process.suspend()
+
+            print( f'DEBUG: Process status after: { process.status() }')
+
+            # Check for children
+            children = process.children( recursive = True )
+            print( f'DEBUG: Child processes: { len( children ) }')
+            for child in children:
+                print( f'  - Child PID { child.pid }: { child.name() } - { child.status() }' )
+                child.suspend()  # Suspend children too!
+                print( f'  - { child.status() }' )
+
+            self._paused = True
             return True
 
         except NoSuchProcess:
@@ -113,9 +128,24 @@ class ScriptExecutionManager:
         import psutil
 
         try:
-            psutil.Process( pid = self.current_runner.current_process.pid ).resume()
-            self._paused = False
+            pid = self.current_runner.current_process.pid
+            process = psutil.Process( pid )
 
+            print( f'DEBUG: Process status before: { process.status() }')
+
+            process.resume()
+
+            print( f'DEBUG: Process status after: { process.status() }')
+
+            # Check for children
+            children = process.children( recursive = True )
+            print( f'DEBUG: Child processes: { len( children ) }')
+            for child in children:
+                print( f'  - Child PID { child.pid }: { child.name() } - { child.status() }' )
+                child.resume()  # Resume children too!
+                print( f'  - { child.status() }' )
+
+            self._paused = True
             return True
 
         except NoSuchProcess:
@@ -253,20 +283,17 @@ class ScriptRunner:
         } )
 
         if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
-            modified_env = os.environ.copy()
-            project_root = self.app_state.secrets.get( 'script_dir_path' ).parent
-            modified_env['PYTHONPATH'] = str( project_root )
 
             return subprocess.Popen(
                 args = [ sys.executable, str( self._script_info.get_attr( 'fullpath' ) ) ],
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,
-                text = True,
-                env = modified_env
+                text = True
             )
 
         elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
+
             return subprocess.Popen(
                 args = [ 'powershell.exe', str( self._script_info.get_attr( 'fullpath' ) ) ],
                 stdout = asyncio.subprocess.PIPE,

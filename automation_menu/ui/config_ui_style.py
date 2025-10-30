@@ -28,7 +28,7 @@ def set_ui_style( style: ttk.Style ):
                 padding = [ ( 'selected', ( 25, 1.5 ) ),
                            ( 'active', ( 25, 1.5 ) ),
                            ( '!selected', ( 25, 1.5 ) ) ],
-                foreground = [ ( 'selected', 'white' ), ( 'active', 'black' ) ]
+                foreground = [ ( 'selected', 'green' ), ( 'active', 'black' ) ]
     )
 
     ###############
