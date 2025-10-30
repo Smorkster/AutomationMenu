@@ -9,7 +9,9 @@ Created: 2025-09-25
 """
 
 from tkinter import E, N, S, W, Tk, messagebox, ttk
+from typing import Union
 
+from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
 from automation_menu.core.script_menu_item import ScriptMenuItem
 from automation_menu.core.state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags
@@ -18,6 +20,7 @@ from automation_menu.ui.config_ui_style import set_ui_style
 from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
+from automation_menu.ui.statusbar import get_statusbar
 from automation_menu.utils.language_manager import LanguageManager
 from automation_menu.filehandling.settings_handler import write_settingsfile
 
@@ -37,7 +40,10 @@ class AutomationMenuWindow:
         self.dev_controls = []
         self.widgets = {}
         self.old_window_geometry = {}
+
         self._close_confirmed = False
+        self._progressbar_visible = False
+
         self.language_manager = LanguageManager( current_language = self.app_state.settings.current_language )
 
         # Create main GUI
@@ -64,11 +70,24 @@ class AutomationMenuWindow:
         self.tabControl.add( child = self.tabOutput, text = _( 'Script output' ) )
 
         # Manage output
+        self.api_callbacks = {
+            'determinate_progress': self.set_progress_determined,
+            'hide_progress': self.hide_progress,
+            'indeterminate_progress': self.set_progress_indetermined,
+            'show_progress': self.show_progress,
+            'update_progress': self.update_progress,
+
+            'clear_status': self.clear_status,
+            'get_status': self.get_status,
+            'set_status': self.set_status
+        }
         self.output_controller = AsyncOutputController(
                                     output_queue = self.app_state.output_queue,
                                     text_widget = self.tbOutput ,
                                     breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ],
-                                    history_manager = self.app_state.history_manager )
+                                    history_manager = self.app_state.history_manager,
+                                    api_callbacks = self.api_callbacks
+                                    )
         self.output_controller.start()
 
         # Create settings
@@ -82,18 +101,22 @@ class AutomationMenuWindow:
 
         self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )
 
+        # Create statusbar
+        self.status_widgets = get_statusbar( master_root = self.root )
+
+        # Style the UI
         set_ui_style( style = style, main_self = self )
-        self.center_screen()
 
         self.root.columnconfigure( index = 0, weight = 1 )
         self.root.columnconfigure( index = 1, weight = 0 )
         self.root.rowconfigure( index = 0, weight = 0 )
-        self.root.rowconfigure( index = 0, weight = 0 )
         self.root.rowconfigure( index = 1, weight = 1 )
         self.root.rowconfigure( index = 2, weight = 0 )
-        self.root.rowconfigure( index = 2, weight = 0 )
+        self.root.rowconfigure( index = 3, weight = 0 )
 
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
+        self.center_screen()
+        self.root.focus()
         self.root.mainloop()
 
 
@@ -285,3 +308,108 @@ class AutomationMenuWindow:
         self.app_state.settings.on_top = new_value
         self.root.focus_force()
         self.root.attributes( '-topmost', new_value )
+
+
+    # region Progressbar API callbacks
+    def hide_progress( self, *args ):
+        """ Hide execution progressbar """
+
+        if self._progressbar_visible:
+            self.status_widgets[ 'progressbar' ].grid_remove()
+            self.status_widgets[ 'separator' ].grid_remove()
+            self._progressbar_visible = False
+
+
+    def set_progress_determined( self, *args ) -> None:
+        """ Set indetermined """
+
+        self.status_widgets[ 'progressbar' ].config( mode = 'determinate' )
+        self.status_widgets[ 'progressbar' ].stop()
+
+
+    def set_progress_indetermined( self, *args ) -> None:
+        """ Set indetermined """
+
+        self.status_widgets[ 'progressbar' ].start( interval = 10 )
+        self.status_widgets[ 'progressbar' ].config( mode = 'indeterminate' )
+
+
+    def show_progress( self, *args ):
+        """ Show execution progressbar """
+
+        if not self._progressbar_visible:
+            self.status_widgets[ 'progressbar' ].grid()
+            self.status_widgets[ 'separator' ].grid()
+            self._progressbar_visible = True
+
+
+    def update_progress( self, update_data: Union[ float, int, dict ] ) -> None:
+        """ Update progressbar
+
+        Args:
+            percent (float): Precalculated value to set in the progressbar
+        """
+
+        new_percentage = 0
+
+        if isinstance( update_data, ( float, int ) ):
+            if update_data >= 100:
+                new_percentage = 99.99999999999
+            else:
+                new_percentage = update_data
+        else:
+            if update_data[ 'percent' ] >= 100:
+                new_percentage = 99.99999999999
+            else:
+                new_percentage = update_data[ 'percent' ]
+
+        if not self._progressbar_visible:
+            self.show_progress()
+
+        self.status_widgets[ 'progressbar' ].config( value = new_percentage )
+        # endregion
+
+
+    # region Textstatus API callbacks
+    def clear_status( self, *args ) -> None:
+        """ Remove all statustext """
+
+        self.status_widgets[ 'text_status' ].config( text = '' )
+
+
+    def get_status( self, *args ) -> None:
+        """ Return current statustext """
+
+        def _send_status():
+            if self.app_state.script_manager.current_runner:
+                status = self.status_widgets[ 'text_status' ].cget( 'text' )
+                msg = f'{ MESSAGE_START }{ status }{ MESSAGE_END }\n'
+
+                try:
+                    self.app_state.script_manager.current_runner.current_process.stdin.write( msg )
+                    self.app_state.script_manager.current_runner.current_process.stdin.flush()
+
+                except:
+                    pass
+
+        self.root.after( 10, _send_status )
+
+
+    def set_status( self, set_data: dict ) -> None:
+        """ Set statustext
+
+        Args:
+            set_data (dict): Dictionary of what status to set
+        """
+
+        text: str = ''
+
+        if set_data.get( 'append' ):
+            text = self.status_widgets[ 'text_status' ].cget( 'text' ) + set_data[ 'set' ]
+        else:
+            text = set_data[ 'set' ]
+
+        text = text.replace( '\r\n', ' ' )
+        self.status_widgets[ 'text_status' ].config( text = text )
+
+    # endregion

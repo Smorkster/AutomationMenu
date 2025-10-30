@@ -10,12 +10,14 @@ Created: 2025-09-25
 """
 
 import asyncio
-from queue import Queue
+import os
 import queue
 import subprocess
+import sys
 import threading
 
 from contextlib import contextmanager
+from queue import Queue
 from tkinter import Tk
 from typing import Callable, Optional
 
@@ -110,20 +112,21 @@ class ScriptRunner:
         self._in_breakpoint = False
         self._terminated = False
 
-
-    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable, main_window: Tk ) -> None:
+    def run_script( self, script_info: ScriptInfo, enable_stop_button_callback: Callable, main_window: Tk, api_callbacks: dict ) -> None:
         """ Start process to run selected script
 
         Args:
             script_info (ScriptInfo): Script info gathered from the scripts info block
             enable_stop_button_callback (Callable): A callback function for enabling the stop script button
             main_window (Tk): The main window
+            api_callbacks (dict): Dictionary for API callbacks
         """
 
         from automation_menu.utils.localization import _
 
         self._script_info = script_info
         self.main_window = main_window
+        self.api_callbacks = api_callbacks
         line = ''
 
         try:
@@ -197,12 +200,17 @@ class ScriptRunner:
         } )
 
         if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
+            modified_env = os.environ.copy()
+            project_root = self.app_state.secrets.get( 'script_dir_path' ).parent
+            modified_env['PYTHONPATH'] = str( project_root )
+
             return subprocess.Popen(
-                args = [ 'python', str( self._script_info.get_attr( 'fullpath' ) ) ],
+                args = [ sys.executable, str( self._script_info.get_attr( 'fullpath' ) ) ],
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,
-                text = True
+                text = True,
+                env = modified_env
             )
 
         elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
@@ -336,6 +344,10 @@ class ScriptRunner:
                     'finished': True,
                     'exec_item': self._exec_item
             } )
+
+        self.api_callbacks[ 'update_progress' ]( 0 )
+        self.api_callbacks[ 'hide_progress' ]()
+        self.api_callbacks[ 'clear_status' ]()
 
 
     def _is_breakpoint_line( self, line: str ) -> bool:
