@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-24 12:49+0200\n"
+"POT-Creation-Date: 2025-10-30 14:35+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: main.py:60
+#: main.py:63
 msgid "Application interrupted by user"
 msgstr ""
 
-#: main.py:70
+#: main.py:73
 #, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
@@ -31,7 +31,7 @@ msgid ""
 "The application will now exit."
 msgstr ""
 
-#: main.py:72
+#: main.py:75
 msgid "Application Error"
 msgstr ""
 
@@ -77,61 +77,61 @@ msgstr ""
 msgid "Not connected to LDAP"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:184
+#: automation_menu/core/execution_manager.py:223
 #, python-brace-format
 msgid "Subprocess error {error}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:187
+#: automation_menu/core/execution_manager.py:226
 #, python-brace-format
 msgid "Unexpected error {error}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:221
+#: automation_menu/core/execution_manager.py:260
 msgid "Mail sent"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:228
+#: automation_menu/core/execution_manager.py:267
 #, python-brace-format
 msgid "Could not send error message to developer {e}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:240
+#: automation_menu/core/execution_manager.py:279
 #, python-brace-format
 msgid "Starting '{file}'"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:279
+#: automation_menu/core/execution_manager.py:330
 #, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:283
+#: automation_menu/core/execution_manager.py:334
 #, python-brace-format
 msgid "Termination - CalledProcessError: {e}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:287
+#: automation_menu/core/execution_manager.py:338
 #, python-brace-format
 msgid "Termination - Exception: {e}"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:319
+#: automation_menu/core/execution_manager.py:370
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
 "reactivate script."
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:366
+#: automation_menu/core/execution_manager.py:417
 msgid "Script terminated"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:374
+#: automation_menu/core/execution_manager.py:425
 msgid "Script completed successfully"
 msgstr ""
 
-#: automation_menu/core/execution_manager.py:382
+#: automation_menu/core/execution_manager.py:433
 #, python-brace-format
 msgid "Script failed with exit code {err}"
 msgstr ""
@@ -144,13 +144,13 @@ msgstr ""
 msgid "In development, and should only be run by its developer."
 msgstr ""
 
-#: automation_menu/core/script_menu_item.py:135
+#: automation_menu/core/script_menu_item.py:141
 msgid ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
 msgstr ""
 
-#: automation_menu/filehandling/exec_history_handler.py:42
+#: automation_menu/filehandling/exec_history_handler.py:46
 #, python-brace-format
 msgid "Writing execution history error; file not found: {file_path}"
 msgstr ""
@@ -220,62 +220,62 @@ msgstr ""
 msgid "{s} s"
 msgstr ""
 
-#: automation_menu/ui/history_manager.py:134
-#: automation_menu/ui/history_manager.py:150
+#: automation_menu/ui/history_manager.py:128
+#: automation_menu/ui/history_manager.py:144
 msgid "Started"
 msgstr ""
 
-#: automation_menu/ui/history_manager.py:136
+#: automation_menu/ui/history_manager.py:130
 msgid "Name"
 msgstr ""
 
-#: automation_menu/ui/history_manager.py:157
+#: automation_menu/ui/history_manager.py:151
 msgid "Ended"
 msgstr ""
 
-#: automation_menu/ui/history_manager.py:164
+#: automation_menu/ui/history_manager.py:158
 msgid "Duration"
 msgstr ""
 
-#: automation_menu/ui/history_manager.py:171
+#: automation_menu/ui/history_manager.py:165
 msgid "Generated output"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:68
+#: automation_menu/ui/main_window.py:73
 msgid "Script output"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:83
+#: automation_menu/ui/main_window.py:101
 msgid "Settings"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:87
+#: automation_menu/ui/main_window.py:105
 msgid "Execution history"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:110
+#: automation_menu/ui/main_window.py:133
 msgid ""
 "There is a script running. Do you want to terminate the script process "
 "before closing the application?"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:112
+#: automation_menu/ui/main_window.py:135
 msgid "Script still runnning"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:148
+#: automation_menu/ui/main_window.py:177
 msgid "Process was resumed"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:149 automation_menu/ui/main_window.py:227
+#: automation_menu/ui/main_window.py:178 automation_menu/ui/main_window.py:350
 msgid "Pause"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:156
+#: automation_menu/ui/main_window.py:185
 msgid "Process was paused"
 msgstr ""
 
-#: automation_menu/ui/main_window.py:157
+#: automation_menu/ui/main_window.py:186
 msgid "Resume"
 msgstr ""
 
