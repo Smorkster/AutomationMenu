@@ -9,6 +9,7 @@ Created: 2025-09-25
 """
 
 import asyncio
+import json
 import logging
 import queue
 import threading
@@ -19,23 +20,32 @@ from tkinter.ttk import Button
 from typing import Optional
 
 from automation_menu.models import SysInstructions
+from automation_menu.models.enums import OutputStyleTags
 from automation_menu.ui.history_manager import HistoryManager
 
 
 class AsyncOutputController:
-    def __init__( self, output_queue: queue.Queue, text_widget: tk.Text, breakpoint_button: Button, history_manager: HistoryManager ):
+    def __init__( self,
+                output_queue: queue.Queue,
+                text_widget: tk.Text,
+                breakpoint_button: Button,
+                history_manager: HistoryManager,
+                api_callbacks: dict
+                ):
         """ Controller for output queue
-        
+
         Args:
             output_queue (queue.Queue): Queue to handle
             text_widget (tk.Text): Tk Text widget to recieve output text
             breakpoint_button (Button): The button to return execution after breakpoint in script
+            api_callbacks (dict): Dictionary with API callbacks
        """
 
         self.history_manager = history_manager
         self.output_queue = output_queue
         self.text_widget = text_widget
         self.breakpoint_button = breakpoint_button
+        self.api_callbacks = api_callbacks
 
         self.loop: Optional[ asyncio.AbstractEventLoop ] = None
 
@@ -92,7 +102,7 @@ class AsyncOutputController:
 
 
     async def _async_processor( self ) -> None:
-        """ Loop to handle queue insertion """
+        """ Loop to handle queue insertions """
 
         while self._running:
             try:
@@ -171,6 +181,9 @@ class AsyncOutputController:
             self.text_widget.delete( '1.0', tk.END )
             self.text_widget.config( state = 'disabled' )
 
+        elif queue_item.get( 'type' ) == 'api':
+            self._api_handler( handler = queue_item[ 'handler' ] , data = queue_item[ 'data' ] )
+
         else:
             self.text_widget.config( state = 'normal' )
             self.text_widget.insert( 'end', queue_item[ 'line' ] + '\n', queue_item[ 'tag' ].value )
@@ -189,6 +202,16 @@ class AsyncOutputController:
             elif queue_item.get( 'finished' ):
                 queue_item[ 'exec_item' ].end = datetime.now()
                 self.history_manager.add_history_item( queue_item[ 'exec_item' ] )
+
+
+    def _api_handler( self, handler: str, data: dict ) -> None:
+        """ Run API-callback
+
+        Args:
+            data (dict): API data, this will be sent, unedited, to specified callback
+        """
+
+        self.api_callbacks[ handler ]( data )
 
 
     def _normalize_queue_item( self, queue_item: str | dict ) -> dict:
@@ -210,8 +233,48 @@ class AsyncOutputController:
         if isinstance( queue_item, str ):
             return {
                 'line': queue_item.rstrip(),
-                'tag': 'suite_info'
+                'tag': OutputStyleTags.INFO
             }
+
+        elif isinstance( queue_item, dict ):
+            if '__API_START__' in queue_item[ 'line' ]:
+                return self._parse_api_message( queue_item )
+
+            else:
+                return queue_item
 
         else:
             return queue_item
+
+
+    def _parse_api_message( self, queue_item: dict ):
+        """ """
+
+        import re
+
+        match = re.search( r'__API_START__(.+?)__API_END__', string = queue_item[ 'line' ] )
+
+        if match:
+            try:
+                api_msg = json.loads( match.group( 1 ) )
+
+                if api_msg[ 'type' ] == 'progress':
+                    data = api_msg.get( 'data' ).get( 'set', api_msg.get( 'data' ).get( 'percent' ) )
+                    handler = 'update'
+
+                    if isinstance( data, str ):
+                        handler = data
+
+                    return { 'type': 'api', 'handler': f'{ handler }_progress', 'data': api_msg[ 'data' ] }
+
+                elif api_msg[ 'type' ] == 'status':
+                    call_type = api_msg.get( 'data' ).get( 'set' )
+
+                    if call_type not in ( 'clear', 'get' ):
+                        call_type = 'set'
+
+                    return { 'type': 'api', 'handler': f'{ call_type }_status', 'data': api_msg[ 'data' ] }
+
+
+            except json.JSONDecodeError as e:
+                pass
