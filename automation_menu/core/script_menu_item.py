@@ -87,27 +87,33 @@ class ScriptMenuItem:
             if not hasattr( self, 'param_widgets' ):
                 self.param_widgets = fill_frame( param_input_frame = self.master_self.input_widgets[ 'input_container' ], parameters = self.script_info.scriptmeta.script_input_parameters )
 
-            self.master_self.input_widgets[ 'input_send_btn' ].bind( '<Button-1>', lambda: self.run_script )
+            self.master_self.input_widgets[ 'input_send_btn' ].bind( '<Button-1>', lambda e: self.run_script() )
             self.master_self.input_widgets[ 'input_frame' ].grid()
 
         else:
             self.run_script()
 
 
-    def _collect_entered_input( self ):
-        """ Collect all entered input """
+    def _collect_entered_input( self ) -> str:
+        """ Collect all entered input
 
-        self.entered_input = []
+        Returns:
+            entered_input (str): String like argument collection of entered input
+        """
+
+        entered_input = ''
 
         for param_frame in self.param_widgets:
             param_entry: Entry = param_frame.children[ '!entry' ]
-            param_text = param_entry.cget( 'text' )
+            param_text = str( param_entry.get() ).strip()
 
             if str( param_text ).strip() != '':
-                self.entered_input.append( f'--{ param_frame.cget( 'text' ) }' )
-                self.entered_input.append( f'"{ param_text }"' )
+                entered_input += f' --{ param_frame.cget( 'text' ).strip() } '
+                entered_input += f'"{ param_text }" '
+
             param_entry.delete( 0, 'end' )
-            param_frame.grid_remove()
+
+        return entered_input
 
 
     def on_enter( self, event ):
@@ -147,7 +153,7 @@ class ScriptMenuItem:
         self._in_debug = False
 
 
-    def run_script( self, *args, **kwargs ):
+    def run_script( self ):
         """ Initiate script execution """
 
         from automation_menu.utils.localization import _
@@ -173,7 +179,13 @@ class ScriptMenuItem:
 
         self.master_self.tabControl.select( 0 )
         self.master_self.app_state.output_queue.put( SysInstructions.CLEAROUTPUT )
-        self.master_self.input_widgets[ 'input_frame' ].grid_remove()
+
+        if self.master_self.input_widgets[ 'input_frame' ].winfo_ismapped():
+            self.master_self.input_widgets[ 'input_frame' ].grid_remove()
+            self.entered_input = self._collect_entered_input()
+
+        else:
+            self.entered_input = ''
 
         if self.master_self.app_state.settings.get( 'minimize_on_running' ):
             if self.script_info.get_attr( 'disable_minimize_on_running' ):
