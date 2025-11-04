@@ -288,7 +288,7 @@ class ScriptRunner:
         if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
 
             return subprocess.Popen(
-                args = [ sys.executable, str( self._script_info.get_attr( 'fullpath' ) ), self.run_input ],
+                args = [ sys.executable, str( self._script_info.get_attr( 'fullpath' ) ) ] + self.run_input,
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,
@@ -298,7 +298,7 @@ class ScriptRunner:
         elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
 
             return subprocess.Popen(
-                args = [ 'powershell.exe', str( self._script_info.get_attr( 'fullpath' ) ), self.run_input ],
+                args = [ 'powershell.exe', str( self._script_info.get_attr( 'fullpath' ) ) ] + self.run_input ,
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,

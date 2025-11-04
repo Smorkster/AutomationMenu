@@ -85,31 +85,35 @@ class ScriptMenuItem:
         if len( self.script_info.scriptmeta.script_input_parameters ) > 0:
             self.master_self.input_widgets[ 'script_name' ].set( self.script_info.filename )
             if not hasattr( self, 'param_widgets' ):
-                self.param_widgets = fill_frame( param_input_frame = self.master_self.input_widgets[ 'input_container' ], parameters = self.script_info.scriptmeta.script_input_parameters )
+                self.param_widgets = fill_frame( param_input_frame = self.master_self.input_widgets[ 'input_container' ],
+                                                 container_canvas = self.master_self.input_widgets[ 'container_canvas' ],
+                                                 parameters = self.script_info.scriptmeta.script_input_parameters
+                                               )
 
-            self.master_self.input_widgets[ 'input_send_btn' ].bind( '<Button-1>', lambda e: self.run_script() )
+            self.master_self.input_widgets[ 'input_send_btn' ].config( command = self.run_script )
             self.master_self.input_widgets[ 'input_frame' ].grid()
 
         else:
             self.run_script()
 
 
-    def _collect_entered_input( self ) -> str:
+    def _collect_entered_input( self ) -> list[ str ]:
         """ Collect all entered input
 
         Returns:
-            entered_input (str): String like argument collection of entered input
+            entered_input (list[ str ]): List of strings of entered input
         """
 
-        entered_input = ''
+        entered_input = []
 
         for param_frame in self.param_widgets:
             param_entry: Entry = param_frame.children[ '!entry' ]
             param_text = str( param_entry.get() ).strip()
 
             if str( param_text ).strip() != '':
-                entered_input += f' --{ param_frame.cget( 'text' ).strip() } '
-                entered_input += f'"{ param_text }" '
+                param_name = self.master_self.root.nametowidget( param_frame.cget( 'labelwidget' ) ).children[ '!label' ].cget( 'text' )
+                entered_input.append( f'--{ param_name.strip() }' )
+                entered_input.append( param_text )
 
             param_entry.delete( 0, 'end' )
 

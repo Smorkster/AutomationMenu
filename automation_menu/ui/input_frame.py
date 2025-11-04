@@ -13,7 +13,6 @@ from tkinter import E, N, S, W, Canvas, StringVar
 from tkinter.ttk import Button, Entry, Frame, Label, Labelframe, Scrollbar
 
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
-from automation_menu.utils.language_manager import LanguageManager
 
 #from automation_menu.ui.main_window import AutomationMenuWindow
 #def get_input_widgets( master_self: AutomationMenuWindow ):
@@ -74,6 +73,8 @@ def get_input_widgets( master_self ):
     container_canvas.grid_columnconfigure( index = 0, weight = 1 )
     container_canvas.bind_all( '<MouseWheel>' , _on_mousewheel )
 
+    input_widgets[ 'container_canvas' ] = container_canvas
+
     container_scrollbar = Scrollbar( master = param_frame, orient = 'vertical', command = container_canvas.yview )
     container_scrollbar.grid( column = 1, row = 0, sticky = ( N, S ) )
 
@@ -92,17 +93,48 @@ def get_input_widgets( master_self ):
 
 
 def _on_key_press( event ):
-    """ """
+    """ Prevent new line characters """
 
     if event.keysym == 'Return':
         return 'break'
 
 
-def fill_frame( param_input_frame: Frame, parameters: list[ ScriptInputParameter ] ):
+def _on_keyboard_focus( widget: Entry, canvas: Canvas ):
+    """ Focus on entry widget when tabbing """
+
+    canvas.update_idletasks()
+
+    param_frame = widget.master
+
+    widget_y = param_frame.winfo_y()
+    widget_height = param_frame.winfo_height()
+
+    canvas_height = canvas.winfo_height()
+
+    bbox = canvas.bbox( 'all' )
+
+    if not bbox:
+        return
+
+    total_height = bbox[ 3 ] - bbox[ 1 ]
+
+    if total_height <= canvas_height:
+        return
+    
+    target_y = widget_y - 10
+
+    scroll_fraction = target_y / total_height
+    scroll_fraction = max( 0.0, min( 1.0, scroll_fraction ) )
+
+    canvas.yview_moveto( scroll_fraction )
+
+
+def fill_frame( param_input_frame: Frame, container_canvas: Canvas, parameters: list[ ScriptInputParameter ] ):
     """ Create input widgets for each parameter
     
     Args:
         param_input_frame (ttk.Frame): Container to place the widgets
+        container_canvas (tk.Canvas): The canvas containing all input widgets
         parameters (): List of parameters to set up
     """
 
@@ -123,11 +155,20 @@ def fill_frame( param_input_frame: Frame, parameters: list[ ScriptInputParameter
         elif param.type == 'float':
             type = _( 'Float number' )
 
-        param_frame = Labelframe( master = param_input_frame, text = f'{ param.name } ({ type })', width = 60, height = 40 )
+        param_title_frame = Frame( )
+        param_title_frame.grid_columnconfigure( index = 0, weight = 1 )
+        param_title_frame.grid_columnconfigure( index = 1, weight = 1 )
+        param_name = Label( master = param_title_frame, text = param.name )
+        param_name.grid( column = 0, row = 0, sticky = ( N, W ) )
+        param_type = Label( master = param_title_frame, text = type )
+        param_type.grid( column = 1, row = 0, sticky = ( N, W ) )
+
+        param_frame = Labelframe( master = param_input_frame, labelwidget = param_title_frame, width = 60, height = 40 )
         param_frame.grid( column = column, row = row, padx = 10, sticky = ( W, E ) )
 
         param_input = Entry( master = param_frame, width = 60 )
         param_input.grid( column = 0, row = 0, sticky = ( W, E ) )
+        param_input.bind( '<FocusIn>', lambda e: _on_keyboard_focus( e.widget, container_canvas ) )
         param_input.bind( '<Key>', _on_key_press )
 
         AlwaysOnTopToolTip( widget = param_frame, msg = param.description )
