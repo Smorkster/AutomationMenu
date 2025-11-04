@@ -9,11 +9,14 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+import logging
 import threading
-from tkinter import Menu
+
+from tkinter import Entry, Menu
 from tkinter.ttk import Label
 from automation_menu.models import ScriptInfo, SysInstructions
 from automation_menu.models.enums import OutputStyleTags, ScriptState
+from automation_menu.ui.input_frame import fill_frame
 #from automation_menu.ui.main_window import AutomationMenuWindow
 
 
@@ -29,6 +32,8 @@ class ScriptMenuItem:
         """
 
         from automation_menu.utils.localization import _
+
+        logging.basicConfig( level = logging.DEBUG )
 
         self.script_menu = script_menu
         self.script_info = script_info
@@ -54,7 +59,8 @@ class ScriptMenuItem:
             style = 'ScriptNormal.TLabel'
 
         self.script_button = Label( self.script_menu, text = self.label_text, style = style, borderwidth = 1 )
-        self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
+        #self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
+        self.script_button.bind( '<Button-1>' , lambda e: self._check_input_params() )
 
         # Add tooltip to this button
         if self.script_info.get_attr( 'description' ):
@@ -69,6 +75,39 @@ class ScriptMenuItem:
 
             tt = AlwaysOnTopToolTip( widget = self.script_button, msg = desc )
             self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev ) )
+
+
+    def _check_input_params( self ):
+        """ Verify if script takes input and if widgets are created """
+
+        self.script_menu.withdraw()
+
+        if len( self.script_info.scriptmeta.script_input_parameters ) > 0:
+            self.master_self.input_widgets[ 'script_name' ].set( self.script_info.filename )
+            if not hasattr( self, 'param_widgets' ):
+                self.param_widgets = fill_frame( param_input_frame = self.master_self.input_widgets[ 'input_container' ], parameters = self.script_info.scriptmeta.script_input_parameters )
+
+            self.master_self.input_widgets[ 'input_send_btn' ].bind( '<Button-1>', lambda: self.run_script )
+            self.master_self.input_widgets[ 'input_frame' ].grid()
+
+        else:
+            self.run_script()
+
+
+    def _collect_entered_input( self ):
+        """ Collect all entered input """
+
+        self.entered_input = []
+
+        for param_frame in self.param_widgets:
+            param_entry: Entry = param_frame.children[ '!entry' ]
+            param_text = param_entry.cget( 'text' )
+
+            if str( param_text ).strip() != '':
+                self.entered_input.append( f'--{ param_frame.cget( 'text' ) }' )
+                self.entered_input.append( f'"{ param_text }"' )
+            param_entry.delete( 0, 'end' )
+            param_frame.grid_remove()
 
 
     def on_enter( self, event ):
@@ -108,7 +147,7 @@ class ScriptMenuItem:
         self._in_debug = False
 
 
-    def run_script( self ):
+    def run_script( self, *args, **kwargs ):
         """ Initiate script execution """
 
         from automation_menu.utils.localization import _
@@ -122,7 +161,8 @@ class ScriptMenuItem:
                                    api_callbacks = self.master_self.api_callbacks,
                                    enable_stop_button_callback = self.master_self.enable_stop_script_button,
                                    enable_pause_button_callback = self.master_self.enable_pause_script_button,
-                                   stop_pause_button_blinking_callback = self.master_self.stop_pause_button_blinking
+                                   stop_pause_button_blinking_callback = self.master_self.stop_pause_button_blinking,
+                                   run_input = self.entered_input
                                  )
 
             self.master_self.disable_stop_script_button()
@@ -131,9 +171,9 @@ class ScriptMenuItem:
             if self.master_self.app_state.settings.get( 'minimize_on_running' ) and not self.script_info.get_attr( 'disable_minimize_on_running' ):
                 self.master_self.set_min_max_on_running()
 
-        self.script_menu.withdraw()
         self.master_self.tabControl.select( 0 )
         self.master_self.app_state.output_queue.put( SysInstructions.CLEAROUTPUT )
+        self.master_self.input_widgets[ 'input_frame' ].grid_remove()
 
         if self.master_self.app_state.settings.get( 'minimize_on_running' ):
             if self.script_info.get_attr( 'disable_minimize_on_running' ):

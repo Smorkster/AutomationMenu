@@ -189,7 +189,8 @@ class ScriptRunner:
                     api_callbacks: dict,
                     enable_stop_button_callback: Callable,
                     enable_pause_button_callback: Callable,
-                    stop_pause_button_blinking_callback: Callable
+                    stop_pause_button_blinking_callback: Callable,
+                    run_input: list[ dict ]
                   ) -> None:
         """ Start process to run selected script
 
@@ -207,6 +208,7 @@ class ScriptRunner:
         self._script_info = script_info
         self.main_window = main_window
         self.api_callbacks = api_callbacks
+        self.run_input = run_input
         line = ''
 
         try:
@@ -282,11 +284,12 @@ class ScriptRunner:
             'tag': OutputStyleTags.SYSINFO,
             'exec_item': self._exec_item
         } )
+        args_string = ' '.join( [ self.run_input ] )
 
         if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
 
             return subprocess.Popen(
-                args = [ sys.executable, str( self._script_info.get_attr( 'fullpath' ) ) ],
+                args = [ sys.executable, str( self._script_info.get_attr( 'fullpath' ) ), args_string ],
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,
@@ -296,7 +299,7 @@ class ScriptRunner:
         elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
 
             return subprocess.Popen(
-                args = [ 'powershell.exe', str( self._script_info.get_attr( 'fullpath' ) ) ],
+                args = [ 'powershell.exe', str( self._script_info.get_attr( 'fullpath' ) ), args_string  ],
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,

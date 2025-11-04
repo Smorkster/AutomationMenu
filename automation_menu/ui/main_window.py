@@ -8,15 +8,16 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+import logging
 from tkinter import E, N, S, W, Tk, messagebox, ttk
 from typing import Union
 
 from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
-from automation_menu.core.script_menu_item import ScriptMenuItem
 from automation_menu.core.application_state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
+from automation_menu.ui.input_frame import get_input_widgets
 from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
@@ -35,6 +36,7 @@ class AutomationMenuWindow:
 
         from automation_menu.utils.localization import _
 
+        logging.basicConfig( level = logging.DEBUG )
         self.app_state = app_state
         self.settings_file_path = self.app_state.secrets.get( 'settings_file_path' )
         self.dev_controls = []
@@ -61,11 +63,16 @@ class AutomationMenuWindow:
             'y': 5
         }
 
+        # Create buttons for script operations
         self.op_buttons = get_op_buttons( self.root, self )
+
+        # Create script input widgets
+        self.input_widgets = get_input_widgets( self )
+        self.input_widgets[ 'input_frame' ].grid_remove()
 
         # Add tabs
         self.tabControl = ttk.Notebook( master = self.root )
-        self.tabControl.grid( column = 0 , columnspan = 2 , row = 1, sticky = ( N, S, E, W ) )
+        self.tabControl.grid( column = 0, columnspan = 2, row = 2, sticky = ( N, S, E, W ) )
 
         # Create output
         self.tabOutput, self.tbOutput = get_output_tab( tabcontrol = self.tabControl )
@@ -111,10 +118,10 @@ class AutomationMenuWindow:
 
         self.root.columnconfigure( index = 0, weight = 1 )
         self.root.columnconfigure( index = 1, weight = 0 )
-        self.root.rowconfigure( index = 0, weight = 0 )
-        self.root.rowconfigure( index = 1, weight = 1 )
-        self.root.rowconfigure( index = 2, weight = 0 )
-        self.root.rowconfigure( index = 3, weight = 0 )
+        self.root.rowconfigure( index = 0, weight = 0 ) # Op buttons
+        self.root.rowconfigure( index = 1, weight = 0 ) # Input frame
+        self.root.rowconfigure( index = 2, weight = 1 ) # Notebook tabs
+        self.root.rowconfigure( index = 3, weight = 0 ) # Status bar
 
         # Shortcuts bindings
         self.root.bind( '<Control-m>', self._open_script_menu )
