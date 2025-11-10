@@ -10,7 +10,7 @@ Created: 2025-10-31
 
 
 from tkinter import E, N, S, W, Canvas, StringVar
-from tkinter.ttk import Button, Entry, Frame, Label, Labelframe, Scrollbar
+from tkinter.ttk import Button, Combobox, Entry, Frame, Label, Labelframe, Scrollbar
 
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 
@@ -68,8 +68,8 @@ def get_input_widgets( master_self ):
     param_frame.grid_columnconfigure( index = 0, weight = 1 )
     param_frame.grid_columnconfigure( index = 1, weight = 0 )
 
-    container_canvas = Canvas( master = param_frame, height = 150 )
-    container_canvas.grid( column = 0, row = 0, sticky = ( N, W, E ) )
+    container_canvas = Canvas( master = param_frame, height = 150, highlightthickness = 0 )
+    container_canvas.grid( sticky = ( N, S, W, E ) )
     container_canvas.grid_columnconfigure( index = 0, weight = 1 )
     container_canvas.bind_all( '<MouseWheel>' , _on_mousewheel )
 
@@ -78,16 +78,7 @@ def get_input_widgets( master_self ):
     container_scrollbar = Scrollbar( master = param_frame, orient = 'vertical', command = container_canvas.yview )
     container_scrollbar.grid( column = 1, row = 0, sticky = ( N, S ) )
 
-    container_frame = Frame( master = container_canvas )
-    container_frame.grid( column = 0, row = 0, columnspan = 2, sticky = ( W, E ) )
-    container_frame.grid_columnconfigure( index = 0, weight = 1 )
-    container_frame.grid_columnconfigure( index = 1, weight = 1 )
-    container_frame.bind( '<Configure>', lambda e: container_canvas.configure( scrollregion = container_canvas.bbox( 'all' ) ) )
-
-    container_canvas.create_window( ( 0, 0 ), window = container_frame, anchor = 'nw', )
     container_canvas.configure( yscrollcommand = container_scrollbar.set )
-
-    input_widgets[ 'input_container' ] = container_frame
 
     return input_widgets
 
@@ -120,7 +111,7 @@ def _on_keyboard_focus( widget: Entry, canvas: Canvas ):
 
     if total_height <= canvas_height:
         return
-    
+
     target_y = widget_y - 10
 
     scroll_fraction = target_y / total_height
@@ -129,11 +120,12 @@ def _on_keyboard_focus( widget: Entry, canvas: Canvas ):
     canvas.yview_moveto( scroll_fraction )
 
 
-def fill_frame( param_input_frame: Frame, container_canvas: Canvas, parameters: list[ ScriptInputParameter ] ):
+def fill_frame( container_canvas: Canvas,
+                parameters: list[ ScriptInputParameter ]
+              ) -> Frame:
     """ Create input widgets for each parameter
-    
+
     Args:
-        param_input_frame (ttk.Frame): Container to place the widgets
         container_canvas (tk.Canvas): The canvas containing all input widgets
         parameters (): List of parameters to set up
     """
@@ -141,46 +133,50 @@ def fill_frame( param_input_frame: Frame, container_canvas: Canvas, parameters: 
     from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
     from automation_menu.utils.localization import _
 
-    column = 0
+    column_count = 0
+    number_of_columns = 2
     row = 0
-    input_widgets = []
+
+    input_container = Frame( master = container_canvas )
+    input_container.grid( sticky = ( N, S, W, E ) )
+    input_container.bind( '<Configure>', lambda e: container_canvas.configure( scrollregion = container_canvas.bbox( 'all' ) ) )
+
+    for i in range( number_of_columns ):
+        input_container.grid_columnconfigure( index = i, weight = 1, uniform = 'params' )
 
     for param in parameters:
-        if param.type == 'str':
-            type = _( 'Text string' )
+        param_frame = Labelframe( master = input_container )
+        param_frame.grid( column = column_count, row = row, sticky = ( N, S, W, E ) )
+        param_frame.grid_columnconfigure( index = 0, weight = 1 )
 
-        elif param.type == 'int':
-            type = _( 'Integer number' )
-
-        elif param.type == 'float':
-            type = _( 'Float number' )
-
-        param_title_frame = Frame( )
-        param_title_frame.grid_columnconfigure( index = 0, weight = 1 )
+        param_title_frame = Frame( master = input_container )
+        param_title_frame.grid_columnconfigure( index = 0, weight = 0 )
         param_title_frame.grid_columnconfigure( index = 1, weight = 1 )
-        param_name = Label( master = param_title_frame, text = param.name )
+        param_name = Label( master = param_title_frame, text = param.name, style = 'LabelFrameTitle.TLabel' )
         param_name.grid( column = 0, row = 0, sticky = ( N, W ) )
-        param_type = Label( master = param_title_frame, text = type )
-        param_type.grid( column = 1, row = 0, sticky = ( N, W ) )
+        param_desc = Label( master = param_title_frame, text = param.description, style = 'LabelFrameTitleDescription.TLabel' )
+        param_desc.grid( column = 1, row = 0, sticky = ( W, E ) )
 
-        param_frame = Labelframe( master = param_input_frame, labelwidget = param_title_frame, width = 60, height = 40 )
-        param_frame.grid( column = column, row = row, padx = 10, sticky = ( W, E ) )
+        param_frame.config( labelwidget = param_title_frame )
 
-        param_input = Entry( master = param_frame, width = 60 )
-        param_input.grid( column = 0, row = 0, sticky = ( W, E ) )
+        if len( param.alternatives ) > 0:
+            param_input = Combobox( master = param_frame, style = 'Input.TCombobox', values = param.alternatives, state = 'readonly' )
+
+        else:
+            param_input = Entry( master = param_frame, style = 'Input.TEntry' )
+
         param_input.bind( '<FocusIn>', lambda e: _on_keyboard_focus( e.widget, container_canvas ) )
         param_input.bind( '<Key>', _on_key_press )
+        param_input.grid( padx = 5, pady = 5, sticky = ( N, S, W, E ) )
 
-        AlwaysOnTopToolTip( widget = param_frame, msg = param.description )
+        AlwaysOnTopToolTip( widget = param_desc, msg = param.description )
 
-        column += 1
-        if column == 2:
+        column_count += 1
+        if column_count == number_of_columns:
             row = row + 1
-            param_input_frame.grid_rowconfigure( index = row, weight = 1 )
-            column = 0
+            input_container.grid_rowconfigure( index = row, weight = 1 )
+            column_count = 0
 
-        input_widgets.append( param_frame )
+    input_container.update_idletasks()
 
-
-    return input_widgets
-
+    return input_container

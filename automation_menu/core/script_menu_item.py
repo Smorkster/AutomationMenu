@@ -12,8 +12,8 @@ Created: 2025-09-25
 import logging
 import threading
 
-from tkinter import Entry, Menu
-from tkinter.ttk import Label
+from tkinter import Entry, Toplevel
+from tkinter.ttk import Combobox, Label
 from automation_menu.models import ScriptInfo, SysInstructions
 from automation_menu.models.enums import OutputStyleTags, ScriptState
 from automation_menu.ui.input_frame import fill_frame
@@ -22,7 +22,7 @@ from automation_menu.ui.input_frame import fill_frame
 
 class ScriptMenuItem:
 #    def __init__ ( self, script_menu: Menu, script_info: ScriptInfo, main_object: AutomationMenuWindow ):
-    def __init__ ( self, script_menu: Menu, script_info: ScriptInfo, main_object ):
+    def __init__ ( self, script_menu: Toplevel, script_info: ScriptInfo, main_object ):
         """ Object for representing a script in the menu
 
         Args:
@@ -106,12 +106,16 @@ class ScriptMenuItem:
 
         entered_input = []
 
-        for param_frame in self.param_widgets:
-            param_entry: Entry = param_frame.children[ '!entry' ]
-            param_text = str( param_entry.get() ).strip()
+        for param_frame in [ self.param_input_container.nametowidget( w ) for w in self.param_input_container.children if str( w ).startswith( '!labelframe' ) ]:
+            if param_frame.winfo_children()[0].winfo_class() == 'TCombobox':
+                param_entry: Combobox = param_frame.children[ '!combobox' ]
+                param_text = str( param_entry.get() ).strip()
+            else:
+                param_entry: Entry = param_frame.children[ '!entry' ]
+                param_text = str( param_entry.get() ).strip()
 
             if str( param_text ).strip() != '':
-                param_name = self.master_self.root.nametowidget( param_frame.cget( 'labelwidget' ) ).children[ '!label' ].cget( 'text' )
+                param_name = param_frame.nametowidget( param_frame.cget( 'labelwidget' ) ).children[ '!label' ].cget( 'text' )
                 entered_input.append( f'--{ param_name.strip() }' )
                 entered_input.append( param_text )
 
@@ -184,8 +188,8 @@ class ScriptMenuItem:
         self.master_self.tabControl.select( 0 )
         self.master_self.app_state.output_queue.put( SysInstructions.CLEAROUTPUT )
 
-        if self.master_self.input_widgets[ 'input_frame' ].winfo_ismapped():
-            self.master_self.input_widgets[ 'input_frame' ].grid_remove()
+        if self.param_input_container.winfo_ismapped():
+            self.param_input_container.grid_remove()
             self.entered_input = self._collect_entered_input()
 
         else:

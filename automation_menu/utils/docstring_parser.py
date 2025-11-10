@@ -48,6 +48,9 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
             specified in the docstring
         warnings (list[ str ]): List of specified fieldnames that does not correspond
             to valid field names or are misspelled
+
+    Raises:
+        ValueError for any exception when trying to read docstring in file
     """
 
     docstring_dict = {}
@@ -99,7 +102,7 @@ def _parse_fields( lines ) -> tuple[ dict, dict ]:
         'values': [],
         'other': [],
     }
-    field_pattern = re.compile( r'^:([^:]+):\s*(.*)$' )
+    field_pattern = re.compile( r'^:([^:]+):\s*(.*)\s*(\[.*\])*$' )
 
     for line in lines:
         match = field_pattern.match( line.strip() )
@@ -155,12 +158,27 @@ def _parse_parameters( field: str, value: str ) -> ScriptInputParameter:
 
     required_match = re.search( r'\(required\)', value, re.IGNORECASE ) != None
 
-    description = re.sub( r'\s*\(default:[^)]+\)', '', re.sub( r'\s*\(required\)', '', value.strip() ).strip() )
+    options_match = re.search( r'\[([^]]+)\]', value, re.IGNORECASE )
+
+    if options_match:
+        options_text = options_match.group( 1 )
+        options_list = [ option.strip().strip( "'" ) for option in options_text.split( ',' ) ]
+        options_list.insert( 0, '' )
+    else:
+        options_list = []
+
+    # Remove options; [ ... ]
+    description = re.sub( r'\s*\[[^]]+\]', '', value.strip() ).strip()
+    # Remove (default: ...)
+    description = re.sub( r'\s*\(default:[^)]+\)', '', description ).strip()
+    # Remove (required)
+    description = re.sub( r'\s*\(required\)', '', description ).strip()
 
     return ScriptInputParameter(
         name = param_name,
         type = 'str',
         required = required_match,
         default = default_value,
+        alternatives = options_list,
         description = description
     )
