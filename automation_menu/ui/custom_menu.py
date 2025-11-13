@@ -57,7 +57,7 @@ class CustomMenu:
         widget = event.widget.winfo_containing( event.x_root, event.y_root )
 
         if widget not in [ self.popup ] + list( self.popup.winfo_children() ):
-            self._hide_menu()
+            self.hide_popup_menu()
 
 
     def _create_popup_content( self ):

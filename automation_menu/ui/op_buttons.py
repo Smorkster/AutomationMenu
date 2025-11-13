@@ -33,7 +33,7 @@ def get_op_buttons( main_root, main_self ):
     widgets[ 'op_buttons_frame' ] = op_buttons_frame
 
     # Add a custom menu
-    script_list = get_scripts( app_state = main_self.app_state )
+    script_list = get_scripts( app_state = main_self.app_state, app_context = main_self.app_context )
 
     custom_menu = CustomMenu( parent = op_buttons_frame, text = _( 'Script ...' ), scripts = script_list , main_object = main_self )
     custom_menu.menu_button.grid( column = 0, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( N, W ) )

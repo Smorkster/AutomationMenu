@@ -1,34 +1,29 @@
 """
-Application state vault
+Application contaxt management
 
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
 Version: 1.0
-Created: 2025-09-25
+Created: 2025-11-11
 """
 
 import queue
 
 from dataclasses import dataclass, field
 from ldap3.core.connection import Connection
-from typing import Optional
 
 from automation_menu.ui.history_manager import HistoryManager
+from automation_menu.ui.input_manager import InputManager
+
 
 @dataclass
-class ApplicationState:
-    """ State vault for application data and managers """
-    from automation_menu.models import Secrets, Settings, User
-
-    current_user: Optional[ User ] = None
-    ldap_connection: Optional[ Connection ] = None
-    output_queue: queue.Queue = field( default_factory = queue.Queue )
-    running_automation = None
-    secrets: Optional[ Secrets ] = None
-    settings: Optional[ Settings ] = None
+class ApplicationContext:
 
     history_manager: HistoryManager = None
+    input_manager: InputManager = None
+    ldap_connection: Connection = None
+    output_queue: queue.Queue = field( default_factory = queue.Queue )
     script_manager = None
 
 

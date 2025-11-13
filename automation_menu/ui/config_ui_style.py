@@ -3,7 +3,7 @@ from tkinter import ttk
 
 
 def set_ui_style( style: ttk.Style ):
-    """ 
+    """ Configure widget styles
 
     Args:
         style (ttk.Style): Main style to set
@@ -13,6 +13,7 @@ def set_ui_style( style: ttk.Style ):
 
     ##################
     # Notebook styling
+    # region
     style.configure( 'TNotebook',
                     tabmargins = [ 0, 1, 2, 0 ],  #[left, top, right, bottom]
                     background = 'lightgray'
@@ -30,9 +31,24 @@ def set_ui_style( style: ttk.Style ):
                            ( '!selected', ( 25, 1.5 ) ) ],
                 foreground = [ ( 'selected', 'green' ), ( 'active', 'black' ) ]
     )
+    # endregion
+
+    ###############
+    # Entry styling
+    # region
+    style.configure( 'Input.TEntry',
+                    font = ( 'Calibri', 10, 'normal' ),
+                    relief = 'flat',
+                    fieldbackground = 'white'
+    )
+    style.map( 'Input.TEntry',
+                fieldbackground = [ ( 'focus', "#c5faff" ) ]
+    )
+    # endregion
 
     ###############
     # Label styling
+    # region
     style.configure( 'ScriptHover.TLabel',
                     background = '#c2e6f3',
                     font = ( 'Calibri', 12, 'normal' )
@@ -54,15 +70,19 @@ def set_ui_style( style: ttk.Style ):
     )
     style.configure( 'LabelFrameTitle.TLabel',
                     font = ( 'Calibri', 13, 'bold' )
-
+    )
+    style.configure( 'LabelFrameTitleDescription.TLabel',
+                    font = ( 'Calibri', 10, 'normal' )
     )
     style.configure( 'TLabel',
                     font = ( 'Calibri', 10, 'normal' ),
                     padding = ( 2, 2 )
     )
+    # endregion
 
     ################
     # Button styling
+    # region
     btn_padding = ( 10, 5 )
     style.configure( 'TButton',
                     font = ( 'Calibri', 12, 'normal' ),
@@ -73,19 +93,36 @@ def set_ui_style( style: ttk.Style ):
                     font = ( 'Calibri', 12, 'normal' ),
                     padding = btn_padding
     )
+    # endregion
 
     ####################
     # LabelFrame styling
+    # region
     style.configure( 'TLabelframe',
                     padding = ( 10, 5 ),
                     width = 500
     )
+    # endregion
 
     ####################
     # Checbutton styling
+    # region
     style.configure( 'TCheckbutton',
                     padding = ( 10, 5 )
     )
+    # endregion
+
+    ##################
+    # Combobox styling
+    # region
+    style.configure( 'Input.TCombobox',
+                    font = ( 'Calibri', 10, 'normal' ),
+                    padding = ( 2, 2 )
+    )
+    style.map( 'Input.TCombobox',
+                fieldbackground = [ ( 'focus', "#c5faff" ) ]
+    )
+    # endregion
 
 
 def set_output_styles( widget ) -> None:

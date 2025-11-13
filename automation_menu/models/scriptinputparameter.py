@@ -21,5 +21,4 @@ class ScriptInputParameter:
     required: bool = True
     default: Optional[ str ] = None
     description: str = ''
-
-
+    alternatives: Optional[ list[ str ] ] = None

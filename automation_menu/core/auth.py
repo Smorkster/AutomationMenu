@@ -14,9 +14,10 @@ import sys
 from dynamicinputbox import dynamic_inputbox as inputbox
 from ldap3 import ALL, Connection, Entry, Server
 from ldap3.core.exceptions import LDAPSocketOpenError
-from automation_menu.core.application_state import ApplicationState
+from automation_menu.core.app_context import ApplicationContext
+from automation_menu.models.application_state import ApplicationState
 
-def connect_to_AD( app_state: ApplicationState ) -> Connection:
+def connect_to_AD( app_state: ApplicationState, app_context: ApplicationContext ) -> Connection:
     """ Connect to Active Directory and return the connection object
     
     Returns:
@@ -66,11 +67,13 @@ def connect_to_AD( app_state: ApplicationState ) -> Connection:
         except Exception as e:
             AD_loginattempts = AD_loginattempts + 1
 
-def get_user_adobject( id = None, app_state: ApplicationState = None ) -> Entry:
+def get_user_adobject( id = None, app_state: ApplicationState = None, app_context: ApplicationContext = None ) -> Entry:
     """ Get the full AD-object of the current user
 
     Args:
-        (entry): AD object for current user
+        id (str): AD object for current user
+        app_state (ApplicationState): Applicate state vault
+        app_context (ApplicationContext): Collection of context managers
     """
 
     from automation_menu.utils.localization import _
@@ -81,13 +84,13 @@ def get_user_adobject( id = None, app_state: ApplicationState = None ) -> Entry:
     else:
         user = id
 
-    if not app_state.is_ldap_connected():
+    if not app_context.is_ldap_connected():
         raise ConnectionError( _( 'Not connected to LDAP' ) )
 
-    app_state.ldap_connection.search(
+    app_context.ldap_connection.search(
         search_base = app_state.secrets.get( 'ldap_search_base' ),
         search_filter = f'(sAMAccountName={ user })',
         attributes = [ '*' ]
     )
 
-    return app_state.ldap_connection.entries[ 0 ]
+    return app_context.ldap_connection.entries[ 0 ]

@@ -8,15 +8,17 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+import logging
 from tkinter import E, N, S, W, Tk, messagebox, ttk
 from typing import Union
 
 from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
-from automation_menu.core.script_menu_item import ScriptMenuItem
-from automation_menu.core.application_state import ApplicationState
+from automation_menu.core.app_context import ApplicationContext
+from automation_menu.models.application_state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
+from automation_menu.ui.input_manager import InputManager
 from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
@@ -26,7 +28,7 @@ from automation_menu.filehandling.settings_handler import write_settingsfile
 
 
 class AutomationMenuWindow:
-    def __init__( self, app_state: ApplicationState ):
+    def __init__( self, app_state: ApplicationState, app_context: ApplicationContext ):
         """ Creates the main window
 
         Args:
@@ -36,21 +38,28 @@ class AutomationMenuWindow:
         from automation_menu.utils.localization import _
 
         self.app_state = app_state
+        self.app_context = app_context
         self.settings_file_path = self.app_state.secrets.get( 'settings_file_path' )
+
         self.dev_controls = []
-        self.widgets = {}
         self.old_window_geometry = {}
+        self.widgets = {}
         self._blink_active = False
         self._blink_job = None
         self._blink_state = False
         self._close_confirmed = False
         self._progressbar_visible = False
 
-        self.language_manager = LanguageManager( current_language = self.app_state.settings.current_language )
+        logging.basicConfig( level = logging.DEBUG )
 
         # Create main GUI
         self.root = Tk()
         self.root.title( string = self.app_state.secrets.get( 'mainwindowtitle' ) )
+
+        self.language_manager = LanguageManager( current_language = self.app_state.settings.current_language )
+        self.app_context.input_manager = InputManager( root = self.root,
+                                                      language_manager = self.language_manager
+                                                      )
 
         # Setup styles
         style = ttk.Style()
@@ -61,11 +70,12 @@ class AutomationMenuWindow:
             'y': 5
         }
 
+        # Create buttons for script operations
         self.op_buttons = get_op_buttons( self.root, self )
 
         # Add tabs
         self.tabControl = ttk.Notebook( master = self.root )
-        self.tabControl.grid( column = 0 , columnspan = 2 , row = 1, sticky = ( N, S, E, W ) )
+        self.tabControl.grid( column = 0, columnspan = 2, row = 2, sticky = ( N, S, E, W ) )
 
         # Create output
         self.tabOutput, self.tbOutput = get_output_tab( tabcontrol = self.tabControl )
@@ -86,13 +96,12 @@ class AutomationMenuWindow:
             'get_status': self.get_status,
             'set_status': self.set_status
         }
-        self.output_controller = AsyncOutputController(
-                                    output_queue = self.app_state.output_queue,
-                                    text_widget = self.tbOutput ,
-                                    breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ],
-                                    history_manager = self.app_state.history_manager,
-                                    api_callbacks = self.api_callbacks
-                                    )
+        self.output_controller = AsyncOutputController( output_queue = self.app_context.output_queue,
+                                                       text_widget = self.tbOutput,
+                                                       breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ],
+                                                       history_manager = self.app_context.history_manager,
+                                                       api_callbacks = self.api_callbacks
+                                                       )
         self.output_controller.start()
 
         # Create settings
@@ -101,23 +110,23 @@ class AutomationMenuWindow:
         self.tabControl.add( child = self.tabSettings, text = _( 'Settings' ) )
 
         # Create history tab
-        self.tabHistory = self.app_state.history_manager.get_history_tab( tabcontrol = self.tabControl, main_self = self )
+        self.tabHistory = self.app_context.history_manager.get_history_tab( tabcontrol = self.tabControl, main_self = self )
         self.tabControl.add( child = self.tabHistory, text = _( 'Execution history' ) )
-
-        self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )
 
         # Create statusbar
         self.status_widgets = get_statusbar( master_root = self.root )
 
         self.root.columnconfigure( index = 0, weight = 1 )
         self.root.columnconfigure( index = 1, weight = 0 )
-        self.root.rowconfigure( index = 0, weight = 0 )
-        self.root.rowconfigure( index = 1, weight = 1 )
-        self.root.rowconfigure( index = 2, weight = 0 )
-        self.root.rowconfigure( index = 3, weight = 0 )
+        self.root.rowconfigure( index = 0, weight = 0 ) # Op buttons
+        self.root.rowconfigure( index = 1, weight = 0 ) # Input frame
+        self.root.rowconfigure( index = 2, weight = 1 ) # Notebook tabs
+        self.root.rowconfigure( index = 3, weight = 0 ) # Status bar
 
         # Shortcuts bindings
         self.root.bind( '<Control-m>', self._open_script_menu )
+
+        self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )
 
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
         self.center_screen()
@@ -172,17 +181,17 @@ class AutomationMenuWindow:
 
         from automation_menu.utils.localization import _
 
-        if self.app_state.script_manager.is_paused():
-            if self.app_state.script_manager.resume_current_script():
-                self.app_state.output_queue.put( { 'line': _( 'Process was resumed' ), 'tag': OutputStyleTags.SYSINFO } )
+        if self.app_context.script_manager.is_paused():
+            if self.app_context.script_manager.resume_current_script():
+                self.app_context.output_queue.put( { 'line': _( 'Process was resumed' ), 'tag': OutputStyleTags.SYSINFO } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
 
                 self._blink_active = False
                 self.stop_pause_button_blinking()
 
         else:
-            if self.app_state.script_manager.pause_current_script():
-                self.app_state.output_queue.put( { 'line': _( 'Process was paused' ), 'tag': OutputStyleTags.SYSINFO } )
+            if self.app_context.script_manager.pause_current_script():
+                self.app_context.output_queue.put( { 'line': _( 'Process was paused' ), 'tag': OutputStyleTags.SYSINFO } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Resume' ) )
                 self._blink_active = True
                 self._pause_button_blinking()
@@ -206,7 +215,7 @@ class AutomationMenuWindow:
     def _stop_script( self ) -> None:
         """ Eventhandler for when user clicks button stop script """
 
-        self.app_state.script_manager.stop_current_script()
+        self.app_context.script_manager.stop_current_script()
         self.stop_pause_button_blinking()
 
 
@@ -228,7 +237,7 @@ class AutomationMenuWindow:
     def on_closing( self ) -> None:
         """ Window close event. Handle if a script is still running """
 
-        if not self._close_confirmed and self.app_state.script_manager.is_running():
+        if not self._close_confirmed and self.app_context.script_manager.is_running():
             if not self._confirm_close_process():
                 return
 
@@ -445,13 +454,13 @@ class AutomationMenuWindow:
         """ Return current statustext """
 
         def _send_status():
-            if self.app_state.script_manager.current_runner:
+            if self.app_context.script_manager.current_runner:
                 status = self.status_widgets[ 'text_status' ].cget( 'text' )
                 msg = f'{ MESSAGE_START }{ status }{ MESSAGE_END }\n'
 
                 try:
-                    self.app_state.script_manager.current_runner.current_process.stdin.write( msg )
-                    self.app_state.script_manager.current_runner.current_process.stdin.flush()
+                    self.app_context.script_manager.current_runner.current_process.stdin.write( msg )
+                    self.app_context.script_manager.current_runner.current_process.stdin.flush()
 
                 except:
                     pass

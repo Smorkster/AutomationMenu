@@ -9,8 +9,10 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+import logging
 import threading
-from tkinter import Menu
+
+from tkinter import Toplevel
 from tkinter.ttk import Label
 from automation_menu.models import ScriptInfo, SysInstructions
 from automation_menu.models.enums import OutputStyleTags, ScriptState
@@ -19,7 +21,7 @@ from automation_menu.models.enums import OutputStyleTags, ScriptState
 
 class ScriptMenuItem:
 #    def __init__ ( self, script_menu: Menu, script_info: ScriptInfo, main_object: AutomationMenuWindow ):
-    def __init__ ( self, script_menu: Menu, script_info: ScriptInfo, main_object ):
+    def __init__ ( self, script_menu: Toplevel, script_info: ScriptInfo, main_object ):
         """ Object for representing a script in the menu
 
         Args:
@@ -29,6 +31,8 @@ class ScriptMenuItem:
         """
 
         from automation_menu.utils.localization import _
+
+        logging.basicConfig( level = logging.DEBUG )
 
         self.script_menu = script_menu
         self.script_info = script_info
@@ -54,7 +58,8 @@ class ScriptMenuItem:
             style = 'ScriptNormal.TLabel'
 
         self.script_button = Label( self.script_menu, text = self.label_text, style = style, borderwidth = 1 )
-        self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
+        #self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
+        self.script_button.bind( '<Button-1>' , lambda e: self._check_input_params() )
 
         # Add tooltip to this button
         if self.script_info.get_attr( 'description' ):
@@ -69,6 +74,18 @@ class ScriptMenuItem:
 
             tt = AlwaysOnTopToolTip( widget = self.script_button, msg = desc )
             self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev ) )
+
+
+    def _check_input_params( self ):
+        """ Verify if script takes input and if widgets are created """
+
+        self.script_menu.withdraw()
+
+        if len( self.script_info.scriptmeta.script_input_parameters ) > 0:
+            self.master_self.app_context.input_manager.show_for_script( script_info = self.script_info, submit_input_callback = self.run_script )
+
+        else:
+            self.run_script()
 
 
     def on_enter( self, event ):
@@ -116,13 +133,14 @@ class ScriptMenuItem:
         def script_process_wrapper():
             """ Wrapper to execute script from separate thread """
 
-            with self.master_self.app_state.script_manager.create_runner() as runner:
+            with self.master_self.app_context.script_manager.create_runner() as runner:
                 runner.run_script( script_info = self.script_info,
                                    main_window = self.master_self.root,
                                    api_callbacks = self.master_self.api_callbacks,
                                    enable_stop_button_callback = self.master_self.enable_stop_script_button,
                                    enable_pause_button_callback = self.master_self.enable_pause_script_button,
-                                   stop_pause_button_blinking_callback = self.master_self.stop_pause_button_blinking
+                                   stop_pause_button_blinking_callback = self.master_self.stop_pause_button_blinking,
+                                   run_input = self.entered_input
                                  )
 
             self.master_self.disable_stop_script_button()
@@ -131,13 +149,15 @@ class ScriptMenuItem:
             if self.master_self.app_state.settings.get( 'minimize_on_running' ) and not self.script_info.get_attr( 'disable_minimize_on_running' ):
                 self.master_self.set_min_max_on_running()
 
-        self.script_menu.withdraw()
         self.master_self.tabControl.select( 0 )
-        self.master_self.app_state.output_queue.put( SysInstructions.CLEAROUTPUT )
+        self.master_self.app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
+
+        self.entered_input = self.master_self.app_context.input_manager.collect_entered_input()
+        self.master_self.app_context.input_manager.hide_input_frame()
 
         if self.master_self.app_state.settings.get( 'minimize_on_running' ):
             if self.script_info.get_attr( 'disable_minimize_on_running' ):
-                self.master_self.app_state.output_queue.put( {
+                self.master_self.app_context.output_queue.put( {
                     'line': _( 'The script has \'DisableMinimizeOnRunning\', meaning the window will not be minimized.' ),
                     'tag': OutputStyleTags.SYSINFO
                 } )

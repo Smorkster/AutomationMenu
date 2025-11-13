@@ -10,7 +10,6 @@ Created: 2025-09-25
 """
 
 import asyncio
-import os
 import queue
 import subprocess
 import sys
@@ -24,7 +23,7 @@ from typing import Callable, Optional
 from psutil import NoSuchProcess
 import psutil
 
-from automation_menu.core.application_state import ApplicationState
+from automation_menu.models.application_state import ApplicationState
 from automation_menu.models import ExecHistory, ScriptInfo, SysInstructions
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.utils.email_handler import report_script_error
@@ -189,7 +188,8 @@ class ScriptRunner:
                     api_callbacks: dict,
                     enable_stop_button_callback: Callable,
                     enable_pause_button_callback: Callable,
-                    stop_pause_button_blinking_callback: Callable
+                    stop_pause_button_blinking_callback: Callable,
+                    run_input: str
                   ) -> None:
         """ Start process to run selected script
 
@@ -207,6 +207,7 @@ class ScriptRunner:
         self._script_info = script_info
         self.main_window = main_window
         self.api_callbacks = api_callbacks
+        self.run_input = run_input
         line = ''
 
         try:
@@ -286,7 +287,7 @@ class ScriptRunner:
         if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
 
             return subprocess.Popen(
-                args = [ sys.executable, str( self._script_info.get_attr( 'fullpath' ) ) ],
+                args = [ sys.executable, str( self._script_info.get_attr( 'fullpath' ) ) ] + self.run_input,
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,
@@ -296,7 +297,7 @@ class ScriptRunner:
         elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
 
             return subprocess.Popen(
-                args = [ 'powershell.exe', str( self._script_info.get_attr( 'fullpath' ) ) ],
+                args = [ 'powershell.exe', str( self._script_info.get_attr( 'fullpath' ) ) ] + self.run_input ,
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
                 stdin = asyncio.subprocess.PIPE,

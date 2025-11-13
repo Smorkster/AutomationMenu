@@ -52,6 +52,7 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ) -> None:
     app_settings_group.grid( column = 0, row = 0, sticky = ( N, W, E ) )
     app_settings_group.rowconfigure( index = 0, weight = 0 )
     app_settings_group.rowconfigure( index = 1, weight = 0 )
+    main_object.language_manager.add_translatable_widget( ( app_settings_group_title, 'Application settings' ) )
 
     val_chb_on_top = BooleanVar( value = settings.get( 'on_top' ) )
     chbTopMost = ttk.Checkbutton( master = app_settings_group,
@@ -84,6 +85,7 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ) -> None:
     language_group.grid( column = 0 , row = 1, sticky = ( N, W, E ) )
     language_group.columnconfigure( index = 0, weight = 0 )
     language_group.columnconfigure( index = 1, weight = 0 )
+    main_object.language_manager.add_translatable_widget( ( language_group_title, 'Application language' ) )
 
     lblCurrentLanguageTitle = ttk.Label( language_group, text = _( 'Application language' ), padding = ( 5, 10 ) )
     lblCurrentLanguageTitle.grid( column = 0, row = 0, sticky = ( N, W ) )
@@ -108,6 +110,7 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_object ) -> None:
     error_group.grid( column = 0, row = 2, sticky = ( N, W, E ) )
     error_group.rowconfigure( index = 0, weight = 0 )
     error_group.rowconfigure( index = 1, weight = 0 )
+    main_object.language_manager.add_translatable_widget( ( error_group_title, 'Errorhandling' ) )
 
     val_chb_send_mail_on_error = BooleanVar( value = settings.get( 'send_mail_on_error' ) )
     chbSendMailOnError = ttk.Checkbutton( master = error_group,

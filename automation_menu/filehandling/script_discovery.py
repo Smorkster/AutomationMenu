@@ -12,7 +12,8 @@ Created: 2025-09-25
 import os
 import re
 
-from automation_menu.core.application_state import ApplicationState
+from automation_menu.core.app_context import ApplicationContext
+from automation_menu.models.application_state import ApplicationState
 from automation_menu.models import ScriptInfo, User
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.models.scriptmetadata import ScriptMetadata
@@ -117,7 +118,7 @@ def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptI
         return None
 
 
-def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
+def get_scripts( app_state: ApplicationState, app_context: ApplicationContext ) -> list[ ScriptInfo ]:
     """ Get script files and parse for any ScriptInfo
 
     Args:
@@ -165,14 +166,14 @@ def get_scripts( app_state: ApplicationState ) -> list[ ScriptInfo ]:
                     indexed_files.append( script_info )
 
         except Exception as e:
-            app_state.output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ), 'tag': OutputStyleTags.SYSWARNING } )
+            app_context.output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ), 'tag': OutputStyleTags.SYSWARNING } )
             continue
 
     if len( scriptswithbreakpoint ) > 0:
         line = _( 'Some script have an active breakpoint in the code, handling this has not been implemented, so these will not be available:' )
-        app_state.output_queue.put( { 'line': '' , 'tag': OutputStyleTags.SYSINFO } )
-        app_state.output_queue.put( { 'line': line , 'tag': OutputStyleTags.SYSWARNING } )
-        app_state.output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ) , 'tag': OutputStyleTags.SYSWARNING } )
+        app_context.output_queue.put( { 'line': '' , 'tag': OutputStyleTags.SYSINFO } )
+        app_context.output_queue.put( { 'line': line , 'tag': OutputStyleTags.SYSWARNING } )
+        app_context.output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ) , 'tag': OutputStyleTags.SYSWARNING } )
 
     return indexed_files
 
