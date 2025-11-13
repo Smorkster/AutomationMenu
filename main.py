@@ -15,17 +15,19 @@ import sys
 
 from pathlib import Path
 
+
 # Add the project root to Python path if needed
 project_root = Path( __file__ ).parent.parent
 sys.path.insert( 0, str( project_root ) )
 
+from automation_menu.core.app_context import ApplicationContext
 from automation_menu.core.execution_manager import ScriptExecutionManager
-from automation_menu.core.application_state import ApplicationState
+from automation_menu.models.application_state import ApplicationState
 from automation_menu.filehandling.exec_history_handler import write_exec_history
 from automation_menu.filehandling.secrets_handler import read_secrets_file
 from automation_menu.models import Secrets, Settings, User
-from automation_menu.ui.history_manager import HistoryManager
 from automation_menu.filehandling.settings_handler import read_settingsfile, write_settingsfile
+from automation_menu.ui.history_manager import HistoryManager
 from automation_menu.utils.localization import change_language
 
 
@@ -37,25 +39,26 @@ def main():
 
     try:
         app_state = ApplicationState()
-        app_state.history_manager = HistoryManager()
+        app_context = ApplicationContext()
+        app_context.history_manager = HistoryManager()
         app_state.secrets = Secrets( read_secrets_file( file_path = Path( __file__ ).resolve().parent / 'secrets.json' ) )
         app_state.settings = Settings( settings_dict = read_settingsfile( app_state.secrets.get( 'settings_file_path' ) ), save_callback = save_settings )
 
         change_language( language_code = app_state.settings.current_language )
 
         from automation_menu.core.auth import connect_to_AD, get_user_adobject
-        app_state.ldap_connection = connect_to_AD( app_state )
-        app_state.current_user = User( get_user_adobject( app_state = app_state ) )
+        app_context.ldap_connection = connect_to_AD( app_state = app_state, app_context = app_context )
+        app_state.current_user = User( get_user_adobject( app_state = app_state, app_context = app_context ) )
 
-        app_state.script_manager = ScriptExecutionManager( output_queue = app_state.output_queue, app_state = app_state )
+        app_context.script_manager = ScriptExecutionManager( output_queue = app_context.output_queue, app_state = app_state )
 
         # Launch the main application window
         from automation_menu.ui.main_window import AutomationMenuWindow
         from automation_menu.utils.localization import _
-        AutomationMenuWindow( app_state )
+        AutomationMenuWindow( app_state = app_state, app_context = app_context )
 
         write_exec_history(
-            exec_items = app_state.history_manager.get_history_list(),
+            exec_items = app_context.history_manager.get_history_list(),
             root_dir = Path( __file__ ).resolve().parent
         )
 

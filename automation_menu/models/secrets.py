@@ -22,7 +22,7 @@ class Secrets:
     @staticmethod
     def get( key: str ) -> str:
         """ Get dict value
-        
+
         Args:
             key (str): Key of dict
         """

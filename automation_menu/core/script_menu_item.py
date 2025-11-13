@@ -12,11 +12,10 @@ Created: 2025-09-25
 import logging
 import threading
 
-from tkinter import Entry, Toplevel
-from tkinter.ttk import Combobox, Label
+from tkinter import Toplevel
+from tkinter.ttk import Label
 from automation_menu.models import ScriptInfo, SysInstructions
 from automation_menu.models.enums import OutputStyleTags, ScriptState
-from automation_menu.ui.input_frame import fill_frame
 #from automation_menu.ui.main_window import AutomationMenuWindow
 
 
@@ -83,45 +82,10 @@ class ScriptMenuItem:
         self.script_menu.withdraw()
 
         if len( self.script_info.scriptmeta.script_input_parameters ) > 0:
-            self.master_self.input_widgets[ 'script_name' ].set( self.script_info.filename )
-            if not hasattr( self, 'param_widgets' ):
-                self.param_widgets = fill_frame( param_input_frame = self.master_self.input_widgets[ 'input_container' ],
-                                                 container_canvas = self.master_self.input_widgets[ 'container_canvas' ],
-                                                 parameters = self.script_info.scriptmeta.script_input_parameters
-                                               )
-
-            self.master_self.input_widgets[ 'input_send_btn' ].config( command = self.run_script )
-            self.master_self.input_widgets[ 'input_frame' ].grid()
+            self.master_self.app_context.input_manager.show_for_script( script_info = self.script_info, submit_input_callback = self.run_script )
 
         else:
             self.run_script()
-
-
-    def _collect_entered_input( self ) -> list[ str ]:
-        """ Collect all entered input
-
-        Returns:
-            entered_input (list[ str ]): List of strings of entered input
-        """
-
-        entered_input = []
-
-        for param_frame in [ self.param_input_container.nametowidget( w ) for w in self.param_input_container.children if str( w ).startswith( '!labelframe' ) ]:
-            if param_frame.winfo_children()[0].winfo_class() == 'TCombobox':
-                param_entry: Combobox = param_frame.children[ '!combobox' ]
-                param_text = str( param_entry.get() ).strip()
-            else:
-                param_entry: Entry = param_frame.children[ '!entry' ]
-                param_text = str( param_entry.get() ).strip()
-
-            if str( param_text ).strip() != '':
-                param_name = param_frame.nametowidget( param_frame.cget( 'labelwidget' ) ).children[ '!label' ].cget( 'text' )
-                entered_input.append( f'--{ param_name.strip() }' )
-                entered_input.append( param_text )
-
-            param_entry.delete( 0, 'end' )
-
-        return entered_input
 
 
     def on_enter( self, event ):
@@ -169,7 +133,7 @@ class ScriptMenuItem:
         def script_process_wrapper():
             """ Wrapper to execute script from separate thread """
 
-            with self.master_self.app_state.script_manager.create_runner() as runner:
+            with self.master_self.app_context.script_manager.create_runner() as runner:
                 runner.run_script( script_info = self.script_info,
                                    main_window = self.master_self.root,
                                    api_callbacks = self.master_self.api_callbacks,
@@ -186,18 +150,14 @@ class ScriptMenuItem:
                 self.master_self.set_min_max_on_running()
 
         self.master_self.tabControl.select( 0 )
-        self.master_self.app_state.output_queue.put( SysInstructions.CLEAROUTPUT )
+        self.master_self.app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
 
-        if self.param_input_container.winfo_ismapped():
-            self.param_input_container.grid_remove()
-            self.entered_input = self._collect_entered_input()
-
-        else:
-            self.entered_input = ''
+        self.entered_input = self.master_self.app_context.input_manager.collect_entered_input()
+        self.master_self.app_context.input_manager.hide_input_frame()
 
         if self.master_self.app_state.settings.get( 'minimize_on_running' ):
             if self.script_info.get_attr( 'disable_minimize_on_running' ):
-                self.master_self.app_state.output_queue.put( {
+                self.master_self.app_context.output_queue.put( {
                     'line': _( 'The script has \'DisableMinimizeOnRunning\', meaning the window will not be minimized.' ),
                     'tag': OutputStyleTags.SYSINFO
                 } )

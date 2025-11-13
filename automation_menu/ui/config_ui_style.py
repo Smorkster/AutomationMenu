@@ -3,7 +3,7 @@ from tkinter import ttk
 
 
 def set_ui_style( style: ttk.Style ):
-    """ 
+    """ Configure widget styles
 
     Args:
         style (ttk.Style): Main style to set

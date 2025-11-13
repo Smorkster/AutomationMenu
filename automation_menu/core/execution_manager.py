@@ -10,7 +10,6 @@ Created: 2025-09-25
 """
 
 import asyncio
-import os
 import queue
 import subprocess
 import sys
@@ -24,7 +23,7 @@ from typing import Callable, Optional
 from psutil import NoSuchProcess
 import psutil
 
-from automation_menu.core.application_state import ApplicationState
+from automation_menu.models.application_state import ApplicationState
 from automation_menu.models import ExecHistory, ScriptInfo, SysInstructions
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.utils.email_handler import report_script_error
