@@ -147,9 +147,11 @@ class ScriptMenuItem:
             self.master_self.disable_pause_script_button()
 
             if self.master_self.app_state.settings.get( 'minimize_on_running' ) and not self.script_info.get_attr( 'disable_minimize_on_running' ):
-                self.master_self.set_min_max_on_running()
+                self.master_self.min_max_on_running()
+            self.master_self._minimize_show_controls()
 
         self.master_self.tabControl.select( 0 )
+        self.master_self._minimize_hide_controls()
         self.master_self.app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
 
         self.entered_input = self.master_self.app_context.input_manager.collect_entered_input()
@@ -169,6 +171,6 @@ class ScriptMenuItem:
                     'x': self.master_self.root.winfo_x(),
                     'y': self.master_self.root.winfo_y()
                 }
-                self.master_self.set_min_max_on_running( old_geometry )
+                self.master_self.min_max_on_running( old_geometry )
 
         threading.Thread( target = script_process_wrapper, daemon = True ).start()

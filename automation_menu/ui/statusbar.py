@@ -31,6 +31,7 @@ def get_statusbar( master_root: Tk ):
     text_status, status_tt = _create_status_textfield( status_frame = status_frame )
 
     return {
+        'status_bar': status_frame,
         'text_status': text_status,
         'text_status_tt': status_tt,
         'progressbar': _create_progressbar( status_frame = status_frame ),

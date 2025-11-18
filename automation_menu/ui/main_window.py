@@ -62,8 +62,8 @@ class AutomationMenuWindow:
                                                       )
 
         # Setup styles
-        style = ttk.Style()
-        set_ui_style( style = style )
+        self._style = ttk.Style()
+        set_ui_style( style = self._style )
 
         self.button_margin = {
             'x': 5,
@@ -157,6 +157,22 @@ class AutomationMenuWindow:
 
         self.app_state.running_automation.continue_breakpoint()
         self.op_buttons[ 'btnContinueBreakpoint' ].state( [ "disabled" ] )
+
+
+    def _minimize_hide_controls( self ) -> None:
+        """  """
+
+        self.tabControl.config( style = 'HiddenTabs.TNotebook' )
+        self.op_buttons[ 'op_buttons_frame' ].grid_remove()
+        self.status_widgets[ 'status_bar' ].grid_remove()
+
+
+    def _minimize_show_controls( self ) -> None:
+        """  """
+
+        self.tabControl.config( style = 'TNotebook' )
+        self.op_buttons[ 'op_buttons_frame' ].grid()
+        self.status_widgets[ 'status_bar' ].grid()
 
 
     def _open_script_menu( self, event = None ) -> None:
@@ -305,7 +321,7 @@ class AutomationMenuWindow:
         self.app_state.settings.minimize_on_running = new_value
 
 
-    def set_min_max_on_running( self, old_geometry: dict = None ) -> None:
+    def min_max_on_running( self, old_geometry: dict = None ) -> None:
         """ Resize window during script execution
 
         Args:
@@ -317,10 +333,12 @@ class AutomationMenuWindow:
 
         if old_geometry:
             self.old_window_geometry = old_geometry
+            self._minimize_hide_controls()
             self.root.geometry( newGeometry = f'{ win_width }x{ win_height }+{ self.root.winfo_screenwidth() - win_width  }+{ self.root.winfo_screenheight() - win_height - 100 }' )
 
         else:
             self.root.geometry( newGeometry = f'{ self.old_window_geometry['w'] }x{ self.old_window_geometry['h'] }+{ self.old_window_geometry['x'] }+{ self.old_window_geometry['y'] }' )
+            self._minimize_show_controls()
 
         self.root.update_idletasks()
 

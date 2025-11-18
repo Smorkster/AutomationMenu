@@ -18,6 +18,7 @@ def set_ui_style( style: ttk.Style ):
                     tabmargins = [ 0, 1, 2, 0 ],  #[left, top, right, bottom]
                     background = 'lightgray'
     )
+
     style.configure( 'TNotebook.Tab',
                     padding = [ 25, 1.5 ], 
                     font = ( 'Calibri', 13, 'bold' ),
@@ -31,6 +32,14 @@ def set_ui_style( style: ttk.Style ):
                            ( '!selected', ( 25, 1.5 ) ) ],
                 foreground = [ ( 'selected', 'green' ), ( 'active', 'black' ) ]
     )
+
+    style.layout( 'HiddenTabs.TNotebook.Tab',
+                 []
+                 )
+    style.layout('HiddenTabs.TNotebook',
+                 style.layout( 'TNotebook' )
+                 )
+
     # endregion
 
     ###############

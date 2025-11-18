@@ -38,11 +38,10 @@ class CustomMenu:
             command = self.show_popup_menu
         )
 
-        # Create popup window (initially hidden)
         self.popup = tk.Toplevel( parent )
-        self.popup.withdraw()  # Hide initially
+        self.popup.withdraw()
         self.popup.overrideredirect( True )  # Remove window decorations
-        self.popup.config( relief = 'flat', borderwidth = 2 , highlightcolor = '#909597', highlightthickness = 2 )
+        self.popup.config( relief = 'flat', borderwidth = 2, highlightcolor = '#909597', highlightthickness = 2 )
 
         self.popup.bind( '<Escape>', self.hide_popup_menu )
         self.popup.bind( '<FocusOut>', self.hide_popup_menu )
