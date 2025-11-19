@@ -1,8 +1,17 @@
+"""
+Collected UI styling for main window
 
-from tkinter import ttk
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+Version: 1.0
+Created: 2025-10-08
+"""
+
+from tkinter.ttk import Entry, Style
 
 
-def set_ui_style( style: ttk.Style ):
+def set_ui_style( style: Style ) -> None:
     """ Configure widget styles
 
     Args:
@@ -134,8 +143,12 @@ def set_ui_style( style: ttk.Style ):
     # endregion
 
 
-def set_output_styles( widget ) -> None:
-    """ Setup Text widget tag configurations"""
+def set_output_styles( widget: Entry ) -> None:
+    """ Setup Text widget tag configurations
+
+    Args:
+        widget (ttk.Entry): Widget to set text tags for
+    """
 
     widget.tag_config( tagName = 'suite_error', foreground = 'Red', font = ( 'Arial', 12, 'bold' ) )
     widget.tag_config( tagName = 'suite_info', foreground = 'Blue', font = ( 'Arial', 12 , 'bold' ) )

@@ -1,12 +1,21 @@
+"""
+API definition for script to AutomationMenu communication
+
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+Version: 1.0
+Created: 2025-10-31
+"""
+
 import json
 import sys
-
 
 MESSAGE_START = '__API_START__'
 MESSAGE_END = '__API_END__'
 
 
-def _get_api_response():
+def _get_api_response() -> None:
     """ Send API call and wait for response """
 
     response = []
@@ -40,9 +49,9 @@ def _get_api_response():
     return ''.join( response )
 
 
-def _send( msg_type: str, data: dict ):
+def _send( msg_type: str, data: dict ) -> None:
     """ Send API call for json parsing
-    
+
     Args:
         msg_type (str): API message type
         data (dict): API data
@@ -54,6 +63,7 @@ def _send( msg_type: str, data: dict ):
     }
 
     print( f'{ MESSAGE_START }{ json.dumps( msg ) }{ MESSAGE_END }', flush = True )
+
 
 # region Progressbar
 def set_progress( percent: float ) -> None:

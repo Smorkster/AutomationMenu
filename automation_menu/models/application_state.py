@@ -8,7 +8,6 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-
 from dataclasses import dataclass
 
 

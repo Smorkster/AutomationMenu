@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-18 08:38+0100\n"
+"POT-Creation-Date: 2025-11-18 14:17+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,7 +49,7 @@ msgid ""
 "{main_label_text}"
 msgstr ""
 
-#: automation_menu/core/auth.py:40
+#: automation_menu/core/auth.py:40 automation_menu/ui/input_manager.py:70
 msgid "Abort"
 msgstr ""
 
@@ -150,7 +150,7 @@ msgid ""
 " minimized."
 msgstr ""
 
-#: automation_menu/filehandling/exec_history_handler.py:46
+#: automation_menu/filehandling/exec_history_handler.py:56
 #, python-brace-format
 msgid "Writing execution history error; file not found: {file_path}"
 msgstr ""
@@ -241,11 +241,11 @@ msgstr ""
 msgid "Generated output"
 msgstr ""
 
-#: automation_menu/ui/input_manager.py:56
+#: automation_menu/ui/input_manager.py:54
 msgid "Input parameters for "
 msgstr ""
 
-#: automation_menu/ui/input_manager.py:70
+#: automation_menu/ui/input_manager.py:74
 msgid "Send to script"
 msgstr ""
 

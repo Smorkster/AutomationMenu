@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-18 08:38+0100\n"
+"POT-Creation-Date: 2025-11-18 14:17+0100\n"
 "PO-Revision-Date: 2025-09-19 09:46+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv_SE\n"
@@ -60,7 +60,7 @@ msgstr ""
 "Felaktigt lösenord. Försök igen\n"
 "{main_label_text}"
 
-#: automation_menu/core/auth.py:40
+#: automation_menu/core/auth.py:40 automation_menu/ui/input_manager.py:70
 msgid "Abort"
 msgstr "Avbryt"
 
@@ -168,7 +168,7 @@ msgstr ""
 "Skriptet använder 'DisableMinimizeOnRunning', dvs fönstret kommer inte "
 "minimeras"
 
-#: automation_menu/filehandling/exec_history_handler.py:46
+#: automation_menu/filehandling/exec_history_handler.py:56
 #, python-brace-format
 msgid "Writing execution history error; file not found: {file_path}"
 msgstr "Fel vid skriva kör historik; fil kunde inte hittas: {file_path}"
@@ -264,11 +264,11 @@ msgstr "Varaktighet"
 msgid "Generated output"
 msgstr "Utdata från skript"
 
-#: automation_menu/ui/input_manager.py:56
+#: automation_menu/ui/input_manager.py:54
 msgid "Input parameters for "
 msgstr "Inparametrar för"
 
-#: automation_menu/ui/input_manager.py:70
+#: automation_menu/ui/input_manager.py:74
 msgid "Send to script"
 msgstr "Skicka till skriptet"
 
@@ -415,3 +415,4 @@ msgstr "<strong>Felmeddelande</strong>"
 #: automation_menu/utils/email_handler.py:64
 msgid "This is an automatic message sent from AutomationMenu"
 msgstr "Detta är ett automatiskt meddelande från AutomationMenu"
+

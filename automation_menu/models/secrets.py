@@ -1,3 +1,14 @@
+"""
+Definition of a Secret object, its data is parsed from
+a specialized file
+
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+Version: 1.0
+Created: 2025-10-31
+"""
+
 import os
 from pathlib import Path
 
@@ -5,7 +16,7 @@ from pathlib import Path
 class Secrets:
     secret_dict = {}
 
-    def __init__( self, new_dict: dict ):
+    def __init__( self, new_dict: dict ) -> None:
         """ An enum like class to hold data customizable from a config file """
 
         Secrets.secret_dict[ 'error_ss_prefix' ] = new_dict[ 'error_ss_prefix' ]

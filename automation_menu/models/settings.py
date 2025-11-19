@@ -1,9 +1,19 @@
+"""
+Definition of a Settings object, with extended function
+
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+Version: 1.0
+Created: 2025-10-31
+"""
+
 import json
 from typing import Callable
 
 
 class Settings:
-    def __init__( self, settings_dict: dict, save_callback: Callable = None ):
+    def __init__( self, settings_dict: dict, save_callback: Callable = None ) -> None:
         """ Class to hold application settings """
 
         self._save_callback = save_callback
@@ -24,30 +34,31 @@ class Settings:
 
 
     @property
-    def current_language( self ):
+    def current_language( self ) -> str:
         """ Property function to get 'current_language' """
 
         return self.get( 'current_language' )
 
 
     @current_language.setter
-    def current_language( self, value: bool ):
+    def current_language( self, value: bool ) -> None:
         """ Property setter function to set 'current_language' """
 
         self._current_language = value
+
         if self._save_callback:
             self._save_callback( self )
 
 
     @property
-    def send_mail_on_error( self ):
+    def send_mail_on_error( self ) -> bool:
         """ Property function to get 'send_mail_on_error' """
 
         return self.get( 'send_mail_on_error' )
 
 
     @send_mail_on_error.setter
-    def send_mail_on_error( self, value: bool ):
+    def send_mail_on_error( self, value: bool ) -> None:
         """ Property setter function to set 'send_mail_on_error'
 
         Args:
@@ -61,14 +72,14 @@ class Settings:
 
 
     @property
-    def include_ss_in_error_mail( self ):
+    def include_ss_in_error_mail( self ) -> None:
         """ Property function to get 'on_top' """
 
         return self.get( 'include_ss_in_error_mail' )
 
 
     @include_ss_in_error_mail.setter
-    def include_ss_in_error_mail( self, value: bool ):
+    def include_ss_in_error_mail( self, value: bool ) -> None:
         """ Property setter function to set 'include_ss_in_error_mail'
 
         Args:
@@ -76,38 +87,41 @@ class Settings:
         """
 
         self._include_ss_in_error_mail = value
+
         if self._save_callback:
             self._save_callback( self )
 
 
     @property
-    def minimize_on_running( self ):
+    def minimize_on_running( self ) -> bool:
         """ Property function to get 'on_top' """
 
         return self.get( 'minimize_on_running' )
 
 
     @minimize_on_running.setter
-    def minimize_on_running( self, value: bool ):
+    def minimize_on_running( self, value: bool ) -> None:
         """ Property setter function to set 'minimize_on_running' """
 
         self._minimize_on_running = value
+
         if self._save_callback:
             self._save_callback( self )
 
 
     @property
-    def on_top( self ):
+    def on_top( self ) -> bool:
         """ Property function to get 'on_top' """
 
         return self.get( 'on_top' )
 
 
     @on_top.setter
-    def on_top( self, value: bool ):
+    def on_top( self, value: bool ) -> None:
         """ Property setter function to set 'on_top' """
 
         self._on_top = value
+
         if self._save_callback:
             self._save_callback( self )
 

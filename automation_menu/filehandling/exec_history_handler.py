@@ -1,3 +1,12 @@
+"""
+File handler to write execution history to file
+
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+Version: 1.0
+Created: 2025-10-31
+"""
 
 import json
 import os
@@ -6,7 +15,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-def write_exec_history( exec_items: str, root_dir: str ):
+def write_exec_history( exec_items: str, root_dir: str ) -> None:
     """ Write settings to JSON file
     
     Args:

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-18 08:38+0100\n"
+"POT-Creation-Date: 2025-11-18 14:17+0100\n"
 "PO-Revision-Date: 2025-09-18 15:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_US\n"
@@ -60,7 +60,7 @@ msgstr ""
 "Wrong password. Try again\n"
 "{main_label_text}"
 
-#: automation_menu/core/auth.py:40
+#: automation_menu/core/auth.py:40 automation_menu/ui/input_manager.py:70
 msgid "Abort"
 msgstr "Abort"
 
@@ -168,7 +168,7 @@ msgstr ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
 
-#: automation_menu/filehandling/exec_history_handler.py:46
+#: automation_menu/filehandling/exec_history_handler.py:56
 #, python-brace-format
 msgid "Writing execution history error; file not found: {file_path}"
 msgstr "Writing execution history error; file not found: {file_path}"
@@ -262,11 +262,11 @@ msgstr "Duration"
 msgid "Generated output"
 msgstr "Generated output"
 
-#: automation_menu/ui/input_manager.py:56
+#: automation_menu/ui/input_manager.py:54
 msgid "Input parameters for "
 msgstr "Input parameters for "
 
-#: automation_menu/ui/input_manager.py:70
+#: automation_menu/ui/input_manager.py:74
 msgid "Send to script"
 msgstr "Send to script"
 

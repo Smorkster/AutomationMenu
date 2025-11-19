@@ -8,17 +8,25 @@ Version: 1.0
 Created: 2025-10-31
 """
 
-
-from tkinter import E, N, S, W, Canvas, StringVar
+from tkinter import E, N, S, W, Canvas, Event, StringVar, Tk
+import tkinter
 from tkinter.ttk import Button, Combobox, Entry, Frame, Label, Labelframe, Scrollbar
 from typing import Callable
 
 from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
+from automation_menu.utils.language_manager import LanguageManager
 
 class InputManager:
 
-    def __init__( self, root, language_manager ):
+    def __init__( self, root: Tk, language_manager: LanguageManager ) -> None:
+        """ Manager class to create, display and retrive data from input widgets
+
+        Args:
+            root (Tk): Main window to attach widgets to
+            language_manager (LanguageManager): Manager to handle translations/localizations
+        """
+
         self._master_root = root
         self._language_manager = language_manager
 
@@ -51,8 +59,10 @@ class InputManager:
         title_frame = Frame()
         title_frame.grid_columnconfigure( index = 0, weight = 1 )
         title_frame.grid_columnconfigure( index = 1, weight = 1 )
+
         frame_title = Label( master = title_frame, style = 'LabelFrameTitle.TLabel', text = _( 'Input parameters for ' ) )
         frame_title.grid( column = 0, row = 0, sticky = ( N, W ) )
+
         frame_scriptname = Label( master = title_frame, style = 'LabelFrameTitle.TLabel' )
         frame_scriptname.grid( column = 1, row = 0, sticky = ( N, W ) )
         self._current_script_name = StringVar( master = frame_scriptname )
@@ -98,23 +108,15 @@ class InputManager:
         self._input_widgets[ 'input_send_btn' ] = send_input_btn
         self._input_widgets[ 'input_frame' ] = root_input_frame
 
-        def on_frame_config( event ):
-            container_canvas.configure( scrollregion = container_canvas.bbox( "all" ) )
 
-        input_container.bind( '<Configure>', on_frame_config )
+        input_container.bind( '<Configure>', self._on_frame_config )
 
-        def on_canvas_config( event ):
-            container_canvas.itemconfig( window_id, width = event.width )
-
-        container_canvas.bind( '<Configure>', on_canvas_config )
+        container_canvas.bind( '<Configure>', self._on_canvas_config )
 
         container_canvas.bind_all( '<MouseWheel>', self._on_mousewheel )
 
 
-    def _create_input_widgets(
-        self,
-        parameters: list[ ScriptInputParameter ]
-    ) -> Frame:
+    def _create_input_widgets( self, parameters: list[ ScriptInputParameter ] ) -> Frame:
         """Create input widgets for each parameter."""
 
         from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
@@ -191,7 +193,37 @@ class InputManager:
         return input_container
 
 
-    def _on_key_press( self, event ) -> None:
+    def _display_frame( self, param_frame: Frame, script_info: ScriptInfo, submit_input_callback: Callable ) -> None:
+        """ Show the input frame for a script """
+
+        self._input_widgets[ 'input_send_btn' ].config( command = submit_input_callback )
+
+        self._current_frame = param_frame
+        self._current_script_info = script_info
+        self._script_name_set( script_info.filename )
+        self._input_widgets[ 'input_frame' ].grid()
+
+
+    def _get_or_create_input_frame( self, script_info: ScriptInfo ) -> Frame:
+        """ Create (or rebuild) the parameter frame for a script """
+
+        return self._create_input_widgets(
+            script_info.scriptmeta.script_input_parameters
+        )
+
+
+    def _on_canvas_config( self, event: Event ) -> None:
+        """ Update canvas width when canvas window changes """
+
+        self._input_widgets[ 'container_canvas' ].itemconfig( self._input_widgets[ 'window_id' ], width = event.width )
+
+
+    def _on_frame_config( self, event: Event ) -> None:
+        """ Update scrollregion when frame region changes """
+
+        self._input_widgets[ 'container_canvas' ].configure( scrollregion = self._input_widgets[ 'container_canvas' ].bbox( 'all' ) )
+
+    def _on_key_press( self, event: Event ) -> None:
         """ Prevent new line characters """
 
         if event.keysym == 'Return':
@@ -224,7 +256,7 @@ class InputManager:
         canvas.yview_moveto( scroll_fraction )
 
 
-    def _on_mousewheel( self, event ) -> None:
+    def _on_mousewheel( self, event: Event ) -> None:
         """ Bind mouse wheel scrolling """
 
         self._input_widgets[ 'container_canvas' ].yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
@@ -292,22 +324,3 @@ class InputManager:
 
         param_frame = self._get_or_create_input_frame( script_info = script_info )
         self._display_frame( param_frame = param_frame, script_info = script_info, submit_input_callback = submit_input_callback )
-
-
-    def _get_or_create_input_frame( self, script_info: ScriptInfo ) -> Frame:
-        """ Create (or rebuild) the parameter frame for a script """
-
-        return self._create_input_widgets(
-            script_info.scriptmeta.script_input_parameters
-        )
-
-
-    def _display_frame( self, param_frame: Frame, script_info: ScriptInfo, submit_input_callback: Callable ) -> None:
-        """ Show the input frame for a script """
-
-        self._input_widgets[ 'input_send_btn' ].config( command = submit_input_callback )
-
-        self._current_frame = param_frame
-        self._current_script_info = script_info
-        self._script_name_set( script_info.filename )
-        self._input_widgets[ 'input_frame' ].grid()

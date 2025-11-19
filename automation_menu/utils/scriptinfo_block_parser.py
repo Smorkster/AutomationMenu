@@ -1,3 +1,16 @@
+"""
+Read script file content for any defined ScriptInfo
+This is the old format of script meta data, and should
+only be used in PowerShell script files
+
+
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+Version: 1.0
+Created: 2025-10-31
+"""
+
 import re
 from automation_menu.models.enums import ScriptState, ValidScriptInfoFields
 from automation_menu.models.scriptinfo import ScriptInfo
