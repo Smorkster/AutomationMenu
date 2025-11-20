@@ -37,28 +37,28 @@ def get_op_buttons( main_root, main_self ):
 
     custom_menu = CustomMenu( parent = op_buttons_frame, text = _( 'Script ...' ), scripts = script_list , main_object = main_self )
     custom_menu.menu_button.grid( column = 0, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( N, W ) )
-    main_self.language_manager.add_translatable_widget( ( custom_menu.menu_button, 'Script ...' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( custom_menu.menu_button, 'Script ...' ) )
 
     widgets[ 'script_menu' ] = custom_menu
 
     btnContinueBreakpoint = ttk.Button( master = op_buttons_frame, text = _( 'Continue' ), command = main_self._continue_breakpoint )
     btnContinueBreakpoint.state( [ "disabled" ] )
     btnContinueBreakpoint.grid( column = 1, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
-    main_self.language_manager.add_translatable_widget( ( btnContinueBreakpoint, 'Continue' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( btnContinueBreakpoint, 'Continue' ) )
 
     widgets[ 'btnContinueBreakpoint' ] = btnContinueBreakpoint
 
     btnStopScript = ttk.Button( master = op_buttons_frame, text = _( 'Stop script' ), command = main_self._stop_script )
     btnStopScript.state( [ "disabled" ] )
     btnStopScript.grid( column = 2, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
-    main_self.language_manager.add_translatable_widget( ( btnStopScript, 'Stop script' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( btnStopScript, 'Stop script' ) )
 
     widgets[ 'btnStopScript' ] = btnStopScript
 
     btnPauseResumeScript = ttk.Button( master = op_buttons_frame, text = _( 'Pause script' ), command = main_self._pause_resume_script )
     btnPauseResumeScript.state( [ "disabled" ] )
     btnPauseResumeScript.grid( column = 3, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
-    main_self.language_manager.add_translatable_widget( ( btnPauseResumeScript, 'Pause script' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( btnPauseResumeScript, 'Pause script' ) )
 
     widgets[ 'btnPauseResumeScript' ] = btnPauseResumeScript
 

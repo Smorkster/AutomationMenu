@@ -15,19 +15,19 @@ import sys
 
 from pathlib import Path
 
-
 # Add the project root to Python path if needed
 project_root = Path( __file__ ).parent.parent
 sys.path.insert( 0, str( project_root ) )
 
 from automation_menu.core.app_context import ApplicationContext
 from automation_menu.core.execution_manager import ScriptExecutionManager
-from automation_menu.models.application_state import ApplicationState
 from automation_menu.filehandling.exec_history_handler import write_exec_history
 from automation_menu.filehandling.secrets_handler import read_secrets_file
-from automation_menu.models import Secrets, Settings, User
 from automation_menu.filehandling.settings_handler import read_settingsfile, write_settingsfile
+from automation_menu.models import Secrets, Settings, User
+from automation_menu.models.application_state import ApplicationState
 from automation_menu.ui.history_manager import HistoryManager
+from automation_menu.utils.language_manager import LanguageManager
 from automation_menu.utils.localization import change_language
 
 
@@ -35,6 +35,8 @@ def main():
     """ Main entry point """
 
     def save_settings( obj ):
+        """ Callback function to save settings to file """
+
         write_settingsfile( settings = obj, settings_file_path = app_state.secrets.get( 'settings_file_path' ) )
 
     try:
@@ -45,6 +47,7 @@ def main():
         app_state.settings = Settings( settings_dict = read_settingsfile( app_state.secrets.get( 'settings_file_path' ) ), save_callback = save_settings )
 
         change_language( language_code = app_state.settings.current_language )
+        app_context.language_manager = LanguageManager( current_language = app_state.settings.current_language )
 
         from automation_menu.core.auth import connect_to_AD, get_user_adobject
         app_context.ldap_connection = connect_to_AD( app_state = app_state, app_context = app_context )

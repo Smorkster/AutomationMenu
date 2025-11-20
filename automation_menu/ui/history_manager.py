@@ -143,28 +143,28 @@ class HistoryManager:
 
         item_start_title = ttk.Label( master = self.history_item_display, text = _( 'Started' ), style = 'History.TLabel' )
         item_start_title.grid( column = 0, row = 0, padx = 5, pady = 5, sticky = ( N, W ) )
-        main_self.language_manager.add_translatable_widget( ( item_start_title, 'Started' ) )
+        main_self.app_context.language_manager.add_translatable_widget( ( item_start_title, 'Started' ) )
 
         self.item_start = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_start.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = ( W, E ) )
 
         item_end_title = ttk.Label( master = self.history_item_display, text = _( 'Ended' ), style = 'History.TLabel' )
         item_end_title.grid( column = 0, row = 1, padx = 5, pady = 5, sticky = ( N, W ) )
-        main_self.language_manager.add_translatable_widget( ( item_end_title, 'Ended' ) )
+        main_self.app_context.language_manager.add_translatable_widget( ( item_end_title, 'Ended' ) )
 
         self.item_end = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_end.grid( column = 1, row = 1, padx = 5, pady = 5, sticky = ( W, E ) )
 
         duration_title = ttk.Label( master = self.history_item_display, text = _( 'Duration' ), style = 'History.TLabel' )
         duration_title.grid( column = 0, row = 2, padx = 5, pady = 5, sticky = ( N, W ) )
-        main_self.language_manager.add_translatable_widget( ( duration_title, 'Duration' ) )
+        main_self.app_context.language_manager.add_translatable_widget( ( duration_title, 'Duration' ) )
 
         self.duration = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.duration.grid( column = 1, row = 2, padx = 5, pady = 5, sticky = ( W, E ) )
 
         item_output_title = ttk.Label( master = self.history_item_display, text = _( 'Generated output' ), style = 'History.TLabel' )
         item_output_title.grid( column = 0, columnspan = 2, row = 3, padx = 5, pady = 5, sticky = ( N, W ) )
-        main_self.language_manager.add_translatable_widget( ( item_output_title, 'Generated output' ) )
+        main_self.app_context.language_manager.add_translatable_widget( ( item_output_title, 'Generated output' ) )
 
         self.item_output = Text( master = self.history_item_display, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_output.grid( column = 0, columnspan = 2, row = 4, padx = 5, pady = 5, sticky = ( N, S, W, E ) )

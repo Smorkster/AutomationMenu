@@ -15,6 +15,7 @@ from ldap3.core.connection import Connection
 
 from automation_menu.ui.history_manager import HistoryManager
 from automation_menu.ui.input_manager import InputManager
+from automation_menu.utils.language_manager import LanguageManager
 
 
 @dataclass
@@ -22,6 +23,7 @@ class ApplicationContext:
 
     history_manager: HistoryManager = None
     input_manager: InputManager = None
+    language_manager: LanguageManager = None
     ldap_connection: Connection = None
     output_queue: queue.Queue = field( default_factory = queue.Queue )
     script_manager = None

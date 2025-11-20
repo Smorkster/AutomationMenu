@@ -23,7 +23,6 @@ from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
 from automation_menu.ui.statusbar import get_statusbar
-from automation_menu.utils.language_manager import LanguageManager
 from automation_menu.filehandling.settings_handler import write_settingsfile
 
 
@@ -56,9 +55,8 @@ class AutomationMenuWindow:
         self.root = Tk()
         self.root.title( string = self.app_state.secrets.get( 'mainwindowtitle' ) )
 
-        self.language_manager = LanguageManager( current_language = self.app_state.settings.current_language )
         self.app_context.input_manager = InputManager( root = self.root,
-                                                      language_manager = self.language_manager
+                                                      language_manager = self.app_context.language_manager
                                                       )
 
         # Setup styles
@@ -126,7 +124,7 @@ class AutomationMenuWindow:
         # Shortcuts bindings
         self.root.bind( '<Control-m>', self._open_script_menu )
 
-        self.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )
+        self.app_context.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )
 
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
         self.center_screen()
@@ -160,7 +158,7 @@ class AutomationMenuWindow:
 
 
     def _minimize_hide_controls( self ) -> None:
-        """  """
+        """ Hide UI control widgets when window is minimized during script execution """
 
         self.tabControl.config( style = 'HiddenTabs.TNotebook' )
         self.op_buttons[ 'op_buttons_frame' ].grid_remove()
@@ -168,7 +166,7 @@ class AutomationMenuWindow:
 
 
     def _minimize_show_controls( self ) -> None:
-        """  """
+        """ Show all hidden UI control widgets when script execution has finished """
 
         self.tabControl.config( style = 'TNotebook' )
         self.op_buttons[ 'op_buttons_frame' ].grid()
@@ -214,7 +212,7 @@ class AutomationMenuWindow:
 
 
     def _pause_button_blinking( self ):
-        """ """
+        """ Initiate blinking effect of pause button during breakpoint pause """
 
         if not self._blink_active:
             return
@@ -273,7 +271,7 @@ class AutomationMenuWindow:
         """
 
         self.app_state.settings.current_language = event.widget.get()
-        self.language_manager.change_language( new_language = event.widget.get() )
+        self.app_context.language_manager.change_language( new_language = event.widget.get() )
 
 
     def set_display_dev( self ) -> None:
@@ -391,7 +389,7 @@ class AutomationMenuWindow:
 
 
     def stop_pause_button_blinking( self ):
-        """ """
+        """ Stop blinking effect for button when script execution continues """
 
         self._blink_active = False
 
@@ -472,6 +470,8 @@ class AutomationMenuWindow:
         """ Return current statustext """
 
         def _send_status():
+            """ Return current status text """
+
             if self.app_context.script_manager.current_runner:
                 status = self.status_widgets[ 'text_status' ].cget( 'text' )
                 msg = f'{ MESSAGE_START }{ status }{ MESSAGE_END }\n'

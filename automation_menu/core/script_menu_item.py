@@ -73,7 +73,7 @@ class ScriptMenuItem:
                 dev = True
 
             tt = AlwaysOnTopToolTip( widget = self.script_button, msg = desc )
-            self.master_self.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev ) )
+            self.master_self.app_context.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev ) )
 
 
     def _check_input_params( self ):
