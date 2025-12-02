@@ -9,13 +9,18 @@ Version: 1.0.0
 Created: 2025-09-25
 """
 
-from tkinter import E, N, S, W, ttk
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
-from automation_menu.filehandling.script_discovery import get_scripts
+if TYPE_CHECKING:
+    from automation_menu.ui.main_window import AutomationMenuWindow
+
+from tkinter import E, N, S, W, Tk, ttk
+
 from automation_menu.ui.custom_menu import CustomMenu
 
 
-def get_op_buttons( main_root, main_self ):
+def get_op_buttons( main_root: Tk, main_self: AutomationMenuWindow ) -> dict:
     """ Create a frame to contain buttons for operations during script execution
 
     Args:
@@ -32,32 +37,47 @@ def get_op_buttons( main_root, main_self ):
 
     widgets[ 'op_buttons_frame' ] = op_buttons_frame
 
-    # Add a custom menu
-    script_list = get_scripts( app_state = main_self.app_state, app_context = main_self.app_context )
+    col = 0
 
-    custom_menu = CustomMenu( parent = op_buttons_frame, text = _( 'Script ...' ), scripts = script_list , main_object = main_self )
-    custom_menu.menu_button.grid( column = 0, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( N, W ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( custom_menu.menu_button, 'Script ...' ) )
+    # Add a custom menu for scripts
+    script_menu = CustomMenu( parent = op_buttons_frame, text = _( 'Script ...' ), exec_list = main_self.app_context.script_manager.get_script_list() , main_object = main_self )
+    script_menu.menu_button.grid( column = col, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( N, W ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( script_menu.menu_button, 'Script ...' ) )
 
-    widgets[ 'script_menu' ] = custom_menu
+    widgets[ 'script_menu' ] = script_menu
+
+    col += 1
+
+    # Add a custom menu for sequences
+    sequence_menu = CustomMenu( parent = op_buttons_frame, text = _( 'Sequence ...' ), exec_list = main_self.app_context.sequence_manager.get_sequence_list(), main_object = main_self )
+    sequence_menu.menu_button.grid( column = col, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( N, W ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( sequence_menu.menu_button, 'Sequence ...' ) )
+
+    widgets[ 'sequence_menu' ] = sequence_menu
+
+    col += 1
 
     btnContinueBreakpoint = ttk.Button( master = op_buttons_frame, text = _( 'Continue' ), command = main_self._continue_breakpoint )
     btnContinueBreakpoint.state( [ "disabled" ] )
-    btnContinueBreakpoint.grid( column = 1, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
+    btnContinueBreakpoint.grid( column = col, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
     main_self.app_context.language_manager.add_translatable_widget( ( btnContinueBreakpoint, 'Continue' ) )
 
     widgets[ 'btnContinueBreakpoint' ] = btnContinueBreakpoint
 
+    col += 1
+
     btnStopScript = ttk.Button( master = op_buttons_frame, text = _( 'Stop script' ), command = main_self._stop_script )
     btnStopScript.state( [ "disabled" ] )
-    btnStopScript.grid( column = 2, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
+    btnStopScript.grid( column = col, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
     main_self.app_context.language_manager.add_translatable_widget( ( btnStopScript, 'Stop script' ) )
 
     widgets[ 'btnStopScript' ] = btnStopScript
 
+    col += 1
+
     btnPauseResumeScript = ttk.Button( master = op_buttons_frame, text = _( 'Pause script' ), command = main_self._pause_resume_script )
     btnPauseResumeScript.state( [ "disabled" ] )
-    btnPauseResumeScript.grid( column = 3, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
+    btnPauseResumeScript.grid( column = col, row = 0, padx = main_self.button_margin[ 'x' ], pady = main_self.button_margin[ 'y' ], sticky = ( S, E ) )
     main_self.app_context.language_manager.add_translatable_widget( ( btnPauseResumeScript, 'Pause script' ) )
 
     widgets[ 'btnPauseResumeScript' ] = btnPauseResumeScript

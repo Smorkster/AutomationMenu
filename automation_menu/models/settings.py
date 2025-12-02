@@ -8,8 +8,12 @@ Version: 1.0
 Created: 2025-10-31
 """
 
+from __future__ import annotations
+
 import json
 from typing import Callable
+
+from automation_menu.models.sequence import Sequence
 
 
 class Settings:
@@ -22,6 +26,8 @@ class Settings:
         self._send_mail_on_error = settings_dict.get( 'send_mail_on_error', False )
         self._include_ss_in_error_mail = settings_dict.get( 'include_ss_in_error_mail', False )
         self._current_language = settings_dict.get( 'current_language', 'sv_SE' )
+
+        self._saved_sequences = settings_dict.get( 'saved_sequences', [] )
 
 
     def to_json( self ) -> dict:
@@ -125,6 +131,22 @@ class Settings:
         if self._save_callback:
             self._save_callback( self )
 
+
+    @property
+    def saved_sequences( self ) -> list[ Sequence ]:
+        """ Property function to get 'saved_sequences' """
+
+        return self.get( 'saved_sequences' )
+
+
+    @saved_sequences.setter
+    def saved_sequences( self, value: list[ Sequence ] ) -> None:
+        """ Property setter function to set 'saved_sequences """
+
+        self._saved_sequences = value
+
+        if self._save_callback:
+            self._save_callback( self )
 
     def get( self, key: str ) -> any:
         """ Get attribute with corrected name

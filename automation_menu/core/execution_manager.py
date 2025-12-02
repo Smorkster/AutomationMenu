@@ -9,6 +9,12 @@ Version: 1.0.0
 Created: 2025-09-25
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Any, Generator
+
+if TYPE_CHECKING:
+    from automation_menu.models.application_state import ApplicationState
+
 import asyncio
 import queue
 import subprocess
@@ -47,7 +53,7 @@ class ScriptExecutionManager:
 
 
     @contextmanager
-    def create_runner( self ):
+    def create_runner( self ) -> Generator[ Any, Any, Any ]:
         """ Contextmanager taking care of runner bootup and cleanup """
 
         with self._lock:
@@ -161,7 +167,7 @@ class ScriptExecutionManager:
 
 
 class ScriptRunner:
-    def __init__( self, output_queue, app_state, exec_manager ):
+    def __init__( self, output_queue: Queue, app_state: ApplicationState, exec_manager: ScriptExecutionManager ) -> None:
         """" A script runner, managing bootup, process output and termination
 
         Args:
@@ -284,36 +290,35 @@ class ScriptRunner:
             'exec_item': self._exec_item
         } )
 
-        if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
+        exec_string = ''
 
-            return subprocess.Popen(
-                args = [ sys.executable, str( self._script_info.get_attr( 'fullpath' ) ) ] + self.run_input,
-                stdout = asyncio.subprocess.PIPE,
-                stderr = asyncio.subprocess.PIPE,
-                stdin = asyncio.subprocess.PIPE,
-                text = True
-            )
+        if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
+            exec_string = sys.executable
 
         elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
+            exec_string = 'powershell.exe'
 
-            return subprocess.Popen(
-                args = [ 'powershell.exe', str( self._script_info.get_attr( 'fullpath' ) ) ] + self.run_input ,
-                stdout = asyncio.subprocess.PIPE,
-                stderr = asyncio.subprocess.PIPE,
-                stdin = asyncio.subprocess.PIPE,
-                text = True
-            )
+        return subprocess.Popen(
+            args = [ exec_string, str( self._script_info.get_attr( 'fullpath' ) ) ] + self.run_input,
+            stdout = asyncio.subprocess.PIPE,
+            stderr = asyncio.subprocess.PIPE,
+            stdin = asyncio.subprocess.PIPE,
+            text = True,
+            encoding = 'utf-8',
+            errors = 'replace'
+        )
 
 
     def terminate( self ) -> None:
         """ Force the running process to terminate """
 
-        def _process_reaper( p: subprocess.Popen ):
-            """ """
+        def _process_reaper( p: subprocess.Popen ) -> None:
+            """ Find and end any child process """
 
             children = psutil.Process( p.pid ).children( recursive = True )
+
             for child in children:
-                child.kill()  # Kill children too!
+                child.kill()
 
             p.kill()
 

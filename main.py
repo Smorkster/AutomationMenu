@@ -10,10 +10,13 @@ Version: 1.0.0
 Created: 2025-09-25
 """
 
+from __future__ import annotations
+
 import logging
 import sys
 
 from pathlib import Path
+
 
 # Add the project root to Python path if needed
 project_root = Path( __file__ ).parent.parent
@@ -27,14 +30,35 @@ from automation_menu.filehandling.settings_handler import read_settingsfile, wri
 from automation_menu.models import Secrets, Settings, User
 from automation_menu.models.application_state import ApplicationState
 from automation_menu.ui.history_manager import HistoryManager
+from automation_menu.ui.sequence_manager import SequenceManager
 from automation_menu.utils.language_manager import LanguageManager
 from automation_menu.utils.localization import change_language
+from automation_menu.utils.script_manager import ScriptManager
 
 
-def main():
+def setup_logger() -> logging.Logger:
+    """ Create a logger for debug purposes """
+
+    logger = logging.getLogger( 'debug_logger' )
+    logger.setLevel( level = logging.DEBUG )
+
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+
+        formater = logging.Formatter(
+            "[%(levelname)s] %(filename)s:%(lineno)d - %(message)s"
+        )
+
+        handler.setFormatter( formater )
+        logger.addHandler( handler )
+
+        return logger
+
+
+def main() -> None:
     """ Main entry point """
 
-    def save_settings( obj ):
+    def save_settings( obj: Settings ) -> None:
         """ Callback function to save settings to file """
 
         write_settingsfile( settings = obj, settings_file_path = app_state.secrets.get( 'settings_file_path' ) )
@@ -42,9 +66,13 @@ def main():
     try:
         app_state = ApplicationState()
         app_context = ApplicationContext()
-        app_context.history_manager = HistoryManager()
+        app_context.debug_logger = setup_logger()
+
+
         app_state.secrets = Secrets( read_secrets_file( file_path = Path( __file__ ).resolve().parent / 'secrets.json' ) )
-        app_state.settings = Settings( settings_dict = read_settingsfile( app_state.secrets.get( 'settings_file_path' ) ), save_callback = save_settings )
+        read_settings = read_settingsfile( settings_file_path = app_state.secrets.get( 'settings_file_path' ), debug_logger = app_context.debug_logger )
+        app_state.settings = Settings( settings_dict = read_settings, save_callback = save_settings )
+        app_context.debug_logger.debug( msg = f'sequence list loaded with "{ len( app_state.settings.saved_sequences ) }" sequences' )
 
         change_language( language_code = app_state.settings.current_language )
         app_context.language_manager = LanguageManager( current_language = app_state.settings.current_language )
@@ -53,7 +81,10 @@ def main():
         app_context.ldap_connection = connect_to_AD( app_state = app_state, app_context = app_context )
         app_state.current_user = User( get_user_adobject( app_state = app_state, app_context = app_context ) )
 
-        app_context.script_manager = ScriptExecutionManager( output_queue = app_context.output_queue, app_state = app_state )
+        app_context.script_manager = ScriptManager( app_context = app_context, app_state = app_state )
+        app_context.execution_manager = ScriptExecutionManager( output_queue = app_context.output_queue, app_state = app_state )
+        app_context.sequence_manager = SequenceManager( app_context = app_context, app_state = app_state, saved_sequences = app_state.settings.saved_sequences )
+        app_context.history_manager = HistoryManager()
 
         # Launch the main application window
         from automation_menu.ui.main_window import AutomationMenuWindow

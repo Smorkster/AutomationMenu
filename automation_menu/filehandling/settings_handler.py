@@ -8,12 +8,16 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+from __future__ import annotations
+
 import json
+
+from logging import Logger
 
 from automation_menu.models import Settings
 
 
-def read_settingsfile( settings_file_path: str ) -> dict:
+def read_settingsfile( settings_file_path: str, debug_logger: Logger ) -> dict:
     """ Read settings from a JSON file
 
     Args:
@@ -31,7 +35,9 @@ def read_settingsfile( settings_file_path: str ) -> dict:
             return json.load( f )
 
     except Exception as e:
-        return { 'on_top' : False, 'minimize_on_running' : False }
+        debug_logger.error( msg = f'Error reading settings file:\n{ e }' )
+
+        return { 'on_top' : False, 'minimize_on_running' : False, 'send_mail_on_error': False, 'include_ss_in_error_mail': False, 'current_language': 'sv_SE' }
 
 
 def write_settingsfile( settings: Settings, settings_file_path: str ) -> None:

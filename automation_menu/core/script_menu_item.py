@@ -9,19 +9,23 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.ui.main_window import AutomationMenuWindow
+
 import logging
 import threading
 
-from tkinter import Toplevel
+from tkinter import Event, Toplevel
 from tkinter.ttk import Label
 from automation_menu.models import ScriptInfo, SysInstructions
 from automation_menu.models.enums import OutputStyleTags, ScriptState
-#from automation_menu.ui.main_window import AutomationMenuWindow
 
 
 class ScriptMenuItem:
-#    def __init__ ( self, script_menu: Menu, script_info: ScriptInfo, main_object: AutomationMenuWindow ):
-    def __init__ ( self, script_menu: Toplevel, script_info: ScriptInfo, main_object ):
+    def __init__ ( self, script_menu: Toplevel, script_info: ScriptInfo, main_object: AutomationMenuWindow ) -> None:
         """ Object for representing a script in the menu
 
         Args:
@@ -57,9 +61,9 @@ class ScriptMenuItem:
         else:
             style = 'ScriptNormal.TLabel'
 
-        self.script_button = Label( self.script_menu, text = self.label_text, style = style, borderwidth = 1 )
+        self.menu_button = Label( self.script_menu, text = self.label_text, style = style, borderwidth = 1 )
         #self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
-        self.script_button.bind( '<Button-1>' , lambda e: self._check_input_params() )
+        self.menu_button.bind( '<Button-1>' , lambda e: self._check_input_params() )
 
         # Add tooltip to this button
         if self.script_info.get_attr( 'description' ):
@@ -72,11 +76,11 @@ class ScriptMenuItem:
                 desc += f'\n\n{ _( 'In development, and should only be run by its developer.' ) }'
                 dev = True
 
-            tt = AlwaysOnTopToolTip( widget = self.script_button, msg = desc )
+            tt = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc )
             self.master_self.app_context.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev ) )
 
 
-    def _check_input_params( self ):
+    def _check_input_params( self ) -> None:
         """ Verify if script takes input and if widgets are created """
 
         self.script_menu.withdraw()
@@ -88,7 +92,7 @@ class ScriptMenuItem:
             self.run_script()
 
 
-    def on_enter( self, event ):
+    def on_enter( self, event: Event ) -> None:
         """ Change label background on mouse enter
 
         Args:
@@ -102,7 +106,7 @@ class ScriptMenuItem:
             event.widget.configure( style = 'ScriptHover.TLabel' )
 
 
-    def on_leave( self, event ):
+    def on_leave( self, event: Event ) -> None:
         """ Change label background on mouse leave
 
         Args:
@@ -116,7 +120,7 @@ class ScriptMenuItem:
             event.widget.configure( style = 'ScriptNormal.TLabel' )
 
 
-    def continue_breakpoint( self ):
+    def continue_breakpoint( self ) -> None:
         """ Continue execution of the script after hitting a breakpoint """
 
         self.process.stdin.write( 'c\n' )
@@ -125,15 +129,15 @@ class ScriptMenuItem:
         self._in_debug = False
 
 
-    def run_script( self ):
+    def run_script( self ) -> None:
         """ Initiate script execution """
 
         from automation_menu.utils.localization import _
 
-        def script_process_wrapper():
+        def script_process_wrapper() -> None:
             """ Wrapper to execute script from separate thread """
 
-            with self.master_self.app_context.script_manager.create_runner() as runner:
+            with self.master_self.app_context.execution_manager.create_runner() as runner:
                 runner.run_script( script_info = self.script_info,
                                    main_window = self.master_self.root,
                                    api_callbacks = self.master_self.api_callbacks,
@@ -148,6 +152,7 @@ class ScriptMenuItem:
 
             if self.master_self.app_state.settings.get( 'minimize_on_running' ) and not self.script_info.get_attr( 'disable_minimize_on_running' ):
                 self.master_self.min_max_on_running()
+
             self.master_self._minimize_show_controls()
 
         self.master_self.tabControl.select( 0 )

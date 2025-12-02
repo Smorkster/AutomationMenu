@@ -1,0 +1,66 @@
+"""
+Object representing a menu item for a sequence
+
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+Version: 1.0
+Created: 2025-12-01
+"""
+
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.ui.main_window import AutomationMenuWindow
+
+import alwaysontop_tooltip
+
+from tkinter import Event, Toplevel
+from tkinter.ttk import Label
+
+
+class SequenceMenuItem:
+    def __init__ ( self, sequence_menu: Toplevel, sequence: str, main_object: AutomationMenuWindow ) -> None:
+        """ Object for representing a sequence in the menu
+
+        Args:
+            sequence_menu (Toplevel): Menu widget to attach menu item to
+            sequence (Sequence): Sequence to create menuitem for
+            main_object (AutomationMenuWindow): The main window
+        """
+
+        from automation_menu.utils.localization import _
+
+        self._sequence_menu = sequence_menu
+        self._sequence = main_object.app_context.sequence_manager.get_sequence_by_name( sequence )
+        self._main_object = main_object
+
+        style = 'ScriptNormal.TLabel'
+        label_text = self._sequence.name
+        label_tt = self._sequence.description
+
+        self.menu_button = Label( master = self._sequence_menu, text = label_text, style = style, borderwidth = 1 )
+        self.menu_button.bind( '<Button-1>', lambda e: self._main_object.app_context.sequence_manager.run_sequence( name = self._sequence.name ) )
+
+        alwaysontop_tooltip.alwaysontop_tooltip.AlwaysOnTopToolTip( widget = self.menu_button, msg = label_tt )
+
+
+    def on_enter( self, event: Event ) -> None:
+        """ Change label background on mouse enter
+
+        Args:
+            event: Event triggering the function
+        """
+
+        event.widget.configure( style = 'ScriptHover.TLabel' )
+
+
+    def on_leave( self, event: Event ) -> None:
+        """ Change label background on mouse leave
+
+        Args:
+            event: Event triggering the function
+        """
+
+        event.widget.configure( style = 'ScriptNormal.TLabel' )

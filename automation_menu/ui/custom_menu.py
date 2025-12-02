@@ -8,16 +8,24 @@ Version: 1.0.0
 Created: 2025-09-25
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from automation_menu.ui.main_window import AutomationMenuWindow
+
 import tkinter as tk
-from tkinter import E, W, Tk, ttk
+from tkinter import E, W, Event, Tk, ttk
 
 from automation_menu.core.script_menu_item import ScriptMenuItem
+from automation_menu.core.sequence_menu_item import SequenceMenuItem
 from automation_menu.models import ScriptInfo
 
 
 class CustomMenu:
-    def __init__( self, parent: Tk, text: str, scripts: list[ ScriptInfo ], main_object ):
-        """ Create a custom meny of a button, a window and labels for each menuitem
+    def __init__( self, parent: Tk, text: str, exec_list: list[ ScriptInfo ], main_object: AutomationMenuWindow() ) -> None:
+        """ Create a custom meny as a button. This launches a separatewindow
+        containing clickable labels for each menuitem
 
         Args:
             parent (Tk): The parent window/widget to attach the button to
@@ -27,7 +35,7 @@ class CustomMenu:
         """
 
         self.parent = parent
-        self.scripts = scripts
+        self.exec_list = exec_list
         self.main_object = main_object
         self._visible = False
 
@@ -50,7 +58,7 @@ class CustomMenu:
         self._create_popup_content()
 
 
-    def _check_click_outside( self, event ):
+    def _check_click_outside( self, event: Event ) -> None:
         """ Check if click was outside popup bounds """
 
         widget = event.widget.winfo_containing( event.x_root, event.y_root )
@@ -59,18 +67,23 @@ class CustomMenu:
             self.hide_popup_menu()
 
 
-    def _create_popup_content( self ):
+    def _create_popup_content( self ) -> None:
         """ Create the popup menu content, with tooltips """
 
-        for i, script_info in enumerate( self.scripts ):
-            script_object = ScriptMenuItem( script_menu = self.popup, script_info = script_info, main_object = self.main_object )
-            script_object.script_button.bind( '<Enter>' , script_object.on_enter )
-            script_object.script_button.bind( '<Leave>' , script_object.on_leave )
+        for i, item_info in enumerate( self.exec_list ):
+            if isinstance( item_info, ScriptInfo ):
+                menu_object = ScriptMenuItem( script_menu = self.popup, script_info = item_info, main_object = self.main_object )
 
-            script_object.script_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
+            else:
+                menu_object = SequenceMenuItem( sequence_menu = self.popup, sequence = item_info, main_object = self.main_object )
+
+            menu_object.menu_button.bind( '<Enter>' , menu_object.on_enter )
+            menu_object.menu_button.bind( '<Leave>' , menu_object.on_leave )
+
+            menu_object.menu_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
 
 
-    def show_popup_menu( self ):
+    def show_popup_menu( self ) -> None:
         """ Show the popup menu """
 
         if self._visible:
@@ -89,7 +102,7 @@ class CustomMenu:
             self._visible = True
 
 
-    def hide_popup_menu( self, *args ) -> None:
+    def hide_popup_menu( self, *args: Any ) -> None:
         """ Hide the popup menu """
 
         self.popup.withdraw()

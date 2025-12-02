@@ -9,8 +9,8 @@ Created: 2025-09-25
 """
 
 import logging
-from tkinter import E, N, S, W, Tk, messagebox, ttk
-from typing import Union
+from tkinter import E, N, S, W, Event, Tk, messagebox, ttk
+from typing import Tuple, Union
 
 from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
 from automation_menu.core.app_context import ApplicationContext
@@ -27,7 +27,7 @@ from automation_menu.filehandling.settings_handler import write_settingsfile
 
 
 class AutomationMenuWindow:
-    def __init__( self, app_state: ApplicationState, app_context: ApplicationContext ):
+    def __init__( self, app_state: ApplicationState, app_context: ApplicationContext ) -> None:
         """ Creates the main window
 
         Args:
@@ -38,6 +38,7 @@ class AutomationMenuWindow:
 
         self.app_state = app_state
         self.app_context = app_context
+        self.app_context.main_window = self
         self.settings_file_path = self.app_state.secrets.get( 'settings_file_path' )
 
         self.dev_controls = []
@@ -49,6 +50,28 @@ class AutomationMenuWindow:
         self._close_confirmed = False
         self._progressbar_visible = False
 
+        self.api_callbacks = {
+            'determinate_progress': self.set_progress_determined,
+            'hide_progress': self.hide_progress,
+            'indeterminate_progress': self.set_progress_indetermined,
+            'show_progress': self.show_progress,
+            'update_progress': self.update_progress,
+
+            'clear_status': self.clear_status,
+            'get_status': self.get_status,
+            'set_status': self.set_status
+        }
+        self.sequence_callbacks = {
+            'op_abort_add_sequence_step': self.op_abort_add_sequence_step,
+            'op_add_sequence_step': self.op_add_sequence_step,
+            'op_create_new_sequence': self.op_create_new_sequence,
+            'op_save_sequence': self.op_save_sequence,
+            'op_remove_sequence_step': self.op_remove_sequence_step,
+            'op_edit_sequence': self.op_edit_sequence,
+            'op_delete_sequence': self.op_delete_sequence,
+            'op_abort_sequence_edit': self.op_abort_sequence_edit,
+            'op_run_sequence': self.op_run_sequence
+        }
         logging.basicConfig( level = logging.DEBUG )
 
         # Create main GUI
@@ -82,18 +105,10 @@ class AutomationMenuWindow:
 
         set_output_styles( self.tbOutput )
 
-        # Manage output
-        self.api_callbacks = {
-            'determinate_progress': self.set_progress_determined,
-            'hide_progress': self.hide_progress,
-            'indeterminate_progress': self.set_progress_indetermined,
-            'show_progress': self.show_progress,
-            'update_progress': self.update_progress,
+        self.sequence_tab = self.app_context.sequence_manager.create_sequence_tab( self.tabControl, self.sequence_callbacks )
+        self.tabControl.add( child =  self.sequence_tab, text = _( 'Automation sequence' ) )
 
-            'clear_status': self.clear_status,
-            'get_status': self.get_status,
-            'set_status': self.set_status
-        }
+        # Manage output
         self.output_controller = AsyncOutputController( output_queue = self.app_context.output_queue,
                                                        text_widget = self.tbOutput,
                                                        breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ],
@@ -124,7 +139,7 @@ class AutomationMenuWindow:
         # Shortcuts bindings
         self.root.bind( '<Control-m>', self._open_script_menu )
 
-        self.app_context.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Settings', 'Execution history' ) ) )
+        self.app_context.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Automation sequence', 'Settings', 'Execution history' ) ) )
 
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
         self.center_screen()
@@ -173,7 +188,7 @@ class AutomationMenuWindow:
         self.status_widgets[ 'status_bar' ].grid()
 
 
-    def _open_script_menu( self, event = None ) -> None:
+    def _open_script_menu( self, event: Event = None ) -> None:
         """ Open script menu with shortcut """
 
         self.op_buttons[ 'script_menu' ].show_popup_menu()
@@ -195,8 +210,8 @@ class AutomationMenuWindow:
 
         from automation_menu.utils.localization import _
 
-        if self.app_context.script_manager.is_paused():
-            if self.app_context.script_manager.resume_current_script():
+        if self.app_context.execution_manager.is_paused():
+            if self.app_context.execution_manager.resume_current_script():
                 self.app_context.output_queue.put( { 'line': _( 'Process was resumed' ), 'tag': OutputStyleTags.SYSINFO } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
 
@@ -204,14 +219,14 @@ class AutomationMenuWindow:
                 self.stop_pause_button_blinking()
 
         else:
-            if self.app_context.script_manager.pause_current_script():
+            if self.app_context.execution_manager.pause_current_script():
                 self.app_context.output_queue.put( { 'line': _( 'Process was paused' ), 'tag': OutputStyleTags.SYSINFO } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Resume' ) )
                 self._blink_active = True
                 self._pause_button_blinking()
 
 
-    def _pause_button_blinking( self ):
+    def _pause_button_blinking( self ) -> None:
         """ Initiate blinking effect of pause button during breakpoint pause """
 
         if not self._blink_active:
@@ -229,7 +244,7 @@ class AutomationMenuWindow:
     def _stop_script( self ) -> None:
         """ Eventhandler for when user clicks button stop script """
 
-        self.app_context.script_manager.stop_current_script()
+        self.app_context.execution_manager.stop_current_script()
         self.stop_pause_button_blinking()
 
 
@@ -251,7 +266,7 @@ class AutomationMenuWindow:
     def on_closing( self ) -> None:
         """ Window close event. Handle if a script is still running """
 
-        if not self._close_confirmed and self.app_context.script_manager.is_running():
+        if not self._close_confirmed and self.app_context.execution_manager.is_running():
             if not self._confirm_close_process():
                 return
 
@@ -263,7 +278,7 @@ class AutomationMenuWindow:
         self.root.destroy()
 
 
-    def set_current_language( self, event ) -> None:
+    def set_current_language( self, event: Event ) -> None:
         """ Change the language in the application
 
         Args:
@@ -388,7 +403,7 @@ class AutomationMenuWindow:
         self._pause_button_blinking()
 
 
-    def stop_pause_button_blinking( self ):
+    def stop_pause_button_blinking( self ) -> None:
         """ Stop blinking effect for button when script execution continues """
 
         self._blink_active = False
@@ -399,8 +414,64 @@ class AutomationMenuWindow:
     # endregion
 
 
+    # region Sequence UI ops
+    def op_add_sequence_step( self, *args: Tuple ) -> None:
+        """ Call for view toggle of sequence step form """
+
+        self.app_context.sequence_manager.toggle_step_form()
+
+
+    def op_create_new_sequence( self, *args: Tuple ) -> None:
+        """ Call for creation of new sequence """
+
+        self.app_context.sequence_manager.create_new_sequence()
+
+
+    def op_abort_add_sequence_step( self, *args: Tuple ) -> None:
+        """ Call to hide step form, i.e. ending editing of step """
+
+        self.app_context.sequence_manager.hide_step_form()
+
+
+    def op_abort_sequence_edit( self, *args: Tuple ) -> None:
+        """ Call to stop editing sequence """
+
+        self.app_context.sequence_manager.abort_sequence_edit()
+
+
+    def op_delete_sequence( self, *args: Tuple ) -> None:
+        """ Call to delete sequence """
+
+        self.app_context.sequence_manager.delete_sequence()
+
+
+    def op_edit_sequence( self, *args: Tuple ) -> None:
+        """ Call to edit selected sequence """
+
+        self.app_context.sequence_manager.edit_sequence()
+
+
+    def op_remove_sequence_step( self, *args: Tuple ) -> None:
+        """ Call to remove step from sequence """
+
+        self.app_context.sequence_manager.remove_sequence_step()
+
+
+    def op_run_sequence( self, *args: Tuple ) -> None:
+        """ Call to run selected sequence """
+
+        self.app_context.sequence_manager.run_sequence()
+
+
+    def op_save_sequence( self, *args: Tuple ) -> None:
+        """ Call to save sequence """
+
+        self.app_context.sequence_manager.save_sequence()
+    # endregion
+
+
     # region Progressbar API callbacks
-    def hide_progress( self, *args ):
+    def hide_progress( self, *args: Tuple ) -> None:
         """ Hide execution progressbar """
 
         if self._progressbar_visible:
@@ -409,21 +480,21 @@ class AutomationMenuWindow:
             self._progressbar_visible = False
 
 
-    def set_progress_determined( self, *args ) -> None:
+    def set_progress_determined( self, *args: Tuple ) -> None:
         """ Set indetermined """
 
         self.status_widgets[ 'progressbar' ].config( mode = 'determinate' )
         self.status_widgets[ 'progressbar' ].stop()
 
 
-    def set_progress_indetermined( self, *args ) -> None:
+    def set_progress_indetermined( self, *args: Tuple ) -> None:
         """ Set indetermined """
 
-        self.status_widgets[ 'progressbar' ].start( interval = 10 )
-        self.status_widgets[ 'progressbar' ].config( mode = 'indeterminate' )
+        self.status_widgets[ 'progressbar': Tuple ].start( interval = 10 )
+        self.status_widgets[ 'progressbar': Tuple ].config( mode = 'indeterminate' )
 
 
-    def show_progress( self, *args ):
+    def show_progress( self, *args: Tuple ) -> None:
         """ Show execution progressbar """
 
         if not self._progressbar_visible:
@@ -472,13 +543,13 @@ class AutomationMenuWindow:
         def _send_status():
             """ Return current status text """
 
-            if self.app_context.script_manager.current_runner:
+            if self.app_context.execution_manager.current_runner:
                 status = self.status_widgets[ 'text_status' ].cget( 'text' )
                 msg = f'{ MESSAGE_START }{ status }{ MESSAGE_END }\n'
 
                 try:
-                    self.app_context.script_manager.current_runner.current_process.stdin.write( msg )
-                    self.app_context.script_manager.current_runner.current_process.stdin.flush()
+                    self.app_context.execution_manager.current_runner.current_process.stdin.write( msg )
+                    self.app_context.execution_manager.current_runner.current_process.stdin.flush()
 
                 except:
                     pass

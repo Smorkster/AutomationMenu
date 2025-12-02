@@ -9,13 +9,18 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.core.app_context import ApplicationContext
+    from automation_menu.models.application_state import ApplicationState
+
 import os
 import sys
 from dynamicinputbox import dynamic_inputbox as inputbox
 from ldap3 import ALL, Connection, Entry, Server
 from ldap3.core.exceptions import LDAPSocketOpenError
-from automation_menu.core.app_context import ApplicationContext
-from automation_menu.models.application_state import ApplicationState
 
 def connect_to_AD( app_state: ApplicationState, app_context: ApplicationContext ) -> Connection:
     """ Connect to Active Directory and return the connection object
@@ -39,7 +44,7 @@ def connect_to_AD( app_state: ApplicationState, app_context: ApplicationContext 
 
             abort_string = _( 'Abort' )
             ok_string = _( 'Ok' )
-            password = inputbox( message = inputbox_label_text, input = True, input_show = '*', buttons = [ ok_string, abort_string ] ).get( dictionary = True )
+            password = inputbox( message = inputbox_label_text, title = _( 'AD password' ), input = True, input_show = '*', buttons = [ ok_string, abort_string ] ).get( dictionary = True )
 
             if password.get( 'button' ) == abort_string or password.get( 'button' ) == 'Cancel':
                 inputbox( message = _( 'No password was entered. Exiting.' ) )
@@ -54,6 +59,7 @@ def connect_to_AD( app_state: ApplicationState, app_context: ApplicationContext 
                              )
 
             if con:
+
                 return con
 
         except SystemExit:
@@ -67,7 +73,8 @@ def connect_to_AD( app_state: ApplicationState, app_context: ApplicationContext 
         except Exception as e:
             AD_loginattempts = AD_loginattempts + 1
 
-def get_user_adobject( id = None, app_state: ApplicationState = None, app_context: ApplicationContext = None ) -> Entry:
+
+def get_user_adobject( id: str = None, app_state: ApplicationState = None, app_context: ApplicationContext = None ) -> Entry:
     """ Get the full AD-object of the current user
 
     Args:

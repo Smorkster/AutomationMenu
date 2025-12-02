@@ -9,13 +9,19 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.ui.main_window import AutomationMenuWindow
+
 from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 from tkinter import E, N, W, BooleanVar, StringVar, ttk
 
 from automation_menu.models import Settings
 
 
-def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_self ) -> ttk.Frame:
+def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_self: AutomationMenuWindow ) -> ttk.Frame:
     """ Create a frame used as a tab to collect settings
 
     Args:
@@ -31,7 +37,7 @@ def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_self ) 
     return tabSettings
 
 
-def _list_settings( tab: ttk.Frame, settings: Settings, main_self ) -> None:
+def _list_settings( tab: ttk.Frame, settings: Settings, main_self: AutomationMenuWindow ) -> None:
     """ Create widgets for application settings
 
     Args:

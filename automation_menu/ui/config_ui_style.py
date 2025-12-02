@@ -8,6 +8,8 @@ Version: 1.0
 Created: 2025-10-08
 """
 
+from __future__ import annotations
+
 from tkinter.ttk import Entry, Style
 
 
@@ -86,6 +88,9 @@ def set_ui_style( style: Style ) -> None:
     style.configure( 'History.TLabel',
                     font = ( 'Calibri', 12, 'bold' )
     )
+    style.configure( 'BiggerTitle.TLabel',
+                    font = ( 'Calibri', 15, 'bold' )
+    )
     style.configure( 'LabelFrameTitle.TLabel',
                     font = ( 'Calibri', 13, 'bold' )
     )
@@ -140,6 +145,15 @@ def set_ui_style( style: Style ) -> None:
     style.map( 'Input.TCombobox',
                 fieldbackground = [ ( 'focus', "#c5faff" ) ]
     )
+    # endregion
+
+    ###############
+    # Frame styling
+    # region
+    style.configure( 'SequenceStep.TFrame',
+                    highlightcolor = '#FFFFFF',
+                    highlightthickness = '2'
+     )
     # endregion
 
 

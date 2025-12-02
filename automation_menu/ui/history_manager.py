@@ -8,20 +8,27 @@ Version: 1.0
 Created: 2025-10-08
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.ui.main_window import AutomationMenuWindow
+
 from datetime import timedelta
-from tkinter import END, N, S, W, E, Text, ttk
+from tkinter import END, N, S, W, E, Event, Text
+from tkinter.ttk import Frame, Label, Notebook, Treeview
 
 from automation_menu.models import ExecHistory
 
-#from automation_menu.ui.main_window import AutomationMenuWindow
 
 class HistoryManager:
-    def __init__( self ):
+    def __init__( self ) -> None:
         """ Manage execution history items UI widgets for display """
+
         self._historylist = []
 
 
-    def _format_duration( self, duration: timedelta ):
+    def _format_duration( self, duration: timedelta ) -> None:
         """ Format duration of script execution
         Current format is: x d x h x m x s
         Meanin days, hours, minutes, seconds
@@ -52,7 +59,7 @@ class HistoryManager:
         return " ".join( text_parts )
 
 
-    def _history_item_selected( self, event ):
+    def _history_item_selected( self, event: Event ) -> None:
         """ Eventhandler for when tree item has been selected """
 
         from automation_menu.utils.localization import _
@@ -85,7 +92,7 @@ class HistoryManager:
         self.item_output.config( state = 'disabled' )
 
 
-    def add_history_item( self, item: ExecHistory ):
+    def add_history_item( self, item: ExecHistory ) -> None:
         """ Adds a new item to the treewidget, and history list
 
         Args:
@@ -107,31 +114,33 @@ class HistoryManager:
         return [ item[ 'item' ].to_dict() for item in self._historylist ]
 
 
-    #def get_history_tab( tabcontrol: ttk.Notebook, history_list: list[ ExecHistory ], main_self: AutomationMenuWindow ):
-    def get_history_tab( self, tabcontrol: ttk.Notebook, main_self ):
+    def get_history_tab( self, tabcontrol: Notebook, main_self: AutomationMenuWindow ) ->  Frame:
         """ Creates the widgets to display execution history
 
         Args:
             tabcontrol (ttk.Notebook): A notebook widget to attach the widgets to
             main_self (AutomationMenuWindow): Main window, and object, to make language manager available
+
+        Returns:
+            tabHistory (Frame): Frame containing history UI
         """
 
         from automation_menu.utils.localization import _
 
-        self.tabHistory = ttk.Frame( tabcontrol )
+        self.tabHistory: Frame = Frame( tabcontrol )
         self.tabHistory.grid( column = 0, row = 0, sticky = ( N, S, W, E ) )
         self.tabHistory.columnconfigure( index = 0, weight = 0 )
         self.tabHistory.columnconfigure( index = 1, weight = 1 )
         self.tabHistory.rowconfigure( index = 0, weight = 1 )
 
-        self.history_tree = ttk.Treeview( self.tabHistory, columns = ( 'name' ) )
+        self.history_tree: Treeview = Treeview( self.tabHistory, columns = ( 'name' ) )
         self.history_tree.heading( '#0', text = _( 'Started' ) )
         self.history_tree.column( '#0', minwidth = 130, width = 130 )
         self.history_tree.heading( 'name', text = _( 'Name' ) )
         self.history_tree.grid( column = 0, rowspan = 3, sticky = ( N, S, W ) )
         self.history_tree.bind( '<<TreeviewSelect>>', self._history_item_selected )
 
-        self.history_item_display = ttk.Frame( self.tabHistory )
+        self.history_item_display: Frame = Frame( self.tabHistory )
         self.history_item_display.grid( column = 1, row = 0, sticky = ( N, S, W, E ) )
         self.history_item_display.columnconfigure( index = 0, weight = 0 )
         self.history_item_display.columnconfigure( index = 1, weight = 1 )
@@ -141,32 +150,32 @@ class HistoryManager:
         self.history_item_display.rowconfigure( index = 3, weight = 0 )
         self.history_item_display.rowconfigure( index = 4, weight = 1 )
 
-        item_start_title = ttk.Label( master = self.history_item_display, text = _( 'Started' ), style = 'History.TLabel' )
+        item_start_title: Label = Label( master = self.history_item_display, text = _( 'Started' ), style = 'History.TLabel' )
         item_start_title.grid( column = 0, row = 0, padx = 5, pady = 5, sticky = ( N, W ) )
         main_self.app_context.language_manager.add_translatable_widget( ( item_start_title, 'Started' ) )
 
-        self.item_start = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
+        self.item_start: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_start.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = ( W, E ) )
 
-        item_end_title = ttk.Label( master = self.history_item_display, text = _( 'Ended' ), style = 'History.TLabel' )
+        item_end_title: Label = Label( master = self.history_item_display, text = _( 'Ended' ), style = 'History.TLabel' )
         item_end_title.grid( column = 0, row = 1, padx = 5, pady = 5, sticky = ( N, W ) )
         main_self.app_context.language_manager.add_translatable_widget( ( item_end_title, 'Ended' ) )
 
-        self.item_end = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
+        self.item_end: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_end.grid( column = 1, row = 1, padx = 5, pady = 5, sticky = ( W, E ) )
 
-        duration_title = ttk.Label( master = self.history_item_display, text = _( 'Duration' ), style = 'History.TLabel' )
+        duration_title: Label = Label( master = self.history_item_display, text = _( 'Duration' ), style = 'History.TLabel' )
         duration_title.grid( column = 0, row = 2, padx = 5, pady = 5, sticky = ( N, W ) )
         main_self.app_context.language_manager.add_translatable_widget( ( duration_title, 'Duration' ) )
 
-        self.duration = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
+        self.duration: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.duration.grid( column = 1, row = 2, padx = 5, pady = 5, sticky = ( W, E ) )
 
-        item_output_title = ttk.Label( master = self.history_item_display, text = _( 'Generated output' ), style = 'History.TLabel' )
+        item_output_title: Label = Label( master = self.history_item_display, text = _( 'Generated output' ), style = 'History.TLabel' )
         item_output_title.grid( column = 0, columnspan = 2, row = 3, padx = 5, pady = 5, sticky = ( N, W ) )
         main_self.app_context.language_manager.add_translatable_widget( ( item_output_title, 'Generated output' ) )
 
-        self.item_output = Text( master = self.history_item_display, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
+        self.item_output: Text = Text( master = self.history_item_display, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_output.grid( column = 0, columnspan = 2, row = 4, padx = 5, pady = 5, sticky = ( N, S, W, E ) )
 
         return self.tabHistory

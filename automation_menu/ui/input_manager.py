@@ -8,9 +8,14 @@ Version: 1.0
 Created: 2025-10-31
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.ui.main_window import AutomationMenuWindow
+
 from tkinter import E, N, S, W, Canvas, Event, StringVar, Tk
-import tkinter
-from tkinter.ttk import Button, Combobox, Entry, Frame, Label, Labelframe, Scrollbar
+from tkinter.ttk import Button, Combobox, Entry, Frame, Label, Labelframe, Scrollbar, Widget
 from typing import Callable
 
 from automation_menu.models.scriptinfo import ScriptInfo
@@ -108,16 +113,13 @@ class InputManager:
         self._input_widgets[ 'input_send_btn' ] = send_input_btn
         self._input_widgets[ 'input_frame' ] = root_input_frame
 
-
         input_container.bind( '<Configure>', self._on_frame_config )
-
         container_canvas.bind( '<Configure>', self._on_canvas_config )
-
         container_canvas.bind_all( '<MouseWheel>', self._on_mousewheel )
 
 
-    def _create_input_widgets( self, parameters: list[ ScriptInputParameter ] ) -> Frame:
-        """Create input widgets for each parameter."""
+    def create_input_widgets( self, parameters: list[ ScriptInputParameter ], parent: Widget = None, pre_set_parameters: list[ dict ] = None ) -> Frame:
+        """ Create input widgets for each parameter"""
 
         from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
         from automation_menu.utils.localization import _
@@ -126,8 +128,13 @@ class InputManager:
         number_of_columns = 2
         row = 0
 
-        # Reuse the frame that lives inside the canvas window
-        input_container: Frame = self._input_widgets[ 'input_container' ]
+        if parent:
+            # Create a frame for use for sequence step
+            input_container: Frame = Frame( master = parent )
+
+        else:
+            # Reuse the frame that lives inside the canvas window
+            input_container: Frame = self._input_widgets[ 'input_container' ]
 
         # Clear any old widgets (from previous script)
         for child in input_container.winfo_children():
@@ -159,11 +166,19 @@ class InputManager:
                     values = param.alternatives,
                     state = 'readonly'
                 )
+
+                if pre_set_parameters and param.name in [ k[ 'name' ] for k in pre_set_parameters ]:
+                    param_input.set( next( k for k in pre_set_parameters if k[ 'name' ] == param.name )[ 'set' ] )
+
             else:
                 param_input = Entry(
                     master = parameter_frame,
                     style = 'Input.TEntry'
                 )
+
+                if pre_set_parameters and param.name in [ k[ 'name' ] for k in pre_set_parameters ]:
+                    param_input.delete( 0, 'end' )
+                    param_input.insert( 'end', next( k for k in pre_set_parameters if k[ 'name' ] == param.name )[ 'set' ] )
 
             param_input.bind(
                 '<FocusIn>',
@@ -207,7 +222,7 @@ class InputManager:
     def _get_or_create_input_frame( self, script_info: ScriptInfo ) -> Frame:
         """ Create (or rebuild) the parameter frame for a script """
 
-        return self._create_input_widgets(
+        return self.create_input_widgets(
             script_info.scriptmeta.script_input_parameters
         )
 
@@ -222,6 +237,7 @@ class InputManager:
         """ Update scrollregion when frame region changes """
 
         self._input_widgets[ 'container_canvas' ].configure( scrollregion = self._input_widgets[ 'container_canvas' ].bbox( 'all' ) )
+
 
     def _on_key_press( self, event: Event ) -> None:
         """ Prevent new line characters """
@@ -268,7 +284,7 @@ class InputManager:
         self._current_script_name.set( name )
 
 
-    def collect_entered_input( self ) -> str:
+    def collect_entered_input( self, frame_to_search: Frame = None ) -> str:
         """ Collect all entered input
 
         Returns:
@@ -277,9 +293,15 @@ class InputManager:
 
         entered_input = []
 
-        if self.is_visible():
+        if self.is_visible() or frame_to_search:
 
-            for widget in [ w for w in self._current_frame.winfo_children() ]:
+            if frame_to_search:
+                frame = frame_to_search
+
+            else:
+                frame = self._current_frame
+
+            for widget in [ w for w in frame.winfo_children() ]:
                 input = widget.winfo_children()[ 1 ]
 
                 if type( input ) == Combobox:
@@ -290,10 +312,15 @@ class InputManager:
 
                 if str( param_text ).strip() != '':
                     param_name = widget.children[ '!label' ].cget( 'text' )
-                    entered_input.append( f'--{ param_name.strip() }' )
-                    entered_input.append( param_text )
 
-                input.delete( 0, 'end' )
+                    if frame_to_search:
+                        entered_input.append( { 'name': param_name, 'set': param_text } )
+
+                    else:
+                        entered_input.append( f'--{ param_name.strip() }' )
+                        entered_input.append( param_text )
+
+                #input.delete( 0, 'end' )
 
         return entered_input
 
