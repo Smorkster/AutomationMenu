@@ -99,14 +99,11 @@ class AutomationMenuWindow:
         self.tabControl.grid( column = 0, columnspan = 2, row = 2, sticky = ( N, S, E, W ) )
 
         # Create output
-        self.tabOutput, self.tbOutput = get_output_tab( tabcontrol = self.tabControl )
-        self.tabOutput.grid( sticky = ( N, S, E, W ) )
-        self.tabControl.add( child = self.tabOutput, text = _( 'Script output' ) )
+        self.tabOutput, self.tbOutput = get_output_tab( tabcontrol = self.tabControl, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
         set_output_styles( self.tbOutput )
 
-        self.sequence_tab = self.app_context.sequence_manager.create_sequence_tab( self.tabControl, self.sequence_callbacks )
-        self.tabControl.add( child =  self.sequence_tab, text = _( 'Automation sequence' ) )
+        self.sequence_tab = self.app_context.sequence_manager.create_sequence_tab( tabcontrol = self.tabControl, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
         # Manage output
         self.output_controller = AsyncOutputController( output_queue = self.app_context.output_queue,
@@ -119,12 +116,9 @@ class AutomationMenuWindow:
 
         # Create settings
         self.tabSettings = get_settings_tab( tabcontrol = self.tabControl, settings = self.app_state.settings, main_self = self )
-        self.tabSettings.grid( sticky = ( N, S, E, W ) )
-        self.tabControl.add( child = self.tabSettings, text = _( 'Settings' ) )
 
         # Create history tab
-        self.tabHistory = self.app_context.history_manager.get_history_tab( tabcontrol = self.tabControl, main_self = self )
-        self.tabControl.add( child = self.tabHistory, text = _( 'Execution history' ) )
+        self.tabHistory = self.app_context.history_manager.get_history_tab( tabcontrol = self.tabControl, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
         # Create statusbar
         self.status_widgets = get_statusbar( master_root = self.root )
@@ -138,8 +132,6 @@ class AutomationMenuWindow:
 
         # Shortcuts bindings
         self.root.bind( '<Control-m>', self._open_script_menu )
-
-        self.app_context.language_manager.add_translatable_widget( ( self.tabControl, ( 'Script output', 'Automation sequence', 'Settings', 'Execution history' ) ) )
 
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
         self.center_screen()
@@ -531,16 +523,16 @@ class AutomationMenuWindow:
 
 
     # region Textstatus API callbacks
-    def clear_status( self, *args ) -> None:
+    def clear_status( self, *args: Tuple ) -> None:
         """ Remove all statustext """
 
         self.status_widgets[ 'text_status' ].config( text = '' )
 
 
-    def get_status( self, *args ) -> None:
+    def get_status( self, *args: Tuple ) -> None:
         """ Return current statustext """
 
-        def _send_status():
+        def _send_status() -> None:
             """ Return current status text """
 
             if self.app_context.execution_manager.current_runner:

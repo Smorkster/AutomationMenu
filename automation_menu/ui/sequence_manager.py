@@ -636,11 +636,13 @@ class SequenceManager:
 
         self._sequence_widgets[ 'sequence_ops' ].grid()
 
-    def create_sequence_tab( self, parent: Notebook, sequence_callbacks: list[ Callable ] ) -> Frame:
+    def create_sequence_tab( self, tabcontrol: Notebook, sequence_callbacks: list[ Callable ], translate_callback: Callable ) -> Frame:
         """ Create a Frame that displays and creates sequences """
 
+        from automation_menu.utils.localization import _
+
         self._sequence_callbacks = sequence_callbacks
-        self._parent = parent
+        self._parent = tabcontrol
 
         main_frame = Frame( master = self._parent )
         main_frame.grid( sticky = ( N, S, W, E ) )
@@ -650,6 +652,9 @@ class SequenceManager:
         main_frame.grid_rowconfigure( index = 1, weight = 0 ) # Sequence op buttons
         main_frame.grid_rowconfigure( index = 2, weight = 1 ) # Sequence editing
         main_frame.grid_rowconfigure( index = 3, weight = 0 ) # Sequence editing / Steps op buttons
+
+        tabcontrol.add( child =  main_frame, text = _( 'Automation sequence' ) )
+        translate_callback( ( main_frame, 'Automation sequence' ) )
 
         self._sequence_widgets[ 'main_frame' ] = main_frame
 

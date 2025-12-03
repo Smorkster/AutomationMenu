@@ -16,12 +16,13 @@ if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
 
 from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
-from tkinter import E, N, W, BooleanVar, StringVar, ttk
+from tkinter import E, N, S, W, BooleanVar, StringVar
+from tkinter.ttk import Checkbutton, Combobox, Frame, Label, LabelFrame, Notebook
 
 from automation_menu.models import Settings
 
 
-def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_self: AutomationMenuWindow ) -> ttk.Frame:
+def get_settings_tab( tabcontrol: Notebook, settings: Settings, main_self: AutomationMenuWindow ) -> Frame:
     """ Create a frame used as a tab to collect settings
 
     Args:
@@ -30,14 +31,20 @@ def get_settings_tab( tabcontrol: ttk.Notebook, settings: Settings, main_self: A
         main_object (AutomationMenuWindow): Main object
     """
 
-    tabSettings = ttk.Frame( tabcontrol , padding = ( 5, 5, 5, 5 ) )
+    from automation_menu.utils.localization import _
+
+    tabSettings = Frame( tabcontrol , padding = ( 5, 5, 5, 5 ) )
+    tabSettings.grid( sticky = ( N, S, E, W ) )
+
+    tabcontrol.add( child = tabSettings, text = _( 'Settings' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tabSettings, 'Settings' ) )
 
     _list_settings( tab = tabSettings, settings = settings, main_self = main_self )
 
     return tabSettings
 
 
-def _list_settings( tab: ttk.Frame, settings: Settings, main_self: AutomationMenuWindow ) -> None:
+def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWindow ) -> None:
     """ Create widgets for application settings
 
     Args:
@@ -53,15 +60,15 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_self: AutomationMen
 
     ######################
     # Application settings
-    app_settings_group_title = ttk.Label( text=_( 'Application settings' ), style = 'LabelFrameTitle.TLabel' )
-    app_settings_group = ttk.LabelFrame( master = tab, labelwidget = app_settings_group_title )
+    app_settings_group_title = Label( text=_( 'Application settings' ), style = 'LabelFrameTitle.TLabel' )
+    app_settings_group = LabelFrame( master = tab, labelwidget = app_settings_group_title )
     app_settings_group.grid( column = 0, row = 0, sticky = ( N, W, E ) )
     app_settings_group.rowconfigure( index = 0, weight = 0 )
     app_settings_group.rowconfigure( index = 1, weight = 0 )
     main_self.app_context.language_manager.add_translatable_widget( ( app_settings_group_title, 'Application settings' ) )
 
     val_chb_on_top = BooleanVar( value = settings.get( 'on_top' ) )
-    chbTopMost = ttk.Checkbutton( master = app_settings_group,
+    chbTopMost = Checkbutton( master = app_settings_group,
                                  text = _( 'Set as topmost window' ),
                                  variable = val_chb_on_top,
                                  command = lambda: main_self.set_on_top( val_chb_on_top.get() ) )
@@ -73,7 +80,7 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_self: AutomationMen
     main_self.settings_ui[ 'chbTopMost' ] = chbTopMost
 
     val_chb_minimize_on_running = BooleanVar( value = settings.get( 'minimize_on_running' ) )
-    chbMinimizeOnRunning = ttk.Checkbutton( master = app_settings_group,
+    chbMinimizeOnRunning = Checkbutton( master = app_settings_group,
                                               text = _( 'Minimize size during script execution' ),
                                               variable = val_chb_minimize_on_running,
                                               command = lambda: main_self.set_minimize_on_running( val_chb_minimize_on_running.get() ) )
@@ -86,19 +93,19 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_self: AutomationMen
 
     ######################
     # Application language
-    language_group_title = ttk.Label( text = _( 'Application language' ), style = 'LabelFrameTitle.TLabel' )
-    language_group = ttk.LabelFrame( master = tab, labelwidget = language_group_title )
+    language_group_title = Label( text = _( 'Application language' ), style = 'LabelFrameTitle.TLabel' )
+    language_group = LabelFrame( master = tab, labelwidget = language_group_title )
     language_group.grid( column = 0 , row = 1, sticky = ( N, W, E ) )
     language_group.columnconfigure( index = 0, weight = 0 )
     language_group.columnconfigure( index = 1, weight = 0 )
     main_self.app_context.language_manager.add_translatable_widget( ( language_group_title, 'Application language' ) )
 
-    lblCurrentLanguageTitle = ttk.Label( language_group, text = _( 'Application language' ), padding = ( 5, 10 ) )
+    lblCurrentLanguageTitle = Label( language_group, text = _( 'Application language' ), padding = ( 5, 10 ) )
     lblCurrentLanguageTitle.grid( column = 0, row = 0, sticky = ( N, W ) )
     main_self.app_context.language_manager.add_translatable_widget( ( lblCurrentLanguageTitle, 'Application language' ) )
 
     val_cmb_current_language = StringVar( value = settings.get( 'current_language' ) )
-    cmbCurrentLanguage = ttk.Combobox( master = language_group,
+    cmbCurrentLanguage = Combobox( master = language_group,
                                        values = get_available_languages(),
                                        textvariable = val_cmb_current_language.get )
     cmbCurrentLanguage.bind( '<<ComboboxSelected>>', main_self.set_current_language )
@@ -111,15 +118,15 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_self: AutomationMen
 
     ###############
     # Errorhandling
-    error_group_title = ttk.Label( text = _( 'Errorhandling' ), style = 'LabelFrameTitle.TLabel' )
-    error_group = ttk.LabelFrame( tab, labelwidget = error_group_title )
+    error_group_title = Label( text = _( 'Errorhandling' ), style = 'LabelFrameTitle.TLabel' )
+    error_group = LabelFrame( tab, labelwidget = error_group_title )
     error_group.grid( column = 0, row = 2, sticky = ( N, W, E ) )
     error_group.rowconfigure( index = 0, weight = 0 )
     error_group.rowconfigure( index = 1, weight = 0 )
     main_self.app_context.language_manager.add_translatable_widget( ( error_group_title, 'Errorhandling' ) )
 
     val_chb_send_mail_on_error = BooleanVar( value = settings.get( 'send_mail_on_error' ) )
-    chbSendMailOnError = ttk.Checkbutton( master = error_group,
+    chbSendMailOnError = Checkbutton( master = error_group,
                                                     text = _( 'Send mail to developer on script error' ),
                                                     variable = val_chb_send_mail_on_error,
                                                     command = lambda: main_self.set_send_mail_on_error( val_chb_send_mail_on_error.get() ) )
@@ -131,7 +138,7 @@ def _list_settings( tab: ttk.Frame, settings: Settings, main_self: AutomationMen
     main_self.settings_ui[ 'chbSendMailOnError' ] = chbSendMailOnError
 
     val_chb_include_ss_in_error_mail = BooleanVar( value = settings.get( 'include_ss_in_error_mail' ) )
-    chbIncludeSsInErrorMail = ttk.Checkbutton( master = error_group,
+    chbIncludeSsInErrorMail = Checkbutton( master = error_group,
                                                     text = _( 'Include screenshot in mail when reporting error' ),
                                                     variable = val_chb_include_ss_in_error_mail,
                                                     command = lambda: main_self.set_include_ss_in_error_mail( val_chb_include_ss_in_error_mail.get() ) )

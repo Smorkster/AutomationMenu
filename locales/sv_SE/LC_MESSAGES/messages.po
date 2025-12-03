@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-18 14:17+0100\n"
+"POT-Creation-Date: 2025-12-03 13:41+0100\n"
 "PO-Revision-Date: 2025-09-19 09:46+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv_SE\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: main.py:66
+#: main.py:100
 msgid "Application interrupted by user"
 msgstr "Applikation avbryten av användare"
 
-#: main.py:76
+#: main.py:110
 #, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
@@ -37,11 +37,11 @@ msgstr ""
 "\n"
 "Applikationen avslutas"
 
-#: main.py:78
+#: main.py:112
 msgid "Application Error"
 msgstr "Applikationsfel"
 
-#: automation_menu/core/auth.py:30
+#: automation_menu/core/auth.py:35
 msgid ""
 "Enter password for AD-domain\n"
 "P.S.\n"
@@ -51,7 +51,7 @@ msgstr ""
 "P.S.\n"
 "Lösenordet kommer inte sparas"
 
-#: automation_menu/core/auth.py:38
+#: automation_menu/core/auth.py:43
 #, python-brace-format
 msgid ""
 "Wrong password. Try again\n"
@@ -60,23 +60,28 @@ msgstr ""
 "Felaktigt lösenord. Försök igen\n"
 "{main_label_text}"
 
-#: automation_menu/core/auth.py:40 automation_menu/ui/input_manager.py:70
+#: automation_menu/core/auth.py:45 automation_menu/ui/input_manager.py:84
+#: automation_menu/ui/sequence_manager.py:350
 msgid "Abort"
 msgstr "Avbryt"
 
-#: automation_menu/core/auth.py:41
+#: automation_menu/core/auth.py:46
 msgid "Ok"
 msgstr "Ok"
 
-#: automation_menu/core/auth.py:45
+#: automation_menu/core/auth.py:47
+msgid "AD password"
+msgstr "AD lösenord"
+
+#: automation_menu/core/auth.py:50
 msgid "No password was entered. Exiting."
 msgstr "Inget lösenord gavs. Avslutar."
 
-#: automation_menu/core/auth.py:63
+#: automation_menu/core/auth.py:69
 msgid "Error"
 msgstr "Fel"
 
-#: automation_menu/core/auth.py:63
+#: automation_menu/core/auth.py:69
 #, python-brace-format
 msgid ""
 "Could not connect to AD\n"
@@ -87,50 +92,50 @@ msgstr ""
 "{error}\n"
 "Avslutar"
 
-#: automation_menu/core/auth.py:88
+#: automation_menu/core/auth.py:95
 msgid "Not connected to LDAP"
 msgstr "Inte ansluten till LDAP"
 
-#: automation_menu/core/execution_manager.py:224
+#: automation_menu/core/execution_manager.py:230
 #, python-brace-format
 msgid "Subprocess error {error}"
 msgstr "Fel i process {error}"
 
-#: automation_menu/core/execution_manager.py:227
+#: automation_menu/core/execution_manager.py:233
 #, python-brace-format
 msgid "Unexpected error {error}"
 msgstr "Oväntat fel {error}"
 
-#: automation_menu/core/execution_manager.py:261
+#: automation_menu/core/execution_manager.py:267
 msgid "Mail sent"
 msgstr "Mail har skickats"
 
-#: automation_menu/core/execution_manager.py:268
+#: automation_menu/core/execution_manager.py:274
 #, python-brace-format
 msgid "Could not send error message to developer {e}"
 msgstr "Kunde inte skicka mail till utvecklaren {e}"
 
-#: automation_menu/core/execution_manager.py:280
+#: automation_menu/core/execution_manager.py:286
 #, python-brace-format
 msgid "Starting '{file}'"
 msgstr "Startar '{file}'"
 
-#: automation_menu/core/execution_manager.py:331
+#: automation_menu/core/execution_manager.py:336
 #, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr "Tvångsavslutning - SubprocessError: {e}"
 
-#: automation_menu/core/execution_manager.py:335
+#: automation_menu/core/execution_manager.py:340
 #, python-brace-format
 msgid "Termination - CalledProcessError: {e}"
 msgstr "Tvångsavslutning - CalledProcessError: {e}"
 
-#: automation_menu/core/execution_manager.py:339
+#: automation_menu/core/execution_manager.py:344
 #, python-brace-format
 msgid "Termination - Exception: {e}"
 msgstr "Tvångsavslutning - Fel: {e}"
 
-#: automation_menu/core/execution_manager.py:371
+#: automation_menu/core/execution_manager.py:376
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
@@ -139,28 +144,28 @@ msgstr ""
 "En brytpunkt uppstod i skriptet på rad {line_nr}. Klicka på 'Fortsätt' "
 "för att fortsätta."
 
-#: automation_menu/core/execution_manager.py:418
+#: automation_menu/core/execution_manager.py:423
 msgid "Script terminated"
 msgstr "Skript avslutat"
 
-#: automation_menu/core/execution_manager.py:426
+#: automation_menu/core/execution_manager.py:431
 msgid "Script completed successfully"
 msgstr "Skriptet avslutades utan problem"
 
-#: automation_menu/core/execution_manager.py:434
+#: automation_menu/core/execution_manager.py:439
 #, python-brace-format
 msgid "Script failed with exit code {err}"
 msgstr "Skriptet avslutades med fel kod {err}"
 
-#: automation_menu/core/script_menu_item.py:54
+#: automation_menu/core/script_menu_item.py:58
 msgid " (Dev)"
 msgstr " (Dev)"
 
-#: automation_menu/core/script_menu_item.py:72
+#: automation_menu/core/script_menu_item.py:76
 msgid "In development, and should only be run by its developer."
 msgstr "Under utveckling och bör bara köras av ansvarig utvecklare."
 
-#: automation_menu/core/script_menu_item.py:163
+#: automation_menu/core/script_menu_item.py:168
 msgid ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
@@ -168,48 +173,48 @@ msgstr ""
 "Skriptet använder 'DisableMinimizeOnRunning', dvs fönstret kommer inte "
 "minimeras"
 
-#: automation_menu/filehandling/exec_history_handler.py:56
+#: automation_menu/filehandling/exec_history_handler.py:55
 #, python-brace-format
 msgid "Writing execution history error; file not found: {file_path}"
 msgstr "Fel vid skriva kör historik; fil kunde inte hittas: {file_path}"
 
-#: automation_menu/filehandling/script_discovery.py:68
+#: automation_menu/filehandling/script_discovery.py:73
 #, python-brace-format
 msgid "File not found: {error}"
 msgstr "Fil hittades inte: {error}"
 
-#: automation_menu/filehandling/script_discovery.py:71
+#: automation_menu/filehandling/script_discovery.py:76
 #, python-brace-format
 msgid "Could not read file: {error}"
 msgstr "Kunde inte läsa fil: {error}"
 
-#: automation_menu/filehandling/script_discovery.py:80
+#: automation_menu/filehandling/script_discovery.py:85
 msgid "No valid ScriptInfo was found in the script"
 msgstr "Hittade ingen ScriptInfo i filen"
 
-#: automation_menu/filehandling/script_discovery.py:152
+#: automation_menu/filehandling/script_discovery.py:158
 #, python-brace-format
 msgid "ScriptInfo contained fields that are not valid, or are misspelled: {names}"
 msgstr "ScriptInfo innehåller fält som inte är godkända eller felstavade: {names}"
 
-#: automation_menu/filehandling/script_discovery.py:155
+#: automation_menu/filehandling/script_discovery.py:161
 #, python-brace-format
 msgid "ScriptInfo contained values that are not valid, or are misspelled: {names}"
 msgstr ""
 "ScriptInfo innehåller värden som inte är godkända eller felstavade: "
 "{names}"
 
-#: automation_menu/filehandling/script_discovery.py:158
+#: automation_menu/filehandling/script_discovery.py:164
 #, python-brace-format
 msgid "Parsing ScriptInfo generated error for these fields: {names}"
 msgstr "Läsning av ScriptInfo genererade fel för dessa fält: {names}"
 
-#: automation_menu/filehandling/script_discovery.py:169
+#: automation_menu/filehandling/script_discovery.py:175
 #, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr "{filename} kunde inte laddas: {e}"
 
-#: automation_menu/filehandling/script_discovery.py:173
+#: automation_menu/filehandling/script_discovery.py:179
 msgid ""
 "Some script have an active breakpoint in the code, handling this has not "
 "been implemented, so these will not be available:"
@@ -217,74 +222,66 @@ msgstr ""
 "Vissa skript har en aktiv brytpunkt i koden, hantering för detta har inte"
 " implementerats, därför kommer dessa inte vara tillgängliga:"
 
-#: automation_menu/filehandling/settings_handler.py:55
+#: automation_menu/filehandling/settings_handler.py:61
 #, python-brace-format
 msgid "Writing settings error; file not found: {file_path}"
 msgstr "Fel att skriva inställningar; fil kunde inte hittas: {file_path}"
 
-#: automation_menu/ui/history_manager.py:41
+#: automation_menu/ui/history_manager.py:48
 #, python-brace-format
 msgid "{d} d"
 msgstr "{d} d"
 
-#: automation_menu/ui/history_manager.py:44
-#, fuzzy, python-brace-format
+#: automation_menu/ui/history_manager.py:51
+#, python-brace-format
 msgid "{h} h"
 msgstr "{h} t"
 
-#: automation_menu/ui/history_manager.py:47
+#: automation_menu/ui/history_manager.py:54
 #, python-brace-format
 msgid "{m} m"
 msgstr "{m} m"
 
-#: automation_menu/ui/history_manager.py:50
+#: automation_menu/ui/history_manager.py:57
 #, python-brace-format
 msgid "{s} s"
 msgstr "{s} s"
 
-#: automation_menu/ui/history_manager.py:128
-#: automation_menu/ui/history_manager.py:144
-msgid "Started"
-msgstr "Startade"
-
-#: automation_menu/ui/history_manager.py:130
-msgid "Name"
-msgstr "Namn"
-
-#: automation_menu/ui/history_manager.py:151
-msgid "Ended"
-msgstr "Avslutade"
-
-#: automation_menu/ui/history_manager.py:158
-msgid "Duration"
-msgstr "Varaktighet"
-
-#: automation_menu/ui/history_manager.py:165
-#, fuzzy
-msgid "Generated output"
-msgstr "Utdata från skript"
-
-#: automation_menu/ui/input_manager.py:54
-msgid "Input parameters for "
-msgstr "Inparametrar för"
-
-#: automation_menu/ui/input_manager.py:74
-msgid "Send to script"
-msgstr "Skicka till skriptet"
-
-#: automation_menu/ui/main_window.py:83
-msgid "Script output"
-msgstr "Utdata från skript"
-
-#: automation_menu/ui/main_window.py:110
-msgid "Settings"
-msgstr "Inställningar"
-
-#: automation_menu/ui/main_window.py:114
+#: automation_menu/ui/history_manager.py:136
 msgid "Execution history"
 msgstr "Kör historik"
 
-#: automation_menu/ui/main_window.py:142
+#: automation_menu/ui/history_manager.py:140
+#: automation_menu/ui/history_manager.py:156
+msgid "Started"
+msgstr "Startade"
+
+#: automation_menu/ui/history_manager.py:142
+#: automation_menu/ui/sequence_manager.py:235
+msgid "Name"
+msgstr "Namn"
+
+#: automation_menu/ui/history_manager.py:163
+msgid "Ended"
+msgstr "Avslutade"
+
+#: automation_menu/ui/history_manager.py:170
+msgid "Duration"
+msgstr "Varaktighet"
+
+#: automation_menu/ui/history_manager.py:177
+msgid "Generated output"
+msgstr "Utdata från skript"
+
+#: automation_menu/ui/input_manager.py:68
+msgid "Input parameters for "
+msgstr "Inparametrar för"
+
+#: automation_menu/ui/input_manager.py:88
+msgid "Send to script"
+msgstr "Skicka till skriptet"
+
+#: automation_menu/ui/main_window.py:149
 msgid ""
 "There is a script running. Do you want to terminate the script process "
 "before closing the application?"
@@ -292,59 +289,160 @@ msgstr ""
 "Ett skript körs fortfarande. Vill du tvinga avslutning av skriptet innan "
 "applikationen avslutas?"
 
-#: automation_menu/ui/main_window.py:144
+#: automation_menu/ui/main_window.py:151
 msgid "Script still runnning"
 msgstr "Skript arbetar"
 
-#: automation_menu/ui/main_window.py:202
+#: automation_menu/ui/main_window.py:209
 msgid "Process was resumed"
 msgstr "Processen återupptogs"
 
-#: automation_menu/ui/main_window.py:203 automation_menu/ui/main_window.py:377
+#: automation_menu/ui/main_window.py:210 automation_menu/ui/main_window.py:384
 msgid "Pause"
 msgstr "Paus"
 
-#: automation_menu/ui/main_window.py:210
+#: automation_menu/ui/main_window.py:217
 msgid "Process was paused"
 msgstr "Processen pausades"
 
-#: automation_menu/ui/main_window.py:211
+#: automation_menu/ui/main_window.py:218
 msgid "Resume"
 msgstr "Återuppta"
 
-#: automation_menu/ui/op_buttons.py:38
+#: automation_menu/ui/op_buttons.py:43
 msgid "Script ..."
 msgstr "Skript ..."
 
-#: automation_menu/ui/op_buttons.py:44
+#: automation_menu/ui/op_buttons.py:52
+msgid "Sequence ..."
+msgstr "Sekvens ..."
+
+#: automation_menu/ui/op_buttons.py:60
 msgid "Continue"
 msgstr "Fortsätt"
 
-#: automation_menu/ui/op_buttons.py:51
+#: automation_menu/ui/op_buttons.py:69
 msgid "Stop script"
 msgstr "Stoppa skript"
 
-#: automation_menu/ui/op_buttons.py:58
+#: automation_menu/ui/op_buttons.py:78
 msgid "Pause script"
 msgstr "Pausa skript"
 
-#: automation_menu/ui/settings_tab.py:50
+#: automation_menu/ui/output_tab.py:30
+msgid "Script output"
+msgstr "Utdata"
+
+#: automation_menu/ui/sequence_manager.py:100
+msgid "Create new sequence"
+msgstr "Skapa ny sekvens"
+
+#: automation_menu/ui/sequence_manager.py:108
+msgid "Edit"
+msgstr "Ändra"
+
+#: automation_menu/ui/sequence_manager.py:120
+msgid "Run selected"
+msgstr "Kör markerad"
+
+#: automation_menu/ui/sequence_manager.py:140
+msgid "Steps in sequence"
+msgstr "Steg i sekvens"
+
+#: automation_menu/ui/sequence_manager.py:184
+msgid "Add step"
+msgstr "Lägg till setting"
+
+#: automation_menu/ui/sequence_manager.py:192
+msgid "Save sequence"
+msgstr "Spara sekvens"
+
+#: automation_menu/ui/sequence_manager.py:200
+msgid "Delete sequence"
+msgstr "Ta bort sekvens"
+
+#: automation_menu/ui/sequence_manager.py:208
+msgid "Abort edit"
+msgstr "Avbryt ändring"
+
+#: automation_menu/ui/sequence_manager.py:244
+msgid "Description"
+msgstr "Beskrivning"
+
+#: automation_menu/ui/sequence_manager.py:253
+#: automation_menu/ui/sequence_manager.py:307
+msgid "Stop on error"
+msgstr "Stopp vid fel"
+
+#: automation_menu/ui/sequence_manager.py:295
+msgid "Script for this step"
+msgstr "Skript för detta steg"
+
+#: automation_menu/ui/sequence_manager.py:317
+msgid "Script input parameters"
+msgstr "Inparametrar för"
+
+#: automation_menu/ui/sequence_manager.py:338
+msgid "Save step"
+msgstr "Spara steg"
+
+#: automation_menu/ui/sequence_manager.py:344
+msgid "Remove step"
+msgstr "Ta bort steg"
+
+#: automation_menu/ui/sequence_manager.py:494
+msgid "Input not specified"
+msgstr "Indata ej specificerad"
+
+#: automation_menu/ui/sequence_manager.py:656
+msgid "Automation sequence"
+msgstr "Sekvenser"
+
+#: automation_menu/ui/sequence_manager.py:762
+#, python-brace-format
+msgid "Starting sequence {name}, with {step_count} steps"
+msgstr "Startar sekvens {name}, med {step_count} steg"
+
+#: automation_menu/ui/sequence_manager.py:803
+#, python-brace-format
+msgid "Aborted by user at step {i}"
+msgstr "Avbruten av användarne under steg {i}"
+
+#: automation_menu/ui/sequence_manager.py:813
+#, python-brace-format
+msgid "Stopped on error at step {i} (exit code: {e})"
+msgstr "Stoppad av fel vid steg {i} (utkod från skript: {e})"
+
+#: automation_menu/ui/sequence_manager.py:822
+#, python-brace-format
+msgid "Step {i} failed (exit code {e})"
+msgstr "Steg {i} avslutades med fel kod {e)"
+
+#: automation_menu/ui/sequence_manager.py:833
+msgid "Sequence stopped due to individual step error"
+msgstr "Sekvens stoppas på grund av fel i steg"
+
+#: automation_menu/ui/settings_tab.py:38
+msgid "Settings"
+msgstr "Inställningar"
+
+#: automation_menu/ui/settings_tab.py:62
 msgid "Application settings"
 msgstr "Applikationsinställningar"
 
-#: automation_menu/ui/settings_tab.py:59
+#: automation_menu/ui/settings_tab.py:71
 msgid "Set as topmost window"
 msgstr "Sätt som ovanför andra fönster"
 
-#: automation_menu/ui/settings_tab.py:62
+#: automation_menu/ui/settings_tab.py:74
 msgid "Shall the window be set as topmost, above all other windows"
 msgstr "Ska fönstret vara ovanför andra fönster"
 
-#: automation_menu/ui/settings_tab.py:71
+#: automation_menu/ui/settings_tab.py:83
 msgid "Minimize size during script execution"
 msgstr "Minimera storlek medan skript körs"
 
-#: automation_menu/ui/settings_tab.py:74
+#: automation_menu/ui/settings_tab.py:86
 msgid ""
 "Downsize the window during script execution, trying not to be in its way."
 " This setting can be ignored in ScriptInfo-block with "
@@ -354,31 +452,31 @@ msgstr ""
 "ivägen. Denna inställning ignoreras i ScriptInfo-blocket med "
 "'DisableMinimizeOnRunning'."
 
-#: automation_menu/ui/settings_tab.py:83 automation_menu/ui/settings_tab.py:90
+#: automation_menu/ui/settings_tab.py:95 automation_menu/ui/settings_tab.py:102
 msgid "Application language"
 msgstr "Applikationsspråk"
 
-#: automation_menu/ui/settings_tab.py:101
+#: automation_menu/ui/settings_tab.py:113
 msgid "Language to use in the application"
 msgstr "Språk i applikationen"
 
-#: automation_menu/ui/settings_tab.py:108
+#: automation_menu/ui/settings_tab.py:120
 msgid "Errorhandling"
 msgstr "Felhantering"
 
-#: automation_menu/ui/settings_tab.py:117
+#: automation_menu/ui/settings_tab.py:129
 msgid "Send mail to developer on script error"
 msgstr "Skicka mail till utvecklare vid fel"
 
-#: automation_menu/ui/settings_tab.py:120
+#: automation_menu/ui/settings_tab.py:132
 msgid "Should an mail be sent to its developer if an error occurs in the script?"
 msgstr "Ska ett mail skickas till dess utvecklare om ett fel uppstår i skriptet?"
 
-#: automation_menu/ui/settings_tab.py:129
+#: automation_menu/ui/settings_tab.py:141
 msgid "Include screenshot in mail when reporting error"
 msgstr "Inkludera skärmbild i mail om felrapport"
 
-#: automation_menu/ui/settings_tab.py:132
+#: automation_menu/ui/settings_tab.py:144
 msgid ""
 "Should the mail sent to script developer when reporting that an error "
 "occured, have a screenshot of main window attached?"
@@ -415,4 +513,3 @@ msgstr "<strong>Felmeddelande</strong>"
 #: automation_menu/utils/email_handler.py:64
 msgid "This is an automatic message sent from AutomationMenu"
 msgstr "Detta är ett automatiskt meddelande från AutomationMenu"
-

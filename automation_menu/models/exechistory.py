@@ -8,11 +8,16 @@ Version: 1.0
 Created: 2025-10-17
 """
 
-from dataclasses import dataclass
-from datetime import datetime
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.models import ScriptInfo
+
 import json
 
-#from automation_menu.models import scriptinfo
+from dataclasses import dataclass
+from datetime import datetime
 
 @dataclass
 class Output:
@@ -32,8 +37,7 @@ class Output:
 
 
 class ExecHistory:
-    #def __init__( self, script_info: scriptinfo.ScriptInfo = None ):
-    def __init__( self, script_info = None ):
+    def __init__( self, script_info: ScriptInfo = None ) -> None:
         """ Class to hold script execution history """
 
         self.script_info = script_info

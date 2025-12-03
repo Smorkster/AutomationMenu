@@ -9,7 +9,7 @@ Created: 2025-10-08
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
@@ -114,7 +114,7 @@ class HistoryManager:
         return [ item[ 'item' ].to_dict() for item in self._historylist ]
 
 
-    def get_history_tab( self, tabcontrol: Notebook, main_self: AutomationMenuWindow ) ->  Frame:
+    def get_history_tab( self, tabcontrol: Notebook, translate_callback: Callable ) ->  Frame:
         """ Creates the widgets to display execution history
 
         Args:
@@ -132,6 +132,9 @@ class HistoryManager:
         self.tabHistory.columnconfigure( index = 0, weight = 0 )
         self.tabHistory.columnconfigure( index = 1, weight = 1 )
         self.tabHistory.rowconfigure( index = 0, weight = 1 )
+
+        tabcontrol.add( child = self.tabHistory, text = _( 'Execution history' ) )
+        translate_callback( ( self.tabHistory, 'Execution history' ) )
 
         self.history_tree: Treeview = Treeview( self.tabHistory, columns = ( 'name' ) )
         self.history_tree.heading( '#0', text = _( 'Started' ) )
@@ -152,28 +155,28 @@ class HistoryManager:
 
         item_start_title: Label = Label( master = self.history_item_display, text = _( 'Started' ), style = 'History.TLabel' )
         item_start_title.grid( column = 0, row = 0, padx = 5, pady = 5, sticky = ( N, W ) )
-        main_self.app_context.language_manager.add_translatable_widget( ( item_start_title, 'Started' ) )
+        translate_callback( ( item_start_title, 'Started' ) )
 
         self.item_start: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_start.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = ( W, E ) )
 
         item_end_title: Label = Label( master = self.history_item_display, text = _( 'Ended' ), style = 'History.TLabel' )
         item_end_title.grid( column = 0, row = 1, padx = 5, pady = 5, sticky = ( N, W ) )
-        main_self.app_context.language_manager.add_translatable_widget( ( item_end_title, 'Ended' ) )
+        translate_callback( ( item_end_title, 'Ended' ) )
 
         self.item_end: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_end.grid( column = 1, row = 1, padx = 5, pady = 5, sticky = ( W, E ) )
 
         duration_title: Label = Label( master = self.history_item_display, text = _( 'Duration' ), style = 'History.TLabel' )
         duration_title.grid( column = 0, row = 2, padx = 5, pady = 5, sticky = ( N, W ) )
-        main_self.app_context.language_manager.add_translatable_widget( ( duration_title, 'Duration' ) )
+        translate_callback( ( duration_title, 'Duration' ) )
 
         self.duration: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.duration.grid( column = 1, row = 2, padx = 5, pady = 5, sticky = ( W, E ) )
 
         item_output_title: Label = Label( master = self.history_item_display, text = _( 'Generated output' ), style = 'History.TLabel' )
         item_output_title.grid( column = 0, columnspan = 2, row = 3, padx = 5, pady = 5, sticky = ( N, W ) )
-        main_self.app_context.language_manager.add_translatable_widget( ( item_output_title, 'Generated output' ) )
+        translate_callback( ( item_output_title, 'Generated output' ) )
 
         self.item_output: Text = Text( master = self.history_item_display, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_output.grid( column = 0, columnspan = 2, row = 4, padx = 5, pady = 5, sticky = ( N, S, W, E ) )
