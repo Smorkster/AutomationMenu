@@ -8,14 +8,19 @@ Version: 1.0
 Created: 2025-09-25
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.core.app_context import ApplicationContext
+    from automation_menu.models.application_state import ApplicationState
+
 import logging
 from tkinter import E, N, S, W, Event, Tk, messagebox, ttk
 from typing import Tuple, Union
 
 from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
-from automation_menu.core.app_context import ApplicationContext
-from automation_menu.models.application_state import ApplicationState
-from automation_menu.models.enums import OutputStyleTags
+from automation_menu.models.enums import OutputStyleTags, SysInstructions
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
 from automation_menu.ui.input_manager import InputManager
@@ -255,6 +260,45 @@ class AutomationMenuWindow:
         self.root.geometry( newGeometry = f'{ width }x{ height }+{ x }+{ y }' )
 
 
+    def execution_post_work( self, disable_minimize: bool = False, is_sequence: bool = False ) -> None:
+        """ Reset UI and controls after script/sequence execution """
+
+        self.disable_pause_script_button()
+        self.disable_stop_script_button()
+
+        if self.app_state.settings.get( 'minimize_on_running' ) and not disable_minimize:
+            self.min_max_on_running()
+
+        self._minimize_show_controls()
+
+
+    def execution_pre_work( self, disable_minimize: bool = False, is_sequence: bool = False ) -> None:
+        """ Set UI and controls according to preferences before execution """
+
+        from automation_menu.utils.localization import _
+
+        self.tabControl.select( 0 )
+        self._minimize_hide_controls()
+        self.app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
+        self.app_context.input_manager.hide_input_frame()
+
+        if self.app_state.settings.get( 'minimize_on_running' ):
+            if disable_minimize:
+                self.app_context.output_queue.put( {
+                    'line': _( 'The script has \'DisableMinimizeOnRunning\', meaning the window will not be minimized.' ),
+                    'tag': OutputStyleTags.SYSINFO
+                } )
+
+            else:
+                old_geometry = {
+                    'h': self.root.winfo_height(),
+                    'w': self.root.winfo_width(),
+                    'x': self.root.winfo_x(),
+                    'y': self.root.winfo_y()
+                }
+                self.min_max_on_running( old_geometry )
+
+
     def on_closing( self ) -> None:
         """ Window close event. Handle if a script is still running """
 
@@ -452,7 +496,14 @@ class AutomationMenuWindow:
     def op_run_sequence( self, *args: Tuple ) -> None:
         """ Call to run selected sequence """
 
-        self.app_context.sequence_manager.run_sequence()
+        def on_finished() -> None:
+            """ Callback function to run after execution """
+
+            self.execution_post_work( disable_minimize = False, is_sequence = True )
+
+        self.execution_pre_work( disable_minimize = False, is_sequence = True )
+
+        self.app_context.sequence_manager.run_sequence( on_finished = on_finished )
 
 
     def op_save_sequence( self, *args: Tuple ) -> None:

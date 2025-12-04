@@ -10,27 +10,26 @@ Created: 2025-11-20
 """
 
 from __future__ import annotations
-import threading
 from typing import TYPE_CHECKING
-
-from automation_menu.core import execution_manager
-from automation_menu.utils.build_run_args import build_run_args
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.models.application_state import ApplicationState
-    from automation_menu.core.execution_manager import ScriptExecutionManager
+    from automation_menu.core.script_execution_manager import ScriptExecutionManager
+
+import alwaysontop_tooltip
+import threading
 
 from tkinter import E, END, N, S, W, BooleanVar, Canvas, Event, Listbox, Scrollbar
 from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Notebook
 from typing import Callable
 
-import alwaysontop_tooltip
-
+from automation_menu.core import script_execution_manager
 from automation_menu.models.enums import OutputStyleTags, SysInstructions
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 from automation_menu.models.sequence import Sequence
 from automation_menu.models.sequencestep import SequenceStep
+from automation_menu.utils.build_run_args import build_run_args
 
 
 class SequenceManager:
@@ -741,12 +740,22 @@ class SequenceManager:
         self.hide_step_form()
 
 
-    def run_sequence( self, name: str = None ) -> None:
+    def run_sequence( self, name: str | None = None, on_finished: Callable = None ) -> None:
         """ Run selected sequence
 
         Args:
             name (str): Name of sequence to run
         """
+
+        def _mini_runner() -> None:
+            """ Worker async sequence execution """
+
+            try:
+                self._sequence_runner( seq )
+
+            finally:
+                if on_finished:
+                    on_finished()
 
         from automation_menu.utils.localization import _
 
@@ -764,7 +773,7 @@ class SequenceManager:
             'exec_item': None
         } )
 
-        threading.Thread( target = self._sequence_runner, args = ( seq, ), daemon = True ).start()
+        threading.Thread( target = _mini_runner, daemon = True ).start()
 
 
     def _sequence_runner( self, sequence: Sequence ) -> None:

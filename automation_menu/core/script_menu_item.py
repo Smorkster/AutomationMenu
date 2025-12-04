@@ -147,35 +147,11 @@ class ScriptMenuItem:
                                    run_input = self.entered_input
                                  )
 
-            self.master_self.disable_stop_script_button()
-            self.master_self.disable_pause_script_button()
-
-            if self.master_self.app_state.settings.get( 'minimize_on_running' ) and not self.script_info.get_attr( 'disable_minimize_on_running' ):
-                self.master_self.min_max_on_running()
-
-            self.master_self._minimize_show_controls()
-
-        self.master_self.tabControl.select( 0 )
-        self.master_self._minimize_hide_controls()
-        self.master_self.app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
+            self.master_self.execution_post_work( disable_minimize = disable_minimize )
 
         self.entered_input = self.master_self.app_context.input_manager.collect_entered_input()
-        self.master_self.app_context.input_manager.hide_input_frame()
+        disable_minimize = self.script_info.scriptmeta.disable_minimize_on_running
 
-        if self.master_self.app_state.settings.get( 'minimize_on_running' ):
-            if self.script_info.get_attr( 'disable_minimize_on_running' ):
-                self.master_self.app_context.output_queue.put( {
-                    'line': _( 'The script has \'DisableMinimizeOnRunning\', meaning the window will not be minimized.' ),
-                    'tag': OutputStyleTags.SYSINFO
-                } )
-
-            else:
-                old_geometry = {
-                    'h': self.master_self.root.winfo_height(),
-                    'w': self.master_self.root.winfo_width(),
-                    'x': self.master_self.root.winfo_x(),
-                    'y': self.master_self.root.winfo_y()
-                }
-                self.master_self.min_max_on_running( old_geometry )
+        self.master_self.execution_pre_work( disable_minimize = disable_minimize )
 
         threading.Thread( target = script_process_wrapper, daemon = True ).start()

@@ -1,170 +1,34 @@
 """
-A manager module for executing script with a contextmanager
-Use as ScriptExecutionManagare and not ScriptRunner seperately
+A worker module for starting execution of script
 
 Author: Smorkster
-GitHub:
+GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
 Version: 1.0.0
 Created: 2025-09-25
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Generator
+from typing import TYPE_CHECKING, Callable, Optional
 
 if TYPE_CHECKING:
-    from automation_menu.models.application_state import ApplicationState
+    from automation_menu.core.script_execution_manager import ScriptExecutionManager
 
 import asyncio
-import queue
+import psutil
 import subprocess
 import sys
 import threading
 
-from contextlib import contextmanager
 from queue import Queue
 from tkinter import Tk
-from typing import Callable, Optional
-
-from psutil import NoSuchProcess
-import psutil
 
 from automation_menu.models.application_state import ApplicationState
-from automation_menu.models import ExecHistory, ScriptInfo, SysInstructions
-from automation_menu.models.enums import OutputStyleTags
+from automation_menu.models.enums import OutputStyleTags, SysInstructions
+from automation_menu.models.exechistory import ExecHistory
+from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.utils.email_handler import report_script_error
 from automation_menu.utils.screenshot import take_screenshot
-
-
-class ScriptExecutionManager:
-    def __init__( self, output_queue: queue.Queue, app_state: ApplicationState ) -> None:
-        """ Provides a contextmanager for running a script
-
-        Args:
-            output_queue (queue.Queue): The queue gathering script output
-            app_state (ApplicationState): General state of application
-        """
-
-        self._output_queue = output_queue
-        self.app_state = app_state
-        self.current_runner: ScriptRunner = None
-        self._lock = threading.Lock()
-        self._paused = False
-
-
-    @contextmanager
-    def create_runner( self ) -> Generator[ Any, Any, Any ]:
-        """ Contextmanager taking care of runner bootup and cleanup """
-
-        with self._lock:
-            if self.current_runner is not None:
-                raise RuntimeError( 'Another script is running, only one allowed at a time.' )
-
-            runner = ScriptRunner( output_queue = self._output_queue, app_state = self.app_state, exec_manager = self )
-            self.current_runner = runner
-
-        try:
-            yield runner
-
-        except Exception as e:
-            self._output_queue.put( {
-                'line': 'Exception ❗: {error}'.format( error = str( e ) ),
-                'tag': OutputStyleTags.SYSERROR,
-                'finished': True,
-                'exec_item': runner._exec_item
-            } )
-            raise
-
-        finally:
-            with self._lock:
-                if self.current_runner == runner:
-                    self.current_runner = None
-
-
-    def is_paused( self ) -> bool:
-        """ Check if current script is paused """
-
-        return self._paused
-
-
-    def is_running( self ) -> bool:
-        """ Verify if a script is running
-
-        Returns:
-            (bool): True if a runner is currently executing
-        """
-
-        with self._lock:
-            return self.current_runner is not None and not self._paused
-
-
-    def pause_current_script( self ) -> None:
-        """ Pause the currently running script """
-
-        import psutil
-
-        try:
-            pid = self.current_runner.current_process.pid
-            process = psutil.Process( pid )
-
-            print( f'DEBUG: Process status before: { process.status() }')
-
-            process.suspend()
-
-            print( f'DEBUG: Process status after: { process.status() }')
-
-            # Check for children
-            children = process.children( recursive = True )
-            print( f'DEBUG: Child processes: { len( children ) }')
-            for child in children:
-                print( f'  - Child PID { child.pid }: { child.name() } - { child.status() }' )
-                child.suspend()  # Suspend children too!
-                print( f'  - { child.status() }' )
-
-            self._paused = True
-            return True
-
-        except NoSuchProcess:
-            return False
-
-
-    def resume_current_script( self ) -> None:
-        """ Resume execution of current script """
-
-        import psutil
-
-        try:
-            pid = self.current_runner.current_process.pid
-            process = psutil.Process( pid )
-
-            print( f'DEBUG: Process status before: { process.status() }')
-
-            process.resume()
-
-            print( f'DEBUG: Process status after: { process.status() }')
-
-            # Check for children
-            children = process.children( recursive = True )
-            print( f'DEBUG: Child processes: { len( children ) }')
-            for child in children:
-                print( f'  - Child PID { child.pid }: { child.name() } - { child.status() }' )
-                child.resume()  # Resume children too!
-                print( f'  - { child.status() }' )
-
-            self._paused = True
-            return True
-
-        except NoSuchProcess:
-            return False
-
-
-    def stop_current_script( self ) -> None:
-        """ Stop/terminate the currently running script """
-
-        with self._lock:
-            if self.current_runner:
-                self.current_runner.terminate()
-
 
 class ScriptRunner:
     def __init__( self, output_queue: Queue, app_state: ApplicationState, exec_manager: ScriptExecutionManager ) -> None:
@@ -195,7 +59,7 @@ class ScriptRunner:
                     enable_stop_button_callback: Callable,
                     enable_pause_button_callback: Callable,
                     stop_pause_button_blinking_callback: Callable,
-                    run_input: str
+                    run_input: list[ str ]
                   ) -> None:
         """ Start process to run selected script
 
