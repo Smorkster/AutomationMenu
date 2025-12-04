@@ -26,6 +26,7 @@ class Settings:
         self._send_mail_on_error = settings_dict.get( 'send_mail_on_error', False )
         self._include_ss_in_error_mail = settings_dict.get( 'include_ss_in_error_mail', False )
         self._current_language = settings_dict.get( 'current_language', 'sv_SE' )
+        self._keepass_shortcut = settings_dict.get( 'keepass_shortcut', { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } )
 
         self._saved_sequences = settings_dict.get( 'saved_sequences', [] )
 
@@ -141,18 +142,49 @@ class Settings:
 
     @saved_sequences.setter
     def saved_sequences( self, value: list[ Sequence ] ) -> None:
-        """ Property setter function to set 'saved_sequences """
+        """ Property setter function to set 'saved_sequences' """
 
         self._saved_sequences = value
 
         if self._save_callback:
             self._save_callback( self )
 
+
+    @property
+    def keepass_shortcut( self ) -> dict:
+        """ Property function to get 'keepass_shortcut' """
+
+        return self.get( 'keepass_shortcut' )
+
+
+    @keepass_shortcut.setter
+    def keepass_shortcut( self, value: dict ) -> None:
+        """ Property setter function to set 'keepass_shortcut'
+
+        Args:
+            value (dict): Value to set
+        """
+
+        self._keepass_shortcut = value
+
+        if self._save_callback:
+            self._save_callback( self )
+
+
     def get( self, key: str ) -> any:
-        """ Get attribute with corrected name
+        """ Get attribute with requested name
 
         Args:
             key (str): Key of dict
         """
 
         return getattr( self, f'_{ key }' )
+
+
+    def set_keepass_shortcut( self, value_tup: tuple ) -> None:
+        """ Set value of 'keepass_shortcut' """
+
+        self._keepass_shortcut[ value_tup[ 0 ] ] = value_tup[ 1 ]
+
+        if self._save_callback:
+            self._save_callback( self )

@@ -11,6 +11,8 @@ Created: 2025-09-25
 from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Optional
 
+from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
+
 if TYPE_CHECKING:
     from automation_menu.core.script_execution_manager import ScriptExecutionManager
 
@@ -173,49 +175,6 @@ class ScriptRunner:
         )
 
 
-    def terminate( self ) -> None:
-        """ Force the running process to terminate """
-
-        def _process_reaper( p: subprocess.Popen ) -> None:
-            """ Find and end any child process """
-
-            children = psutil.Process( p.pid ).children( recursive = True )
-
-            for child in children:
-                child.kill()
-
-            p.kill()
-
-
-        if self.current_process:
-            from automation_menu.utils.localization import _
-            line = ''
-
-            try:
-                self._terminated = True
-                self._output_queue.put( SysInstructions.PROCESSTERMINATED )
-                _process_reaper( self.current_process )
-
-            except subprocess.SubprocessError as e:
-                line = _( 'Termination - SubprocessError: {e}' ).format( e = str( e ) )
-                _process_reaper( self.current_process )
-
-            except subprocess.CalledProcessError:
-                line = _( 'Termination - CalledProcessError: {e}' ).format( e = str( e ) )
-                _process_reaper( self.current_process )
-
-            except Exception as e:
-                line = _( 'Termination - Exception: {e}' ).format( e = str( e ) )
-                _process_reaper( self.current_process )
-
-            if len( line ) > 0:
-                self._output_queue.put( {
-                    'line': line,
-                    'tag': OutputStyleTags.SYSERROR,
-                    'exec_item': self._exec_item
-                } )
-
-
     def _read_stdout( self ) -> None:
         """ Monitor standard output from running process """
 
@@ -325,3 +284,64 @@ class ScriptRunner:
         import re
 
         return re.search( r'^.*\((.*)\)<module>\(\)', line.lower() ) or re.search( 'At .*:{l}', line )
+
+
+    def send_api_response( self, response: str ) -> None:
+        """ Send the API response the script stdin
+
+        Args:
+            response (str): String formated response to send
+        """
+
+        msg = f'{ MESSAGE_START }{ response }{ MESSAGE_END }\n'
+
+        try:
+            self.current_process.stdin.write( msg )
+            self.current_process.stdin.flush()
+
+        except:
+            pass
+
+
+
+    def terminate( self ) -> None:
+        """ Force the running process to terminate """
+
+        def _process_reaper( p: subprocess.Popen ) -> None:
+            """ Find and end any child process """
+
+            children = psutil.Process( p.pid ).children( recursive = True )
+
+            for child in children:
+                child.kill()
+
+            p.kill()
+
+
+        if self.current_process:
+            from automation_menu.utils.localization import _
+            line = ''
+
+            try:
+                self._terminated = True
+                self._output_queue.put( SysInstructions.PROCESSTERMINATED )
+                _process_reaper( self.current_process )
+
+            except subprocess.SubprocessError as e:
+                line = _( 'Termination - SubprocessError: {e}' ).format( e = str( e ) )
+                _process_reaper( self.current_process )
+
+            except subprocess.CalledProcessError:
+                line = _( 'Termination - CalledProcessError: {e}' ).format( e = str( e ) )
+                _process_reaper( self.current_process )
+
+            except Exception as e:
+                line = _( 'Termination - Exception: {e}' ).format( e = str( e ) )
+                _process_reaper( self.current_process )
+
+            if len( line ) > 0:
+                self._output_queue.put( {
+                    'line': line,
+                    'tag': OutputStyleTags.SYSERROR,
+                    'exec_item': self._exec_item
+                } )

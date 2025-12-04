@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 from tkinter import E, N, S, W, BooleanVar, StringVar
-from tkinter.ttk import Checkbutton, Combobox, Frame, Label, LabelFrame, Notebook
+from tkinter.ttk import Checkbutton, Combobox, Entry, Frame, Label, LabelFrame, Notebook
 
 from automation_menu.models import Settings
 
@@ -60,94 +60,170 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
 
     ######################
     # Application settings
+    tab_frame_row = 0
+
     app_settings_group_title = Label( text=_( 'Application settings' ), style = 'LabelFrameTitle.TLabel' )
     app_settings_group = LabelFrame( master = tab, labelwidget = app_settings_group_title )
-    app_settings_group.grid( column = 0, row = 0, sticky = ( N, W, E ) )
-    app_settings_group.rowconfigure( index = 0, weight = 0 )
-    app_settings_group.rowconfigure( index = 1, weight = 0 )
+    app_settings_group.grid( column = 0, row = tab_frame_row, sticky = ( N, W, E ) )
+    app_settings_group.grid_columnconfigure( index = 0, weight = 0, uniform = 'titles' )
+    app_settings_group.grid_columnconfigure( index = 1, weight = 1, uniform = 'values' )
     main_self.app_context.language_manager.add_translatable_widget( ( app_settings_group_title, 'Application settings' ) )
 
+    row = 0
+
+    app_settings_group.rowconfigure( index = row, weight = 0 )
+    chb_on_top_title = Label( master = app_settings_group, text = _( 'Set as topmost window' ), padding = ( 5, 10 ) )
+    chb_on_top_title.grid( column = 0, row = row, sticky = ( W, E ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( chb_on_top_title, 'Set as topmost window' ) )
+
     val_chb_on_top = BooleanVar( value = settings.get( 'on_top' ) )
-    chbTopMost = Checkbutton( master = app_settings_group,
-                                 text = _( 'Set as topmost window' ),
-                                 variable = val_chb_on_top,
-                                 command = lambda: main_self.set_on_top( val_chb_on_top.get() ) )
-    tt = AlwaysOnTopToolTip( widget = chbTopMost, msg = _ ( 'Shall the window be set as topmost, above all other windows' ) )
-    chbTopMost.grid( column = 0 , row = 0, sticky = ( N, W ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( chbTopMost, 'Set as topmost window' ) )
+    chb_on_top = Checkbutton( master = app_settings_group,
+                             variable = val_chb_on_top,
+                             command = lambda: main_self.set_on_top( val_chb_on_top.get() ) )
+    chb_on_top.grid( column = 1, row = row, sticky = ( N, W ) )
+    main_self.settings_ui[ 'chbTopMost' ] = chb_on_top
+
+    tt = AlwaysOnTopToolTip( widget = chb_on_top, msg = _ ( 'Shall the window be set as topmost, above all other windows' ) )
     main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Shall the window be set as topmost, above all other windows' , False ) )
 
-    main_self.settings_ui[ 'chbTopMost' ] = chbTopMost
+    row += 1
+
+    app_settings_group.rowconfigure( index = row, weight = 0 )
+    chb_minimize_on_running_title = Label( master = app_settings_group, text = _( 'Minimize size during script execution' ), padding = ( 5, 10 ) )
+    chb_minimize_on_running_title.grid( column = 0, row = row, sticky = ( W, E ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( chb_minimize_on_running_title, 'Minimize size during script execution' ) )
 
     val_chb_minimize_on_running = BooleanVar( value = settings.get( 'minimize_on_running' ) )
-    chbMinimizeOnRunning = Checkbutton( master = app_settings_group,
-                                              text = _( 'Minimize size during script execution' ),
-                                              variable = val_chb_minimize_on_running,
-                                              command = lambda: main_self.set_minimize_on_running( val_chb_minimize_on_running.get() ) )
-    tt = AlwaysOnTopToolTip( widget = chbMinimizeOnRunning, msg = _( 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' ) )
-    chbMinimizeOnRunning.grid( column = 0 , row = 1, sticky = ( N, W ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( chbMinimizeOnRunning, 'Minimize size during script execution' ) )
+    chb_minimize_on_running = Checkbutton( master = app_settings_group,
+                                          variable = val_chb_minimize_on_running,
+                                          command = lambda: main_self.set_minimize_on_running( val_chb_minimize_on_running.get() ) )
+    chb_minimize_on_running.grid( column = 1, row = row, sticky = ( N, W ) )
+    main_self.settings_ui[ 'chbMinimizeOnRunning' ] = chb_minimize_on_running
+
+    tt = AlwaysOnTopToolTip( widget = chb_minimize_on_running, msg = _( 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' ) )
     main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' , False ) )
 
-    main_self.settings_ui[ 'chbMinimizeOnRunning' ] = chbMinimizeOnRunning
+    row += 1
 
-    ######################
-    # Application language
-    language_group_title = Label( text = _( 'Application language' ), style = 'LabelFrameTitle.TLabel' )
-    language_group = LabelFrame( master = tab, labelwidget = language_group_title )
-    language_group.grid( column = 0 , row = 1, sticky = ( N, W, E ) )
-    language_group.columnconfigure( index = 0, weight = 0 )
-    language_group.columnconfigure( index = 1, weight = 0 )
-    main_self.app_context.language_manager.add_translatable_widget( ( language_group_title, 'Application language' ) )
-
-    lblCurrentLanguageTitle = Label( language_group, text = _( 'Application language' ), padding = ( 5, 10 ) )
-    lblCurrentLanguageTitle.grid( column = 0, row = 0, sticky = ( N, W ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( lblCurrentLanguageTitle, 'Application language' ) )
+    app_settings_group.rowconfigure( index = row, weight = 0 )
+    cmb_current_language_title = Label( master = app_settings_group, text = _( 'Application language' ), padding = ( 5, 10 ) )
+    cmb_current_language_title.grid( column = 0, row = row, sticky = ( N, W ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( cmb_current_language_title, 'Application language' ) )
 
     val_cmb_current_language = StringVar( value = settings.get( 'current_language' ) )
-    cmbCurrentLanguage = Combobox( master = language_group,
+    cmb_current_language = Combobox( master = app_settings_group,
                                        values = get_available_languages(),
                                        textvariable = val_cmb_current_language.get )
-    cmbCurrentLanguage.bind( '<<ComboboxSelected>>', main_self.set_current_language )
-    cmbCurrentLanguage.grid( column = 1, row = 0, pady = 5, sticky = ( N, W ) )
-    cmbCurrentLanguage.current( cmbCurrentLanguage[ 'values' ].index( val_cmb_current_language.get() ) )
-    tt = AlwaysOnTopToolTip( widget = cmbCurrentLanguage, msg = _( 'Language to use in the application' ) )
+    cmb_current_language.bind( '<<ComboboxSelected>>', main_self.set_current_language )
+    cmb_current_language.grid( column = 1, row = row, padx = 5, pady = 5, sticky = ( W, E ) )
+    cmb_current_language.current( cmb_current_language[ 'values' ].index( val_cmb_current_language.get() ) )
+    main_self.settings_ui[ 'cmbCurrentLanguage' ] = cmb_current_language
+
+    tt = AlwaysOnTopToolTip( widget = cmb_current_language, msg = _( 'Language to use in the application' ) )
     main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Language to use in the application' , False ) )
 
-    main_self.settings_ui[ 'cmbCurrentLanguage' ] = cmbCurrentLanguage
+    row += 1
+
+    app_settings_group.rowconfigure( index = row, weight = 0 )
+    keepass_shortcut_title = Label( master = app_settings_group, text = _( 'KeePass shortcut' ), padding = ( 5, 10 ) )
+    keepass_shortcut_title.grid( column = 0, row = row, sticky = ( N, W ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( keepass_shortcut_title, 'KeePass shortcut' ) )
+
+    keepass_shortcut_value_frame = Frame( master = app_settings_group )
+    keepass_shortcut_value_frame.grid( column = 1, row = row, sticky = ( N, W, E ) )
+
+    val_keepass_shortcut_ctrl = BooleanVar( value = main_self.app_state.settings.get( 'keepass_shortcut' ).get( 'ctrl' ) )
+    keepass_shortcut_ctrl = Checkbutton( master = keepass_shortcut_value_frame,
+                                        text = _( 'CTRL' ),
+                                        variable = val_keepass_shortcut_ctrl,
+                                        command = lambda: main_self.app_state.settings.set_keepass_shortcut( value_tup = ( 'ctrl', val_keepass_shortcut_ctrl.get() ) ) )
+    keepass_shortcut_ctrl.grid( column = 0, row = 0, sticky = ( N, W ) )
+    main_self.settings_ui[ 'keepass_shortcut_ctrl' ] = keepass_shortcut_ctrl
+    main_self.settings_ui[ 'keepass_shortcut_ctrl_val' ] = val_keepass_shortcut_ctrl
+    main_self.app_context.language_manager.add_translatable_widget( ( keepass_shortcut_ctrl, 'CTRL' ) )
+    keepass_shortcut_ctrl.update_idletasks()
+
+    val_keepass_shortcut_alt = BooleanVar( value = main_self.app_state.settings.get( 'keepass_shortcut' ).get( 'alt' ) )
+    keepass_shortcut_alt = Checkbutton( master = keepass_shortcut_value_frame,
+                                       text = _( 'ALT' ),
+                                       variable = val_keepass_shortcut_alt,
+                                       command = lambda : main_self.app_state.settings.set_keepass_shortcut( value_tup = ( 'alt', val_keepass_shortcut_alt.get() ) ) )
+    keepass_shortcut_alt.grid( column = 1, row = 0, sticky = ( N, W ) )
+    main_self.settings_ui[ 'keepass_shortcut_alt' ] = keepass_shortcut_alt
+    main_self.settings_ui[ 'keepass_shortcut_alt_val' ] = val_keepass_shortcut_alt
+    main_self.app_context.language_manager.add_translatable_widget( ( keepass_shortcut_alt, 'ALT' ) )
+    keepass_shortcut_alt.update_idletasks()
+
+    val_keepass_shortcut_shift = BooleanVar( value = main_self.app_state.settings.get( 'keepass_shortcut' ).get( 'shift' ) )
+    keepass_shortcut_shift = Checkbutton( master = keepass_shortcut_value_frame,
+                                         text = _( 'Shift' ),
+                                         variable = val_keepass_shortcut_shift,
+                                         command = lambda *args: main_self.app_state.settings.set_keepass_shortcut( value_tup = ( 'shift', val_keepass_shortcut_shift.get() ) ) )
+    keepass_shortcut_shift.grid( column = 2, row = 0, sticky = ( N, W ) )
+    main_self.settings_ui[ 'keepass_shortcut_shift' ] = keepass_shortcut_shift
+    main_self.settings_ui[ 'keepass_shortcut_shift_val' ] = val_keepass_shortcut_shift
+    main_self.app_context.language_manager.add_translatable_widget( ( keepass_shortcut_shift, 'Shift' ) )
+    keepass_shortcut_shift.update_idletasks()
+
+    val_keepass_shortcut_key = StringVar( value = main_self.app_state.settings.get( 'keepass_shortcut' ).get( 'key' ) )
+    keepass_shortcut_key = Entry( master = keepass_shortcut_value_frame,
+                                 textvariable = val_keepass_shortcut_key )
+    val_keepass_shortcut_key.trace_add( mode = 'write', callback = lambda *args: main_self.app_state.settings.set_keepass_shortcut( value_tup = ( 'key', val_keepass_shortcut_key.get() ) ) )
+    keepass_shortcut_key.grid( column = 3, row = 0, padx = 5, pady = 5, sticky = ( W ) )
+    main_self.settings_ui[ 'keepass_shortcut_key' ] = keepass_shortcut_key
+    main_self.settings_ui[ 'keepass_shortcut_key_val' ] = val_keepass_shortcut_key
+    keepass_shortcut_key.update_idletasks()
+
+    tt = AlwaysOnTopToolTip( widget = keepass_shortcut_key, msg = _( 'Shortcut used to activate KeePass for auto typing' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Shortcut used to activate KeePass for auto typing' , False ) )
+
+    keepass_shortcut_value_frame.update_idletasks()
 
     ###############
     # Errorhandling
+    tab_frame_row += 1
+
     error_group_title = Label( text = _( 'Errorhandling' ), style = 'LabelFrameTitle.TLabel' )
     error_group = LabelFrame( tab, labelwidget = error_group_title )
-    error_group.grid( column = 0, row = 2, sticky = ( N, W, E ) )
-    error_group.rowconfigure( index = 0, weight = 0 )
-    error_group.rowconfigure( index = 1, weight = 0 )
+    error_group.grid_columnconfigure( index = 0, weight = 0, uniform = 'titles' )
+    error_group.grid_columnconfigure( index = 1, weight = 1, uniform = 'values' )
+    error_group.grid( column = 0, row = tab_frame_row, sticky = ( N, W, E ) )
     main_self.app_context.language_manager.add_translatable_widget( ( error_group_title, 'Errorhandling' ) )
 
-    val_chb_send_mail_on_error = BooleanVar( value = settings.get( 'send_mail_on_error' ) )
-    chbSendMailOnError = Checkbutton( master = error_group,
-                                                    text = _( 'Send mail to developer on script error' ),
-                                                    variable = val_chb_send_mail_on_error,
-                                                    command = lambda: main_self.set_send_mail_on_error( val_chb_send_mail_on_error.get() ) )
-    tt = AlwaysOnTopToolTip( widget = chbSendMailOnError, msg = _( 'Should an mail be sent to its developer if an error occurs in the script?' ) )
-    chbSendMailOnError.grid( column = 0 , row = 0, sticky = ( N, W ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( chbSendMailOnError, 'Send mail to developer on script error' ) )
+    row = 0
+
+    error_group.rowconfigure( index = row, weight = 0 )
+    chb_send_mail_on_error_title = Label( master = error_group, text = _( 'Send mail to developer on script error' ), padding = ( 5, 10 ) )
+    chb_send_mail_on_error_title.grid( column = 0, row = row, sticky = ( W, E ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( chb_send_mail_on_error_title, 'Send mail to developer on script error' ) )
+
+    val_chb_send_mail_on_error = BooleanVar( value = main_self.app_state.settings.get( 'send_mail_on_error' ) )
+    chb_send_mail_on_error = Checkbutton( master = error_group,
+                                          variable = val_chb_send_mail_on_error,
+                                          command = lambda: main_self.set_send_mail_on_error( val_chb_send_mail_on_error.get() ) )
+    chb_send_mail_on_error.grid( column = 1, row = 0, sticky = ( W, E ) )
+    main_self.settings_ui[ 'chbSendMailOnError' ] = chb_send_mail_on_error
+
+    tt = AlwaysOnTopToolTip( widget = chb_send_mail_on_error, msg = _( 'Should an mail be sent to its developer if an error occurs in the script?' ) )
     main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Should an mail be sent to its developer if an error occurs in the script?' , False ) )
 
-    main_self.settings_ui[ 'chbSendMailOnError' ] = chbSendMailOnError
+    row += 1
 
-    val_chb_include_ss_in_error_mail = BooleanVar( value = settings.get( 'include_ss_in_error_mail' ) )
-    chbIncludeSsInErrorMail = Checkbutton( master = error_group,
-                                                    text = _( 'Include screenshot in mail when reporting error' ),
-                                                    variable = val_chb_include_ss_in_error_mail,
-                                                    command = lambda: main_self.set_include_ss_in_error_mail( val_chb_include_ss_in_error_mail.get() ) )
-    tt = AlwaysOnTopToolTip( widget = chbIncludeSsInErrorMail, msg = _( 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' ) )
-    chbIncludeSsInErrorMail.grid( column = 0 , row = 1, padx = 20, sticky = ( N, W ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( chbIncludeSsInErrorMail, 'Include screenshot in mail when reporting error' ) )
+    error_group.rowconfigure( index = row, weight = 0 )
+    chb_include_screenshot_in_errormail_title = Label( master = error_group, text = _( 'Include screenshot in mail when reporting error' ), padding = ( 5, 10 ) )
+    chb_include_screenshot_in_errormail_title.grid( column = 0, row = row, sticky = ( W, E ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( chb_include_screenshot_in_errormail_title, 'Include screenshot in mail when reporting error' ) )
+
+    val_chb_include_ss_in_error_mail = BooleanVar( value = main_self.app_state.settings.get( 'include_ss_in_error_mail' ) )
+    chb_include_screenshot_in_errormail = Checkbutton( master = error_group,
+                                                      variable = val_chb_include_ss_in_error_mail,
+                                                      command = lambda: main_self.set_include_ss_in_error_mail( val_chb_include_ss_in_error_mail.get() ) )
+    chb_include_screenshot_in_errormail.grid( column = 1, row = row, sticky = ( W, E ) )
+    main_self.settings_ui[ 'chbIncludeSsInErrorMail' ] = chb_include_screenshot_in_errormail
+
+    tt = AlwaysOnTopToolTip( widget = chb_include_screenshot_in_errormail, msg = _( 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' ) )
     main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' , False ) )
 
     if not val_chb_send_mail_on_error.get():
-        chbIncludeSsInErrorMail.config( state = 'disabled' )
+        chb_include_screenshot_in_errormail.config( state = 'disabled' )
 
-    main_self.settings_ui[ 'chbIncludeSsInErrorMail' ] = chbIncludeSsInErrorMail

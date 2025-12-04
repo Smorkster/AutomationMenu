@@ -64,7 +64,9 @@ class AutomationMenuWindow:
 
             'clear_status': self.clear_status,
             'get_status': self.get_status,
-            'set_status': self.set_status
+            'set_status': self.set_status,
+
+            'setting': self.setting
         }
         self.sequence_callbacks = {
             'op_abort_add_sequence_step': self.op_abort_add_sequence_step,
@@ -573,6 +575,17 @@ class AutomationMenuWindow:
         # endregion
 
 
+    # region Settings API callbacks
+    def setting( self, key_dict: dict ) -> dict:
+        """ Return setting through the API """
+
+        if self.app_context.execution_manager.current_runner:
+            setting = self.app_state.settings.get( key_dict[ 'key' ] )
+            self.root.after( 10, lambda: self.app_context.execution_manager.current_runner.send_api_response( response = setting ) )
+
+    # endregion Settings API callbacks
+
+
     # region Textstatus API callbacks
     def clear_status( self, *args: Tuple ) -> None:
         """ Remove all statustext """
@@ -583,21 +596,9 @@ class AutomationMenuWindow:
     def get_status( self, *args: Tuple ) -> None:
         """ Return current statustext """
 
-        def _send_status() -> None:
-            """ Return current status text """
-
-            if self.app_context.execution_manager.current_runner:
-                status = self.status_widgets[ 'text_status' ].cget( 'text' )
-                msg = f'{ MESSAGE_START }{ status }{ MESSAGE_END }\n'
-
-                try:
-                    self.app_context.execution_manager.current_runner.current_process.stdin.write( msg )
-                    self.app_context.execution_manager.current_runner.current_process.stdin.flush()
-
-                except:
-                    pass
-
-        self.root.after( 10, _send_status )
+        if self.app_context.execution_manager.current_runner:
+            status = self.status_widgets[ 'text_status' ].cget( 'text' )
+            self.root.after( 10, lambda: self.app_context.execution_manager.current_runner.send_api_response( response = status ) )
 
 
     def set_status( self, set_data: dict ) -> None:
@@ -611,6 +612,7 @@ class AutomationMenuWindow:
 
         if set_data.get( 'append' ):
             text = self.status_widgets[ 'text_status' ].cget( 'text' ) + set_data[ 'set' ]
+
         else:
             text = set_data[ 'set' ]
 

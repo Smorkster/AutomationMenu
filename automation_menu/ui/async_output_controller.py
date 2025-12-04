@@ -31,7 +31,7 @@ class AsyncOutputController:
                 breakpoint_button: Button,
                 history_manager: HistoryManager,
                 api_callbacks: dict
-                ):
+                ) -> None:
         """ Controller for output queue
 
         Args:
@@ -73,7 +73,7 @@ class AsyncOutputController:
             self.loop.close()
 
 
-    async def _shutdown( self ):
+    async def _shutdown( self ) -> None:
         """ Gather and cancel all tasks and stop the async loop """
 
         tasks = [ t for t in asyncio.all_tasks( self.loop ) if t is not asyncio.current_task() ]
@@ -137,11 +137,11 @@ class AsyncOutputController:
             return 'timeout'
 
 
-    async def _async_process_queue_item( self, queue_item ) -> str | dict:
+    async def _async_process_queue_item( self, queue_item: str | SysInstructions | dict ) -> None | dict:
         """ Process gathered queue item
 
         Args:
-            message (Any): Queue item to process
+            queue_item (str | SysInstructions | dict): Queue item to process
 
         Returns:
             (dict): Message normalized to a dict
@@ -158,7 +158,7 @@ class AsyncOutputController:
         return self._normalize_queue_item( queue_item )
 
 
-    def _schedule_ui_update( self, processed_queue_item ) -> None:
+    def _schedule_ui_update( self, processed_queue_item: dict ) -> None:
         """ Schedule UI update with the processed message
 
         Args:
@@ -208,6 +208,7 @@ class AsyncOutputController:
         """ Run API-callback
 
         Args:
+            handler (str): Name of API handler callback
             data (dict): API data, this will be sent, unedited, to specified callback
         """
 
@@ -222,12 +223,6 @@ class AsyncOutputController:
 
         Returns:
             (dict): A normalized message dict
-        """
-
-        """
-        TODO
-        match_py = re.search( r'^.*((.*))<module>()', output[ 'line' ].lower() )
-        match_ps = re.search( r'^entering debug mode', output[ 'line' ].lower() )
         """
 
         if isinstance( queue_item, str ):
@@ -247,8 +242,15 @@ class AsyncOutputController:
             return queue_item
 
 
-    def _parse_api_message( self, queue_item: dict ):
-        """ """
+    def _parse_api_message( self, queue_item: dict ) -> dict:
+        """ Parse API call from queue item
+
+        Args:
+            queue_item (dict): Queue item to parse
+
+        Returns:
+            (dict): Dictionary with name of API handler and recieved data
+        """
 
         import re
 
@@ -274,6 +276,10 @@ class AsyncOutputController:
                         call_type = 'set'
 
                     return { 'type': 'api', 'handler': f'{ call_type }_status', 'data': api_msg[ 'data' ] }
+
+                elif api_msg[ 'type' ] == 'setting':
+
+                    return { 'type': 'api', 'handler': 'setting', 'data': api_msg.get( 'data' ) }
 
 
             except json.JSONDecodeError as e:

@@ -11,7 +11,9 @@ Created: 2025-11-11
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
+    from automation_menu.core.script_execution_manager import ScriptExecutionManager
     from automation_menu.ui.main_window import AutomationMenuWindow
 
 from logging import Logger
@@ -35,7 +37,7 @@ class ApplicationContext:
     language_manager: LanguageManager = None
     ldap_connection: Connection = None
     output_queue: queue.Queue = field( default_factory = queue.Queue )
-    execution_manager = None
+    execution_manager: ScriptExecutionManager = None
     sequence_manager: SequenceManager = None
     script_manager: ScriptManager = None
     main_window: AutomationMenuWindow = None
