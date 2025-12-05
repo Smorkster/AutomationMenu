@@ -16,9 +16,9 @@ from typing import Optional, Union
 class ScriptInputParameter:
     """ Represents a single input parameter """
 
-    name: str
-    type: Union[ str, int, bool ]
-    required: bool = True
+    alternatives: Optional[ list[ str ] ] = None
     default: Optional[ str ] = None
     description: str = ''
-    alternatives: Optional[ list[ str ] ] = None
+    name: str
+    required: bool = True
+    type: Union[ str, int, bool ]

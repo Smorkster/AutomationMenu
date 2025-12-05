@@ -8,7 +8,6 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-
 from tkinter import E, N, S, W, Text, ttk
 from typing import Callable
 

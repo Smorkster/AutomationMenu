@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 import os
 import re
+
 from queue import Queue
 
 from automation_menu.models import ScriptInfo, User

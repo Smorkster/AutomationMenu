@@ -9,14 +9,11 @@ Created: 2025-10-08
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable
-
-if TYPE_CHECKING:
-    from automation_menu.ui.main_window import AutomationMenuWindow
 
 from datetime import timedelta
 from tkinter import END, N, S, W, E, Event, Text
 from tkinter.ttk import Frame, Label, Notebook, Treeview
+from typing import Callable
 
 from automation_menu.models import ExecHistory
 

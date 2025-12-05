@@ -31,15 +31,6 @@ class Settings:
         self._saved_sequences = settings_dict.get( 'saved_sequences', [] )
 
 
-    def to_json( self ) -> dict:
-        """ Convert settings to a JSON-serializable dictionary """
-
-        d = { k.lstrip( '_' ): v
-             for k, v in self.__dict__.items()
-             if not callable( self.__dict__[ k ] ) }
-        return json.dumps( d, indent = 2 )
-
-
     @property
     def current_language( self ) -> str:
         """ Property function to get 'current_language' """
@@ -52,27 +43,6 @@ class Settings:
         """ Property setter function to set 'current_language' """
 
         self._current_language = value
-
-        if self._save_callback:
-            self._save_callback( self )
-
-
-    @property
-    def send_mail_on_error( self ) -> bool:
-        """ Property function to get 'send_mail_on_error' """
-
-        return self.get( 'send_mail_on_error' )
-
-
-    @send_mail_on_error.setter
-    def send_mail_on_error( self, value: bool ) -> None:
-        """ Property setter function to set 'send_mail_on_error'
-
-        Args:
-            value (bool): Value to set
-        """
-
-        self._send_mail_on_error = value
 
         if self._save_callback:
             self._save_callback( self )
@@ -94,6 +64,27 @@ class Settings:
         """
 
         self._include_ss_in_error_mail = value
+
+        if self._save_callback:
+            self._save_callback( self )
+
+
+    @property
+    def keepass_shortcut( self ) -> dict:
+        """ Property function to get 'keepass_shortcut' """
+
+        return self.get( 'keepass_shortcut' )
+
+
+    @keepass_shortcut.setter
+    def keepass_shortcut( self, value: dict ) -> None:
+        """ Property setter function to set 'keepass_shortcut'
+
+        Args:
+            value (dict): Value to set
+        """
+
+        self._keepass_shortcut = value
 
         if self._save_callback:
             self._save_callback( self )
@@ -151,21 +142,21 @@ class Settings:
 
 
     @property
-    def keepass_shortcut( self ) -> dict:
-        """ Property function to get 'keepass_shortcut' """
+    def send_mail_on_error( self ) -> bool:
+        """ Property function to get 'send_mail_on_error' """
 
-        return self.get( 'keepass_shortcut' )
+        return self.get( 'send_mail_on_error' )
 
 
-    @keepass_shortcut.setter
-    def keepass_shortcut( self, value: dict ) -> None:
-        """ Property setter function to set 'keepass_shortcut'
+    @send_mail_on_error.setter
+    def send_mail_on_error( self, value: bool ) -> None:
+        """ Property setter function to set 'send_mail_on_error'
 
         Args:
-            value (dict): Value to set
+            value (bool): Value to set
         """
 
-        self._keepass_shortcut = value
+        self._send_mail_on_error = value
 
         if self._save_callback:
             self._save_callback( self )
@@ -188,3 +179,12 @@ class Settings:
 
         if self._save_callback:
             self._save_callback( self )
+
+
+    def to_json( self ) -> dict:
+        """ Convert settings to a JSON-serializable dictionary """
+
+        d = { k.lstrip( '_' ): v
+             for k, v in self.__dict__.items()
+             if not callable( self.__dict__[ k ] ) }
+        return json.dumps( d, indent = 2 )

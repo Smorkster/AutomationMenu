@@ -17,13 +17,13 @@ from email.headerregistry import Address
 from email.message import EmailMessage
 
 from automation_menu.core.auth import get_user_adobject
-from automation_menu.models.application_state import ApplicationState
 from automation_menu.models import ScriptInfo
+from automation_menu.models.application_state import ApplicationState
 
 
 def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_state: ApplicationState ) -> EmailMessage:
     """ Compose the mail body
-    
+
     Args:
         script_info (ScriptInfo): Info about the script currently running
         error_msg (str): Message to for the mail
@@ -85,7 +85,7 @@ def _compose( script_info: ScriptInfo, error_msg: str, screenshot: str, app_stat
     return msg
 
 
-def report_script_error( app_state: ApplicationState, error_msg: str , script_info = None, screenshot:str = None ) -> bool:
+def report_script_error( app_state: ApplicationState, error_msg: str , script_info: ScriptInfo = None, screenshot:str = None ) -> bool:
     """ Send the composed mail to script author
 
     Args:

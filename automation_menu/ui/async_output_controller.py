@@ -53,52 +53,15 @@ class AsyncOutputController:
         self._executor = None
 
 
-    def start( self ) -> None:
-        """ Start thread to parse queue """
+    def _api_handler( self, handler: str, data: dict ) -> None:
+        """ Run API-callback
 
-        if not self._running:
-            self._running = True
-            self._loop_thread = threading.Thread( target = self._run_async_loop, daemon = True )
-            self._loop_thread.start()
+        Args:
+            handler (str): Name of API handler callback
+            data (dict): API data, this will be sent, unedited, to specified callback
+        """
 
-
-    def closedown( self ) -> None:
-        """ Close asyncio """
-
-        self._running = False
-
-        if self.loop.is_running():
-            self._loop_thread.join( timeout = 3 )
-            self.loop.stop()
-            self.loop.close()
-
-
-    async def _shutdown( self ) -> None:
-        """ Gather and cancel all tasks and stop the async loop """
-
-        tasks = [ t for t in asyncio.all_tasks( self.loop ) if t is not asyncio.current_task() ]
-
-        for task in tasks:
-            task.cancel()
-
-        await asyncio.gather( *tasks, return_exceptions = True )
-        self.loop.stop()
-
-
-    def _run_async_loop( self ) -> None:
-        """" Startup the async loop """
-
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop( self.loop )
-
-        try:
-            self.loop.run_until_complete( self._async_processor() )
-
-        except:
-            pass
-
-        finally:
-            self.loop.close()
+        self.api_callbacks[ handler ]( data )
 
 
     async def _async_processor( self ) -> None:
@@ -123,20 +86,6 @@ class AsyncOutputController:
                 logging.error( f'Error in async processor: { e }' )
 
 
-    def _get_queue_item( self ) -> dict | str:
-        """ Get the last queue item inserted
-
-        Returns:
-            (dict | str): Queue item
-        """
-
-        try:
-            return self.output_queue.get( timeout = 1.5 )
-
-        except queue.Empty:
-            return 'timeout'
-
-
     async def _async_process_queue_item( self, queue_item: str | SysInstructions | dict ) -> None | dict:
         """ Process gathered queue item
 
@@ -158,15 +107,18 @@ class AsyncOutputController:
         return self._normalize_queue_item( queue_item )
 
 
-    def _schedule_ui_update( self, processed_queue_item: dict ) -> None:
-        """ Schedule UI update with the processed message
+    def _get_queue_item( self ) -> dict | str:
+        """ Get the last queue item inserted
 
-        Args:
-            processed_message (Any): Message to update output with
+        Returns:
+            (dict | str): Queue item
         """
 
-        if processed_queue_item:
-            self.text_widget.after( 0, lambda: self._handle_ui_update( processed_queue_item ) )
+        try:
+            return self.output_queue.get( timeout = 1.5 )
+
+        except queue.Empty:
+            return 'timeout'
 
 
     def _handle_ui_update( self, queue_item: dict | str ) -> None:
@@ -202,17 +154,6 @@ class AsyncOutputController:
             elif queue_item.get( 'finished' ):
                 queue_item[ 'exec_item' ].end = datetime.now()
                 self.history_manager.add_history_item( queue_item[ 'exec_item' ] )
-
-
-    def _api_handler( self, handler: str, data: dict ) -> None:
-        """ Run API-callback
-
-        Args:
-            handler (str): Name of API handler callback
-            data (dict): API data, this will be sent, unedited, to specified callback
-        """
-
-        self.api_callbacks[ handler ]( data )
 
 
     def _normalize_queue_item( self, queue_item: str | dict ) -> dict:
@@ -284,3 +225,62 @@ class AsyncOutputController:
 
             except json.JSONDecodeError as e:
                 pass
+
+
+    def _run_async_loop( self ) -> None:
+        """" Startup the async loop """
+
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop( self.loop )
+
+        try:
+            self.loop.run_until_complete( self._async_processor() )
+
+        except:
+            pass
+
+        finally:
+            self.loop.close()
+
+
+    def _schedule_ui_update( self, processed_queue_item: dict ) -> None:
+        """ Schedule UI update with the processed message
+
+        Args:
+            processed_message (Any): Message to update output with
+        """
+
+        if processed_queue_item:
+            self.text_widget.after( 0, lambda: self._handle_ui_update( processed_queue_item ) )
+
+
+    async def _shutdown( self ) -> None:
+        """ Gather and cancel all tasks and stop the async loop """
+
+        tasks = [ t for t in asyncio.all_tasks( self.loop ) if t is not asyncio.current_task() ]
+
+        for task in tasks:
+            task.cancel()
+
+        await asyncio.gather( *tasks, return_exceptions = True )
+        self.loop.stop()
+
+
+    def closedown( self ) -> None:
+        """ Close asyncio """
+
+        self._running = False
+
+        if self.loop.is_running():
+            self._loop_thread.join( timeout = 3 )
+            self.loop.stop()
+            self.loop.close()
+
+
+    def start( self ) -> None:
+        """ Start thread to parse queue """
+
+        if not self._running:
+            self._running = True
+            self._loop_thread = threading.Thread( target = self._run_async_loop, daemon = True )
+            self._loop_thread.start()

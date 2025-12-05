@@ -19,6 +19,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 
+
 @dataclass
 class Output:
     out_time: datetime

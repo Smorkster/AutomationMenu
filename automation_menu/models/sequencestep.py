@@ -17,8 +17,8 @@ from dataclasses import dataclass
 class SequenceStep:
     """ Definition of a sequence step """
 
-    script_file: str = None
     pre_set_parameters: dict[ str, str ] = None
-    stop_on_error: bool = False
-    step_index: int = 0
+    script_file: str = None
     script_info: str = None
+    step_index: int = 0
+    stop_on_error: bool = False

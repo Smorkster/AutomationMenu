@@ -10,11 +10,7 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
-from concurrent.futures import thread
 from typing import TYPE_CHECKING, Any, Callable, Generator
-
-from automation_menu.models.scriptinfo import ScriptInfo
-from automation_menu.ui.main_window import AutomationMenuWindow
 
 if TYPE_CHECKING:
     from automation_menu.models.application_state import ApplicationState
@@ -28,6 +24,8 @@ from psutil import NoSuchProcess
 from automation_menu.core.script_runner import ScriptRunner
 from automation_menu.models.application_state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags
+from automation_menu.models.scriptinfo import ScriptInfo
+from automation_menu.ui.main_window import AutomationMenuWindow
 
 
 class ScriptExecutionManager:
@@ -152,6 +150,22 @@ class ScriptExecutionManager:
             return False
 
 
+    def run_script_async( self, *, script_info: ScriptInfo, main_window: AutomationMenuWindow, api_callbacks: dict, enable_stop_button_callback: Callable, enable_pause_button_callback: Callable, stop_pause_button_blinking_callback: Callable, run_input: list[ str ], on_finished: Callable = None, ) -> None:
+        """ Launch script in async """
+
+        import threading
+
+        def sync_caller() -> None:
+            """ Async worker for script execution """
+
+            exec_item, exit_code, terminated = self.run_script_sync( script_info = script_info, main_window = main_window, api_callbacks = api_callbacks, enable_stop_button_callback = enable_stop_button_callback, enable_pause_button_callback = enable_pause_button_callback, stop_pause_button_blinking_callback = stop_pause_button_blinking_callback, run_input = run_input )
+
+            if on_finished:
+                on_finished( exec_item, exit_code, terminated )
+
+        threading.Thread( sync_caller, daemon = True ).start()
+
+
     def run_script_sync( self, script_info: ScriptInfo, main_window: AutomationMenuWindow, api_callbacks: dict, enable_stop_button_callback: Callable, enable_pause_button_callback: Callable, stop_pause_button_blinking_callback: Callable, run_input: list[ str ] ) -> None:
         """ Launch  """
 
@@ -172,22 +186,6 @@ class ScriptExecutionManager:
             terminated = runner._terminated
 
         return runner._exec_item, exit_code, terminated
-
-
-    def run_script_async( self, *, script_info: ScriptInfo, main_window: AutomationMenuWindow, api_callbacks: dict, enable_stop_button_callback: Callable, enable_pause_button_callback: Callable, stop_pause_button_blinking_callback: Callable, run_input: list[ str ], on_finished: Callable = None, ) -> None:
-        """ Launch script in async """
-
-        import threading
-
-        def sync_caller() -> None:
-            """ Async worker for script execution """
-
-            exec_item, exit_code, terminated = self.run_script_sync( script_info = script_info, main_window = main_window, api_callbacks = api_callbacks, enable_stop_button_callback = enable_stop_button_callback, enable_pause_button_callback = enable_pause_button_callback, stop_pause_button_blinking_callback = stop_pause_button_blinking_callback, run_input = run_input )
-
-            if on_finished:
-                on_finished( exec_item, exit_code, terminated )
-
-        threading.Thread( sync_caller, daemon = True ).start()
 
 
     def stop_current_script( self ) -> None:

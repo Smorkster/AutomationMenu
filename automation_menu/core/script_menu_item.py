@@ -62,7 +62,6 @@ class ScriptMenuItem:
             style = 'ScriptNormal.TLabel'
 
         self.menu_button = Label( self.script_menu, text = self.label_text, style = style, borderwidth = 1 )
-        #self.script_button.bind( '<Button-1>' , lambda e: self.run_script() )
         self.menu_button.bind( '<Button-1>' , lambda e: self._check_input_params() )
 
         # Add tooltip to this button
@@ -92,6 +91,15 @@ class ScriptMenuItem:
             self.run_script()
 
 
+    def continue_breakpoint( self ) -> None:
+        """ Continue execution of the script after hitting a breakpoint """
+
+        self.process.stdin.write( 'c\n' )
+        self.process.stdin.flush()
+        self.master_self.btnContinueBreakpoint.after( 0, self.master_self.enable_breakpoint_button() )
+        self._in_debug = False
+
+
     def on_enter( self, event: Event ) -> None:
         """ Change label background on mouse enter
 
@@ -118,15 +126,6 @@ class ScriptMenuItem:
 
         else:
             event.widget.configure( style = 'ScriptNormal.TLabel' )
-
-
-    def continue_breakpoint( self ) -> None:
-        """ Continue execution of the script after hitting a breakpoint """
-
-        self.process.stdin.write( 'c\n' )
-        self.process.stdin.flush()
-        self.master_self.btnContinueBreakpoint.after( 0, self.master_self.enable_breakpoint_button() )
-        self._in_debug = False
 
 
     def run_script( self ) -> None:

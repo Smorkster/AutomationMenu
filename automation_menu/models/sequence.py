@@ -18,7 +18,7 @@ from automation_menu.models.sequencestep import SequenceStep
 class Sequence:
     """ Define an automatic run sequence """
 
-    name: str
     description: str
+    name: str
     steps: list[ SequenceStep ]
     stop_on_error: bool

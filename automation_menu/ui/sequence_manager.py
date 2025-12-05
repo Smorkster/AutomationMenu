@@ -122,52 +122,6 @@ class SequenceManager:
         self._app_context.language_manager.add_translatable_widget( ( run_sequence, 'Run selected' ) )
 
 
-    def _create_steps_display( self ) -> None:
-        """ Create display frame to contain sequence steps """
-
-        from automation_menu.utils.localization import _
-
-        steps_display_frame: Frame = Frame( master = self._sequence_widgets[ 'main_frame' ] )
-        steps_display_frame.grid( column = 1, row = 0, rowspan = 3, sticky = ( N, S, W, E ) )
-        steps_display_frame.grid_columnconfigure( index = 0, weight = 1 )
-        steps_display_frame.grid_columnconfigure( index = 1, weight = 0 )
-        steps_display_frame.grid_rowconfigure( index = 0, weight = 0 )
-        steps_display_frame.grid_rowconfigure( index = 1, weight = 1 )
-        steps_display_frame.grid_rowconfigure( index = 2, weight = 0 )
-        self._sequence_widgets[ 'steps_display_frame' ] = steps_display_frame
-
-        steps_title: Label = Label( master = steps_display_frame, text = _( 'Steps in sequence' ), style = 'BiggerTitle.TLabel' )
-        steps_title.grid( column = 0, row = 0, sticky = ( W ) )
-
-        display_container: Frame = Frame( master = steps_display_frame )
-        display_container.grid( column = 0, columnspan = 2, row = 1, sticky = ( N, S, W, E ) )
-        display_container.grid_columnconfigure( index = 0, weight = 1 )
-        display_container.grid_rowconfigure( index = 0, weight = 1 )
-        self._sequence_widgets[ 'display_container' ] = display_container
-
-        container_canvas: Canvas = Canvas( master = display_container, highlightthickness = 0 )
-        container_canvas.grid( sticky = ( N, S, W, E ) )
-        container_canvas.grid_columnconfigure( index = 0, weight = 1 )
-        container_canvas.bind( '<Configure>', self._on_canvas_config )
-        self._sequence_widgets[ 'container_canvas' ] = container_canvas
-        container_canvas.bind_all( '<MouseWheel>' , self._on_mousewheel )
-
-        container_scrollbar: Scrollbar = Scrollbar( master = display_container, orient = 'vertical', command = container_canvas.yview )
-        container_scrollbar.grid( column = 1, row = 0, sticky = ( N, S ) )
-        self._sequence_widgets[ 'container_scrollbar' ] = container_scrollbar
-
-        container_canvas.configure( yscrollcommand = container_scrollbar.set )
-
-        steps_container: Frame = Frame( master = container_canvas )
-        steps_container.grid_columnconfigure( index = 0, weight = 1 )
-        steps_container.grid_rowconfigure( index = 0, weight = 1 )
-        steps_container.bind( '<Configure>', self._on_frame_config )
-        self._sequence_widgets[ 'steps_container' ] = steps_container
-
-        window_id = container_canvas.create_window( ( 0, 0 ), window = steps_container, anchor = 'nw' )
-        self._sequence_widgets[ 'window_id' ] = window_id
-
-
     def _create_sequence_editing_op_buttons( self ) -> None:
         """ Create buttons for editing a sequence """
 
@@ -275,6 +229,52 @@ class SequenceManager:
 
         for k in self._sequences.keys():
             sequence_list.insert( 'end', k )
+
+
+    def _create_steps_display( self ) -> None:
+        """ Create display frame to contain sequence steps """
+
+        from automation_menu.utils.localization import _
+
+        steps_display_frame: Frame = Frame( master = self._sequence_widgets[ 'main_frame' ] )
+        steps_display_frame.grid( column = 1, row = 0, rowspan = 3, sticky = ( N, S, W, E ) )
+        steps_display_frame.grid_columnconfigure( index = 0, weight = 1 )
+        steps_display_frame.grid_columnconfigure( index = 1, weight = 0 )
+        steps_display_frame.grid_rowconfigure( index = 0, weight = 0 )
+        steps_display_frame.grid_rowconfigure( index = 1, weight = 1 )
+        steps_display_frame.grid_rowconfigure( index = 2, weight = 0 )
+        self._sequence_widgets[ 'steps_display_frame' ] = steps_display_frame
+
+        steps_title: Label = Label( master = steps_display_frame, text = _( 'Steps in sequence' ), style = 'BiggerTitle.TLabel' )
+        steps_title.grid( column = 0, row = 0, sticky = ( W ) )
+
+        display_container: Frame = Frame( master = steps_display_frame )
+        display_container.grid( column = 0, columnspan = 2, row = 1, sticky = ( N, S, W, E ) )
+        display_container.grid_columnconfigure( index = 0, weight = 1 )
+        display_container.grid_rowconfigure( index = 0, weight = 1 )
+        self._sequence_widgets[ 'display_container' ] = display_container
+
+        container_canvas: Canvas = Canvas( master = display_container, highlightthickness = 0 )
+        container_canvas.grid( sticky = ( N, S, W, E ) )
+        container_canvas.grid_columnconfigure( index = 0, weight = 1 )
+        container_canvas.bind( '<Configure>', self._on_canvas_config )
+        self._sequence_widgets[ 'container_canvas' ] = container_canvas
+        container_canvas.bind_all( '<MouseWheel>' , self._on_mousewheel )
+
+        container_scrollbar: Scrollbar = Scrollbar( master = display_container, orient = 'vertical', command = container_canvas.yview )
+        container_scrollbar.grid( column = 1, row = 0, sticky = ( N, S ) )
+        self._sequence_widgets[ 'container_scrollbar' ] = container_scrollbar
+
+        container_canvas.configure( yscrollcommand = container_scrollbar.set )
+
+        steps_container: Frame = Frame( master = container_canvas )
+        steps_container.grid_columnconfigure( index = 0, weight = 1 )
+        steps_container.grid_rowconfigure( index = 0, weight = 1 )
+        steps_container.bind( '<Configure>', self._on_frame_config )
+        self._sequence_widgets[ 'steps_container' ] = steps_container
+
+        window_id = container_canvas.create_window( ( 0, 0 ), window = steps_container, anchor = 'nw' )
+        self._sequence_widgets[ 'window_id' ] = window_id
 
 
     def _create_step_form( self ) -> None:
@@ -535,6 +535,77 @@ class SequenceManager:
         self._persist_sequences()
 
 
+    def _sequence_runner( self, sequence: Sequence ) -> None:
+        """ Worker function to execute sequence and its steps
+
+        Args:
+            sequence (Sequence): Sequence to execute
+        """
+
+        from automation_menu.utils.localization import _
+
+        for step in sequence.steps:
+            exec_mgr: ScriptExecutionManager = self._app_context.execution_manager
+
+            run_args = build_run_args( step.pre_set_parameters )
+
+            with exec_mgr.create_runner() as runner:
+                runner.run_script( script_info = step.script_info,
+                                main_window = self._app_context.main_window.root,
+                                api_callbacks = self._app_context.main_window.api_callbacks,
+                                enable_stop_button_callback = self._app_context.main_window.enable_stop_script_button,
+                                enable_pause_button_callback = self._app_context.main_window.enable_pause_script_button,
+                                stop_pause_button_blinking_callback = self._app_context.main_window.stop_pause_button_blinking,
+                                run_input = run_args
+                )
+
+                runner.current_process.wait()
+                exit_code = runner._exec_item.exit_code
+                terminated = runner._terminated
+
+                effective_stop = step.stop_on_error or sequence.stop_on_error
+
+                if terminated:
+                    # Manual stop, abort sequence
+                    self._app_context.output_queue.put({
+                        "line": _( 'Aborted by user at step {i}' ).format( i = step.step_index ),
+                        "tag": OutputStyleTags.SYSINFO,
+                        "exec_item": runner._exec_item,
+                    })
+
+                    run_success = 1
+
+                elif exit_code != 0:
+                    if effective_stop:
+                        self._app_context.output_queue.put({
+                            "line": _( 'Stopped on error at step {i} (exit code: {e})' ).format( i = step.step_index, e = exit_code ),
+                            "tag": OutputStyleTags.SYSERROR,
+                            "exec_item": runner._exec_item,
+                        })
+
+                        run_success = 2
+
+                    else:
+                        self._app_context.output_queue.put({
+                            "line": _( 'Step {i} failed (exit code {e})' ).format( i = step.step_index, e = exit_code ),
+                            "tag": OutputStyleTags.SYSWARNING,
+                            "exec_item": runner._exec_item,
+                        })
+
+                        run_success = 3
+
+                run_success = 0
+
+            if run_success > 0:
+                self._app_context.output_queue.put( {
+                    'line': _( 'Sequence stopped due to individual step error' ),
+                    'tag': OutputStyleTags.SYSWARNING,
+                    'exec_item': None
+                } )
+
+                break
+
+
     def _show_step_form( self ) -> None:
         """ Display the form to edit/add sequence step """
 
@@ -634,6 +705,7 @@ class SequenceManager:
         self._sequence_widgets[ 'stop_sequence_on_error_field' ].config( state = 'normal' )
 
         self._sequence_widgets[ 'sequence_ops' ].grid()
+
 
     def create_sequence_tab( self, tabcontrol: Notebook, sequence_callbacks: list[ Callable ], translate_callback: Callable ) -> Frame:
         """ Create a Frame that displays and creates sequences """
@@ -774,77 +846,6 @@ class SequenceManager:
         } )
 
         threading.Thread( target = _mini_runner, daemon = True ).start()
-
-
-    def _sequence_runner( self, sequence: Sequence ) -> None:
-        """ Worker function to execute sequence and its steps
-
-        Args:
-            sequence (Sequence): Sequence to execute
-        """
-
-        from automation_menu.utils.localization import _
-
-        for step in sequence.steps:
-            exec_mgr: ScriptExecutionManager = self._app_context.execution_manager
-
-            run_args = build_run_args( step.pre_set_parameters )
-
-            with exec_mgr.create_runner() as runner:
-                runner.run_script( script_info = step.script_info,
-                                main_window = self._app_context.main_window.root,
-                                api_callbacks = self._app_context.main_window.api_callbacks,
-                                enable_stop_button_callback = self._app_context.main_window.enable_stop_script_button,
-                                enable_pause_button_callback = self._app_context.main_window.enable_pause_script_button,
-                                stop_pause_button_blinking_callback = self._app_context.main_window.stop_pause_button_blinking,
-                                run_input = run_args
-                )
-
-                runner.current_process.wait()
-                exit_code = runner._exec_item.exit_code
-                terminated = runner._terminated
-
-                effective_stop = step.stop_on_error or sequence.stop_on_error
-
-                if terminated:
-                    # Manual stop, abort sequence
-                    self._app_context.output_queue.put({
-                        "line": _( 'Aborted by user at step {i}' ).format( i = step.step_index ),
-                        "tag": OutputStyleTags.SYSINFO,
-                        "exec_item": runner._exec_item,
-                    })
-
-                    run_success = 1
-
-                elif exit_code != 0:
-                    if effective_stop:
-                        self._app_context.output_queue.put({
-                            "line": _( 'Stopped on error at step {i} (exit code: {e})' ).format( i = step.step_index, e = exit_code ),
-                            "tag": OutputStyleTags.SYSERROR,
-                            "exec_item": runner._exec_item,
-                        })
-
-                        run_success = 2
-
-                    else:
-                        self._app_context.output_queue.put({
-                            "line": _( 'Step {i} failed (exit code {e})' ).format( i = step.step_index, e = exit_code ),
-                            "tag": OutputStyleTags.SYSWARNING,
-                            "exec_item": runner._exec_item,
-                        })
-
-                        run_success = 3
-
-                run_success = 0
-
-            if run_success > 0:
-                self._app_context.output_queue.put( {
-                    'line': _( 'Sequence stopped due to individual step error' ),
-                    'tag': OutputStyleTags.SYSWARNING,
-                    'exec_item': None
-                } )
-
-                break
 
 
     def save_sequence( self ) -> None:

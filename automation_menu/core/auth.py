@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 import os
 import sys
+
 from dynamicinputbox import dynamic_inputbox as inputbox
 from ldap3 import ALL, Connection, Entry, Server
 from ldap3.core.exceptions import LDAPSocketOpenError

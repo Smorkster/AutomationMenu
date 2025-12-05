@@ -11,8 +11,6 @@ Created: 2025-09-25
 from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Optional
 
-from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
-
 if TYPE_CHECKING:
     from automation_menu.core.script_execution_manager import ScriptExecutionManager
 
@@ -25,12 +23,14 @@ import threading
 from queue import Queue
 from tkinter import Tk
 
+from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
 from automation_menu.models.application_state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags, SysInstructions
 from automation_menu.models.exechistory import ExecHistory
 from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.utils.email_handler import report_script_error
 from automation_menu.utils.screenshot import take_screenshot
+
 
 class ScriptRunner:
     def __init__( self, output_queue: Queue, app_state: ApplicationState, exec_manager: ScriptExecutionManager ) -> None:
@@ -52,57 +52,6 @@ class ScriptRunner:
         self._script_info = None
         self._in_breakpoint = False
         self._terminated = False
-
-
-    def run_script( self,
-                    script_info: ScriptInfo,
-                    main_window: Tk,
-                    api_callbacks: dict,
-                    enable_stop_button_callback: Callable,
-                    enable_pause_button_callback: Callable,
-                    stop_pause_button_blinking_callback: Callable,
-                    run_input: list[ str ]
-                  ) -> None:
-        """ Start process to run selected script
-
-        Args:
-            script_info (ScriptInfo): Script info gathered from the scripts info block
-            main_window (Tk): The main window
-            api_callbacks (dict): Dictionary for API callbacks
-            enable_stop_button_callback (Callable): A callback function for enabling the stop script button
-            enable_pause_button_callback (Callable): A callback function for enabling the pause/resume script button
-            stop_pause_button_blinking_callback (Callable): A callback function for stopping any current button blinking
-        """
-
-        from automation_menu.utils.localization import _
-
-        self._script_info = script_info
-        self.main_window = main_window
-        self.api_callbacks = api_callbacks
-        self.run_input = run_input
-        line = ''
-
-        try:
-            self.current_process = self._create_process()
-
-            enable_stop_button_callback()
-            enable_pause_button_callback()
-
-            self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ self._script_info.filename }_stdout' ).start()
-            self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()
-            self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
-
-        except subprocess.SubprocessError as e:
-            line = _( 'Subprocess error {error}' ).format( error = str( e ) )
-
-        except Exception as e:
-            line = _( 'Unexpected error {error}' ).format( error = str( e ) )
-
-        finally:
-            stop_pause_button_blinking_callback()
-
-        if len( line ) > 0:
-            self._collect_error_info( error = line )
 
 
     def _collect_error_info( self, error: str ) -> None:
@@ -175,61 +124,19 @@ class ScriptRunner:
         )
 
 
-    def _read_stdout( self ) -> None:
-        """ Monitor standard output from running process """
+    def _is_breakpoint_line( self, line: str ) -> bool:
+        """ Verify if a line from the output, corresponds with a breakpoint has occured in the running script
 
-        from automation_menu.utils.localization import _
+        Args:
+            line (str): Output line to check
 
-        while True:
-            try:
-                line = self.current_process.stdout.readline()
+        Returns:
+            (bool): True if line corresponds with breakpoint info message
+        """
 
-            except:
-                break
+        import re
 
-            if not line:
-                break
-
-            line_str = line.decode() if isinstance( line, bytes ) else line
-            line_nr = self._is_breakpoint_line( line_str )
-
-            if line_nr:
-                self._in_breakpoint = True
-                self._output_queue.put( {
-                    'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr ),
-                    'tag': OutputStyleTags.SYSINFO,
-                    'breakpoint': True,
-                    'exec_item': self._exec_item
-                } )
-            else:
-                self._output_queue.put( {
-                    'line': line_str.rstrip(),
-                    'tag': OutputStyleTags.INFO,
-                    'exec_item': self._exec_item
-                } )
-
-
-    def _read_stderr( self ) -> None:
-        """ Monitor standard error output from running process """
-
-        from automation_menu.utils.localization import _
-
-        while True:
-            try:
-                line = self.current_process.stderr.readline()
-
-            except:
-                break
-
-            if not line:
-                break
-
-            line_str = line.decode() if isinstance( line, bytes ) else line
-            self._output_queue.put( {
-                'line': line_str.rstrip(),
-                'tag': OutputStyleTags.ERROR,
-                'exec_item': self._exec_item
-            } )
+        return re.search( r'^.*\((.*)\)<module>\(\)', line.lower() ) or re.search( 'At .*:{l}', line )
 
 
     def _read_monitor_completion( self ) -> None:
@@ -271,19 +178,112 @@ class ScriptRunner:
         self.script_execution_manager._paused = False
 
 
-    def _is_breakpoint_line( self, line: str ) -> bool:
-        """ Verify if a line from the output, corresponds with a breakpoint has occured in the running script
+    def _read_stderr( self ) -> None:
+        """ Monitor standard error output from running process """
+
+        from automation_menu.utils.localization import _
+
+        while True:
+            try:
+                line = self.current_process.stderr.readline()
+
+            except:
+                break
+
+            if not line:
+                break
+
+            line_str = line.decode() if isinstance( line, bytes ) else line
+            self._output_queue.put( {
+                'line': line_str.rstrip(),
+                'tag': OutputStyleTags.ERROR,
+                'exec_item': self._exec_item
+            } )
+
+
+    def _read_stdout( self ) -> None:
+        """ Monitor standard output from running process """
+
+        from automation_menu.utils.localization import _
+
+        while True:
+            try:
+                line = self.current_process.stdout.readline()
+
+            except:
+                break
+
+            if not line:
+                break
+
+            line_str = line.decode() if isinstance( line, bytes ) else line
+            line_nr = self._is_breakpoint_line( line_str )
+
+            if line_nr:
+                self._in_breakpoint = True
+                self._output_queue.put( {
+                    'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr ),
+                    'tag': OutputStyleTags.SYSINFO,
+                    'breakpoint': True,
+                    'exec_item': self._exec_item
+                } )
+            else:
+                self._output_queue.put( {
+                    'line': line_str.rstrip(),
+                    'tag': OutputStyleTags.INFO,
+                    'exec_item': self._exec_item
+                } )
+
+
+    def run_script( self,
+                    script_info: ScriptInfo,
+                    main_window: Tk,
+                    api_callbacks: dict,
+                    enable_stop_button_callback: Callable,
+                    enable_pause_button_callback: Callable,
+                    stop_pause_button_blinking_callback: Callable,
+                    run_input: list[ str ]
+                  ) -> None:
+        """ Start process to run selected script
 
         Args:
-            line (str): Output line to check
-
-        Returns:
-            (bool): True if line corresponds with breakpoint info message
+            script_info (ScriptInfo): Script info gathered from the scripts info block
+            main_window (Tk): The main window
+            api_callbacks (dict): Dictionary for API callbacks
+            enable_stop_button_callback (Callable): A callback function for enabling the stop script button
+            enable_pause_button_callback (Callable): A callback function for enabling the pause/resume script button
+            stop_pause_button_blinking_callback (Callable): A callback function for stopping any current button blinking
         """
 
-        import re
+        from automation_menu.utils.localization import _
 
-        return re.search( r'^.*\((.*)\)<module>\(\)', line.lower() ) or re.search( 'At .*:{l}', line )
+        self._script_info = script_info
+        self.main_window = main_window
+        self.api_callbacks = api_callbacks
+        self.run_input = run_input
+        line = ''
+
+        try:
+            self.current_process = self._create_process()
+
+            enable_stop_button_callback()
+            enable_pause_button_callback()
+
+            self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ self._script_info.filename }_stdout' ).start()
+            self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()
+            self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
+
+        except subprocess.SubprocessError as e:
+            line = _( 'Subprocess error {error}' ).format( error = str( e ) )
+
+        except Exception as e:
+            line = _( 'Unexpected error {error}' ).format( error = str( e ) )
+
+        finally:
+            stop_pause_button_blinking_callback()
+
+        if len( line ) > 0:
+            self._collect_error_info( error = line )
 
 
     def send_api_response( self, response: str ) -> None:
@@ -301,7 +301,6 @@ class ScriptRunner:
 
         except:
             pass
-
 
 
     def terminate( self ) -> None:

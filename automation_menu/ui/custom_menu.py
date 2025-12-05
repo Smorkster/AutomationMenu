@@ -15,10 +15,11 @@ if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
 
 import tkinter as tk
+
 from tkinter import E, W, Event, Tk, ttk
 
-from automation_menu.core.script_menu_item import ScriptMenuItem
 from automation_menu.core.sequence_menu_item import SequenceMenuItem
+from automation_menu.core.script_menu_item import ScriptMenuItem
 from automation_menu.models import ScriptInfo
 
 
@@ -83,6 +84,13 @@ class CustomMenu:
             menu_object.menu_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
 
 
+    def hide_popup_menu( self, *args: Any ) -> None:
+        """ Hide the popup menu """
+
+        self.popup.withdraw()
+        self._visible = False
+
+
     def show_popup_menu( self ) -> None:
         """ Show the popup menu """
 
@@ -100,10 +108,3 @@ class CustomMenu:
 
             self.popup.focus_set()
             self._visible = True
-
-
-    def hide_popup_menu( self, *args: Any ) -> None:
-        """ Hide the popup menu """
-
-        self.popup.withdraw()
-        self._visible = False

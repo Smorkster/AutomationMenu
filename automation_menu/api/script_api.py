@@ -66,6 +66,36 @@ def _send( msg_type: str, data: dict ) -> None:
 
 
 # region Progressbar
+def determinate_progress() -> None:
+    """ API entry to set progressbar as determinate """
+
+    data = {
+        'set': 'determinate'
+    }
+
+    _send( msg_type = 'progress', data = data )
+
+
+def hide_progress() -> None:
+    """ API entry to hide progressbar """
+
+    data = {
+        'set': 'hide'
+    }
+
+    _send( msg_type = 'progress', data = data )
+
+
+def indeterminate_progress() -> None:
+    """ API entry to set progressbar as indeterminate """
+
+    data = {
+        'set': 'indeterminate'
+    }
+
+    _send( msg_type = 'progress', data = data )
+
+
 def set_progress( percent: float ) -> None:
     """ API entry to update progressbar in main window
 
@@ -88,37 +118,25 @@ def show_progress() -> None:
     }
 
     _send( msg_type = 'progress', data = data )
-
-
-def hide_progress() -> None:
-    """ API entry to hide progressbar """
-
-    data = {
-        'set': 'hide'
-    }
-
-    _send( msg_type = 'progress', data = data )
-
-
-def determinate_progress() -> None:
-    """ API entry to set progressbar as determinate """
-
-    data = {
-        'set': 'determinate'
-    }
-
-    _send( msg_type = 'progress', data = data )
-
-
-def indeterminate_progress() -> None:
-    """ API entry to set progressbar as indeterminate """
-
-    data = {
-        'set': 'indeterminate'
-    }
-
-    _send( msg_type = 'progress', data = data )
 # endregion Progressbar
+
+
+# region Settings
+def get_keepass_shortcut() -> dict:
+    """ Get KeePass global auto-type shortcut
+    This setting should be set by AutomationMenu user and should match
+    setting set in KeePass application
+
+    Returns:
+        (dict): A dictionary with keys to use for KeePass global auto type
+            Set dict will be formated like:
+            { "ctrl": bool, "alt": bool, "shift": bool, "key": str }
+    """
+
+    _send( msg_type = 'setting', data = { 'key': 'keepass_shortcut' } )
+
+    return _get_api_response()
+# endregion Settings
 
 
 # region Textstatus
@@ -162,21 +180,3 @@ def set_status( text: str, append: bool = False ) -> None:
 
     _send( msg_type = 'status', data = data )
 # endregion Textstatus
-
-
-# region Automation Settings > KeePass shortcut
-def get_keepass_shortcut() -> dict:
-    """ Get KeePass global auto-type shortcut
-    This setting should be set by AutomationMenu user and should match
-    setting set in KeePass application
-
-    Returns:
-        (dict): A dictionary with keys to use for KeePass global auto type
-            Set dict will be formated like:
-            { "ctrl": bool, "alt": bool, "shift": bool, "key": str }
-    """
-
-    _send( msg_type = 'setting', data = { 'key': 'keepass_shortcut' } )
-
-    return _get_api_response()
-# endregion Automation Settings > KeePass shortcut

@@ -22,28 +22,6 @@ from tkinter.ttk import Checkbutton, Combobox, Entry, Frame, Label, LabelFrame, 
 from automation_menu.models import Settings
 
 
-def get_settings_tab( tabcontrol: Notebook, settings: Settings, main_self: AutomationMenuWindow ) -> Frame:
-    """ Create a frame used as a tab to collect settings
-
-    Args:
-        tabcontrol (Notebook): Tabcontrol (Notebook) to place the frame in
-        settings (Settings): Collection of settings data
-        main_object (AutomationMenuWindow): Main object
-    """
-
-    from automation_menu.utils.localization import _
-
-    tabSettings = Frame( tabcontrol , padding = ( 5, 5, 5, 5 ) )
-    tabSettings.grid( sticky = ( N, S, E, W ) )
-
-    tabcontrol.add( child = tabSettings, text = _( 'Settings' ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( tabSettings, 'Settings' ) )
-
-    _list_settings( tab = tabSettings, settings = settings, main_self = main_self )
-
-    return tabSettings
-
-
 def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWindow ) -> None:
     """ Create widgets for application settings
 
@@ -227,3 +205,24 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     if not val_chb_send_mail_on_error.get():
         chb_include_screenshot_in_errormail.config( state = 'disabled' )
 
+
+def get_settings_tab( tabcontrol: Notebook, settings: Settings, main_self: AutomationMenuWindow ) -> Frame:
+    """ Create a frame used as a tab to collect settings
+
+    Args:
+        tabcontrol (Notebook): Tabcontrol (Notebook) to place the frame in
+        settings (Settings): Collection of settings data
+        main_object (AutomationMenuWindow): Main object
+    """
+
+    from automation_menu.utils.localization import _
+
+    tabSettings = Frame( tabcontrol , padding = ( 5, 5, 5, 5 ) )
+    tabSettings.grid( sticky = ( N, S, E, W ) )
+
+    tabcontrol.add( child = tabSettings, text = _( 'Settings' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tabSettings, 'Settings' ) )
+
+    _list_settings( tab = tabSettings, settings = settings, main_self = main_self )
+
+    return tabSettings

@@ -16,10 +16,11 @@ if TYPE_CHECKING:
     from automation_menu.models.application_state import ApplicationState
 
 import logging
+
 from tkinter import E, N, S, W, Event, Tk, messagebox, ttk
 from typing import Tuple, Union
 
-from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
+from automation_menu.filehandling.settings_handler import write_settingsfile
 from automation_menu.models.enums import OutputStyleTags, SysInstructions
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
@@ -28,7 +29,6 @@ from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
 from automation_menu.ui.statusbar import get_statusbar
-from automation_menu.filehandling.settings_handler import write_settingsfile
 
 
 class AutomationMenuWindow:

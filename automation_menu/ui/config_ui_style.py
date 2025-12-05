@@ -13,6 +13,22 @@ from __future__ import annotations
 from tkinter.ttk import Entry, Style
 
 
+def set_output_styles( widget: Entry ) -> None:
+    """ Setup Text widget tag configurations
+
+    Args:
+        widget (ttk.Entry): Widget to set text tags for
+    """
+
+    widget.tag_config( tagName = 'suite_error', foreground = 'Red', font = ( 'Arial', 12, 'bold' ) )
+    widget.tag_config( tagName = 'suite_info', foreground = 'Blue', font = ( 'Arial', 12 , 'bold' ) )
+    widget.tag_config( tagName = 'suite_success', foreground = 'Green', font = ( 'Arial', 12 , 'bold' ) )
+    widget.tag_config( tagName = 'suite_warning', foreground = 'Orange', font = ( 'Arial', 12 ) )
+    widget.tag_config( tagName = 'suite_syserror', foreground = 'Red', font = ( 'Arial', 12, 'italic' ) )
+    widget.tag_config( tagName = 'suite_sysinfo', foreground = 'Black', font = ( 'Arial', 12, 'italic' ) )
+    widget.tag_config( tagName = 'suite_syswarning', foreground = 'Orange', font = ( 'Arial', 12, 'italic' ) )
+
+
 def set_ui_style( style: Style ) -> None:
     """ Configure widget styles
 
@@ -155,19 +171,3 @@ def set_ui_style( style: Style ) -> None:
                     highlightthickness = '2'
      )
     # endregion
-
-
-def set_output_styles( widget: Entry ) -> None:
-    """ Setup Text widget tag configurations
-
-    Args:
-        widget (ttk.Entry): Widget to set text tags for
-    """
-
-    widget.tag_config( tagName = 'suite_error', foreground = 'Red', font = ( 'Arial', 12, 'bold' ) )
-    widget.tag_config( tagName = 'suite_info', foreground = 'Blue', font = ( 'Arial', 12 , 'bold' ) )
-    widget.tag_config( tagName = 'suite_success', foreground = 'Green', font = ( 'Arial', 12 , 'bold' ) )
-    widget.tag_config( tagName = 'suite_warning', foreground = 'Orange', font = ( 'Arial', 12 ) )
-    widget.tag_config( tagName = 'suite_syserror', foreground = 'Red', font = ( 'Arial', 12, 'italic' ) )
-    widget.tag_config( tagName = 'suite_sysinfo', foreground = 'Black', font = ( 'Arial', 12, 'italic' ) )
-    widget.tag_config( tagName = 'suite_syswarning', foreground = 'Orange', font = ( 'Arial', 12, 'italic' ) )

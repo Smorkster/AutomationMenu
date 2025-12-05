@@ -9,10 +9,6 @@ Created: 2025-10-31
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from automation_menu.ui.main_window import AutomationMenuWindow
 
 from tkinter import E, N, S, W, Canvas, Event, StringVar, Tk
 from tkinter.ttk import Button, Combobox, Entry, Frame, Label, Labelframe, Scrollbar, Widget
@@ -22,8 +18,8 @@ from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 from automation_menu.utils.language_manager import LanguageManager
 
-class InputManager:
 
+class InputManager:
     def __init__( self, root: Tk, language_manager: LanguageManager ) -> None:
         """ Manager class to create, display and retrive data from input widgets
 
@@ -116,96 +112,6 @@ class InputManager:
         input_container.bind( '<Configure>', self._on_frame_config )
         container_canvas.bind( '<Configure>', self._on_canvas_config )
         container_canvas.bind_all( '<MouseWheel>', self._on_mousewheel )
-
-
-    def create_input_widgets( self, parameters: list[ ScriptInputParameter ], parent: Widget = None, pre_set_parameters: list[ dict ] = None ) -> Frame:
-        """ Create input widgets for each parameter"""
-
-        from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
-        from automation_menu.utils.localization import _
-
-        column_count = 0
-        number_of_columns = 2
-        row = 0
-
-        if parent:
-            # Create a frame for use for sequence step
-            input_container: Frame = Frame( master = parent )
-
-        else:
-            # Reuse the frame that lives inside the canvas window
-            input_container: Frame = self._input_widgets[ 'input_container' ]
-
-        # Clear any old widgets (from previous script)
-        for child in input_container.winfo_children():
-            child.destroy()
-
-        # Layout config for the grid of parameter frames
-        for i in range( number_of_columns ):
-            input_container.grid_columnconfigure( index = i, weight = 1, uniform = 'params' )
-
-        for param in parameters:
-            parameter_frame = Frame( master = input_container )
-            parameter_frame.grid( column = column_count, row = row, sticky = ( N, S, W, E ), padx = 2, pady = 2 )
-            parameter_frame.grid_columnconfigure( index = 0, weight = 0, uniform = 'name' )
-            parameter_frame.grid_columnconfigure( index = 1, weight = 1 )
-
-            param_name = Label(
-                master = parameter_frame,
-                text = param.name,
-                style = 'LabelFrameTitle.TLabel',
-                width = 15
-            )
-            param_name.grid( column = 0, row = 0, sticky = ( N, W ) )
-
-            # Create input widget
-            if param.alternatives and len( param.alternatives ) > 0:
-                param_input = Combobox(
-                    master = parameter_frame,
-                    style = 'Input.TCombobox',
-                    values = param.alternatives,
-                    state = 'readonly'
-                )
-
-                if pre_set_parameters and param.name in [ k[ 'name' ] for k in pre_set_parameters ]:
-                    param_input.set( next( k for k in pre_set_parameters if k[ 'name' ] == param.name )[ 'set' ] )
-
-            else:
-                param_input = Entry(
-                    master = parameter_frame,
-                    style = 'Input.TEntry'
-                )
-
-                if pre_set_parameters and param.name in [ k[ 'name' ] for k in pre_set_parameters ]:
-                    param_input.delete( 0, 'end' )
-                    param_input.insert( 'end', next( k for k in pre_set_parameters if k[ 'name' ] == param.name )[ 'set' ] )
-
-            param_input.bind(
-                '<FocusIn>',
-                lambda e, c = self._input_widgets[ 'container_canvas' ]:
-                    self._on_keyboard_focus( e.widget, c )
-            )
-            param_input.bind( '<Key>', self._on_key_press )
-            param_input.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = ( N, S, W, E ) )
-
-            AlwaysOnTopToolTip( widget = param_name, msg = param.description )
-
-            column_count += 1
-            if column_count == number_of_columns:
-                row += 1
-                input_container.grid_rowconfigure( index = row, weight = 1 )
-                column_count = 0
-
-        input_container.update_idletasks()
-
-        canvas = self._input_widgets[ 'container_canvas' ]
-        max_height = int( canvas.cget( 'height' ) )
-
-        required_height = input_container.winfo_reqheight()
-
-        canvas.configure( height = min( required_height, 150 ) )
-
-        return input_container
 
 
     def _display_frame( self, param_frame: Frame, script_info: ScriptInfo, submit_input_callback: Callable ) -> None:
@@ -323,6 +229,96 @@ class InputManager:
                 #input.delete( 0, 'end' )
 
         return entered_input
+
+
+    def create_input_widgets( self, parameters: list[ ScriptInputParameter ], parent: Widget = None, pre_set_parameters: list[ dict ] = None ) -> Frame:
+        """ Create input widgets for each parameter"""
+
+        from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
+        from automation_menu.utils.localization import _
+
+        column_count = 0
+        number_of_columns = 2
+        row = 0
+
+        if parent:
+            # Create a frame for use for sequence step
+            input_container: Frame = Frame( master = parent )
+
+        else:
+            # Reuse the frame that lives inside the canvas window
+            input_container: Frame = self._input_widgets[ 'input_container' ]
+
+        # Clear any old widgets (from previous script)
+        for child in input_container.winfo_children():
+            child.destroy()
+
+        # Layout config for the grid of parameter frames
+        for i in range( number_of_columns ):
+            input_container.grid_columnconfigure( index = i, weight = 1, uniform = 'params' )
+
+        for param in parameters:
+            parameter_frame = Frame( master = input_container )
+            parameter_frame.grid( column = column_count, row = row, sticky = ( N, S, W, E ), padx = 2, pady = 2 )
+            parameter_frame.grid_columnconfigure( index = 0, weight = 0, uniform = 'name' )
+            parameter_frame.grid_columnconfigure( index = 1, weight = 1 )
+
+            param_name = Label(
+                master = parameter_frame,
+                text = param.name,
+                style = 'LabelFrameTitle.TLabel',
+                width = 15
+            )
+            param_name.grid( column = 0, row = 0, sticky = ( N, W ) )
+
+            # Create input widget
+            if param.alternatives and len( param.alternatives ) > 0:
+                param_input = Combobox(
+                    master = parameter_frame,
+                    style = 'Input.TCombobox',
+                    values = param.alternatives,
+                    state = 'readonly'
+                )
+
+                if pre_set_parameters and param.name in [ k[ 'name' ] for k in pre_set_parameters ]:
+                    param_input.set( next( k for k in pre_set_parameters if k[ 'name' ] == param.name )[ 'set' ] )
+
+            else:
+                param_input = Entry(
+                    master = parameter_frame,
+                    style = 'Input.TEntry'
+                )
+
+                if pre_set_parameters and param.name in [ k[ 'name' ] for k in pre_set_parameters ]:
+                    param_input.delete( 0, 'end' )
+                    param_input.insert( 'end', next( k for k in pre_set_parameters if k[ 'name' ] == param.name )[ 'set' ] )
+
+            param_input.bind(
+                '<FocusIn>',
+                lambda e, c = self._input_widgets[ 'container_canvas' ]:
+                    self._on_keyboard_focus( e.widget, c )
+            )
+            param_input.bind( '<Key>', self._on_key_press )
+            param_input.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = ( N, S, W, E ) )
+
+            AlwaysOnTopToolTip( widget = param_name, msg = param.description )
+
+            column_count += 1
+            if column_count == number_of_columns:
+                row += 1
+                input_container.grid_rowconfigure( index = row, weight = 1 )
+                column_count = 0
+
+        input_container.update_idletasks()
+
+        canvas = self._input_widgets[ 'container_canvas' ]
+        max_height = int( canvas.cget( 'height' ) )
+
+        required_height = input_container.winfo_reqheight()
+
+        canvas.configure( height = min( required_height, 150 ) )
+
+        return input_container
 
 
     def hide_input_frame( self ) -> None:

@@ -115,38 +115,6 @@ def _parse_parameters( field: str, value: str ) -> ScriptInputParameter:
     )
 
 
-def extract_script_metadata( script_info: ScriptInfo ) -> tuple[ dict, dict ]:
-    """ Extract the docstring for script
-
-    Args:
-        scriptinfo (ScriptInfo): ScriptInfo object for found script file
-
-    Returns:
-        parsed_data (dict): Description and fields, including script input parameters,
-            specified in the docstring
-        warnings (list[ str ]): List of specified fieldnames that does not correspond
-            to valid field names or are misspelled
-    """
-
-    try:
-        with open( script_info.get_attr( 'fullpath' ), 'r', encoding = 'utf-8' ) as f:
-            tree = ast.parse( f.read() )
-
-        if ( tree.body
-            and isinstance( tree.body[ 0 ], ast.Expr )
-            and isinstance( tree.body[ 0 ].value, ast.Constant )
-            and isinstance( tree.body[ 0 ].value.value, str ) ):
-
-            parsed_docstring, warnings = docstring_parser( tree.body[ 0 ].value.value )
-
-            return parsed_docstring, warnings
-
-    except SyntaxError as e:
-        from automation_menu.utils.localization import _
-
-        raise ValueError( _( f'Cannot parse {f}:\n{e}' ) ).format( f = script_info.get_attr( 'fullpath' ), e = e )
-
-
 def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
     """ Parse docstring text and extract teh rows with field definitions
 
@@ -192,3 +160,35 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
     }
 
     return parsed_data, warnings
+
+
+def extract_script_metadata( script_info: ScriptInfo ) -> tuple[ dict, dict ]:
+    """ Extract the docstring for script
+
+    Args:
+        scriptinfo (ScriptInfo): ScriptInfo object for found script file
+
+    Returns:
+        parsed_data (dict): Description and fields, including script input parameters,
+            specified in the docstring
+        warnings (list[ str ]): List of specified fieldnames that does not correspond
+            to valid field names or are misspelled
+    """
+
+    try:
+        with open( script_info.get_attr( 'fullpath' ), 'r', encoding = 'utf-8' ) as f:
+            tree = ast.parse( f.read() )
+
+        if ( tree.body
+            and isinstance( tree.body[ 0 ], ast.Expr )
+            and isinstance( tree.body[ 0 ].value, ast.Constant )
+            and isinstance( tree.body[ 0 ].value.value, str ) ):
+
+            parsed_docstring, warnings = docstring_parser( tree.body[ 0 ].value.value )
+
+            return parsed_docstring, warnings
+
+    except SyntaxError as e:
+        from automation_menu.utils.localization import _
+
+        raise ValueError( _( f'Cannot parse {f}:\n{e}' ) ).format( f = script_info.get_attr( 'fullpath' ), e = e )

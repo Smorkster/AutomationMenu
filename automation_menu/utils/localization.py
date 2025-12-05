@@ -15,6 +15,57 @@ from pathlib import Path
 from typing import Callable
 
 
+def change_language( language_code: str ) -> None:
+    """ Change the application language at runtime.
+
+    Args:
+        language_code (str): Language code like 'sv_SE' or 'en_US'
+    """
+
+    setup_localization( language = language_code )
+
+
+def find_locales_directory() -> str:
+    """ Find the locales directory relative to this file
+
+    Returns:
+        locale_dir (str): Path of the locale directory
+    """
+
+    current_file = Path( __file__ )
+
+    # Go up two levels to reach root directory
+    project_root = current_file.parent.parent.parent
+    locale_dir = project_root / 'locales'
+
+    if not locale_dir.exists():
+        print( f'Creating locales directory at: { locale_dir }' )
+        locale_dir.mkdir( exist_ok = True )
+
+    return locale_dir
+
+
+def get_available_languages() -> list[ str ]:
+    """ Get list of available translation languages
+
+    Returns:
+        languages (list[ str ]): A list of available languages
+    """
+
+    locale_dir = find_locales_directory()
+    languages = []
+
+    try:
+        for item in locale_dir.iterdir():
+            if item.is_dir() and ( item / 'LC_MESSAGES' / 'messages.mo' ).exists():
+                languages.append( item.name )
+
+    except Exception as e:
+        print( f'Error scanning for languages: { e }' )
+
+    return sorted( languages )
+
+
 def get_system_locale() -> str:
     """ Get the system locale, with fallback to English """
 
@@ -36,32 +87,16 @@ def get_system_locale() -> str:
         return default_localization
 
 
-def find_locales_directory() -> str:
-    """ Find the locales directory relative to this file """
-
-    current_file = Path( __file__ )
-
-    # Go up two levels to reach root directory
-    project_root = current_file.parent.parent.parent
-    locale_dir = project_root / 'locales'
-
-    if not locale_dir.exists():
-        print( f'Creating locales directory at: { locale_dir }' )
-        locale_dir.mkdir( exist_ok = True )
-
-    return locale_dir
-
-
-def setup_localization( domain = 'messages', language = None ) -> Callable:
+def setup_localization( domain: str = 'messages', language: str = None ) -> Callable:
     """
     Set up localization for the application.
 
     Args:
-        domain: The translation domain (usually 'messages')
-        language: Force a specific language (e.g., 'sv_SE'), or None for auto-detect
+        domain: The translation domain
+        language: Force a specific language, or None for auto-detect
 
     Returns:
-        Translation function to use as _()
+        (Callable): Translation function to use as _()
     """
 
     global _
@@ -93,38 +128,3 @@ def setup_localization( domain = 'messages', language = None ) -> Callable:
         return lambda text: text
 
 _ = setup_localization()
-
-
-def change_language( language_code: str ) -> None:
-    """
-    Change the application language at runtime.
-
-    Args:
-        language_code (str): Language code like 'sv_SE' or 'en_US'
-
-    Returns:
-        New translation function
-    """
-
-    setup_localization( language = language_code )
-
-
-def get_available_languages() -> list[ str ]:
-    """ Get list of available translation languages
-
-    Returns:
-        languages (list[ str ]): A list of available languages
-    """
-
-    locale_dir = find_locales_directory()
-    languages = []
-
-    try:
-        for item in locale_dir.iterdir():
-            if item.is_dir() and ( item / 'LC_MESSAGES' / 'messages.mo' ).exists():
-                languages.append( item.name )
-
-    except Exception as e:
-        print( f'Error scanning for languages: { e }' )
-
-    return sorted( languages )

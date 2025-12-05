@@ -41,6 +41,7 @@ def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> str:
 
     return png_path
 
+
 def take_screenshot( root_window: Tk, script_info: ScriptInfo, file_name_prefix: str ) -> str:
     """ Take a screenshot of the main window and save it as a PNG file
 
