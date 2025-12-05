@@ -38,35 +38,23 @@ def set_ui_style( style: Style ) -> None:
 
     style.theme_use( 'clam' )
 
-    ##################
-    # Notebook styling
+    ################
+    # Button styling
     # region
-    style.configure( 'TNotebook',
-                    tabmargins = [ 0, 1, 2, 0 ],  #[left, top, right, bottom]
-                    background = 'lightgray'
+    btn_padding = ( 10, 5 )
+    style.configure( 'TButton',
+                    font = ( 'Calibri', 12, 'normal' ),
+                    padding = btn_padding
     )
-
-    style.configure( 'TNotebook.Tab',
-                    padding = [ 25, 1.5 ], 
-                    font = ( 'Calibri', 13, 'bold' ),
-                    relief = 'flat'
+    style.configure( 'BlinkBg.TButton',
+                    background = '#5ad5be',
+                    font = ( 'Calibri', 12, 'normal' ),
+                    padding = btn_padding
     )
-    style.map( 'TNotebook.Tab',
-                background = [ ( 'selected', '#f1f1f1' ),
-                              ( 'active', 'lightblue' ) ],
-                padding = [ ( 'selected', ( 25, 1.5 ) ),
-                           ( 'active', ( 25, 1.5 ) ),
-                           ( '!selected', ( 25, 1.5 ) ) ],
-                foreground = [ ( 'selected', 'green' ), ( 'active', 'black' ) ]
+    style.configure( 'RunningSmall.TButton',
+                   font = ( 'Calibri', 9, 'normal' ),
+                   padding = ( 2, 1 )
     )
-
-    style.layout( 'HiddenTabs.TNotebook.Tab',
-                 []
-                 )
-    style.layout('HiddenTabs.TNotebook',
-                 style.layout( 'TNotebook' )
-                 )
-
     # endregion
 
     ###############
@@ -80,6 +68,35 @@ def set_ui_style( style: Style ) -> None:
     style.map( 'Input.TEntry',
                 fieldbackground = [ ( 'focus', "#c5faff" ) ]
     )
+    # endregion
+
+    ####################
+    # Checbutton styling
+    # region
+    style.configure( 'TCheckbutton',
+                    padding = ( 10, 5 )
+    )
+    # endregion
+
+    ##################
+    # Combobox styling
+    # region
+    style.configure( 'Input.TCombobox',
+                    font = ( 'Calibri', 10, 'normal' ),
+                    padding = ( 2, 2 )
+    )
+    style.map( 'Input.TCombobox',
+                fieldbackground = [ ( 'focus', "#c5faff" ) ]
+    )
+    # endregion
+
+    ###############
+    # Frame styling
+    # region
+    style.configure( 'SequenceStep.TFrame',
+                    highlightcolor = '#FFFFFF',
+                    highlightthickness = '2'
+     )
     # endregion
 
     ###############
@@ -119,21 +136,6 @@ def set_ui_style( style: Style ) -> None:
     )
     # endregion
 
-    ################
-    # Button styling
-    # region
-    btn_padding = ( 10, 5 )
-    style.configure( 'TButton',
-                    font = ( 'Calibri', 12, 'normal' ),
-                    padding = btn_padding
-    )
-    style.configure( 'BlinkBg.TButton',
-                    background = '#5ad5be',
-                    font = ( 'Calibri', 12, 'normal' ),
-                    padding = btn_padding
-    )
-    # endregion
-
     ####################
     # LabelFrame styling
     # region
@@ -143,31 +145,64 @@ def set_ui_style( style: Style ) -> None:
     )
     # endregion
 
-    ####################
-    # Checbutton styling
-    # region
-    style.configure( 'TCheckbutton',
-                    padding = ( 10, 5 )
-    )
-    # endregion
-
     ##################
-    # Combobox styling
+    # Notebook styling
     # region
-    style.configure( 'Input.TCombobox',
-                    font = ( 'Calibri', 10, 'normal' ),
-                    padding = ( 2, 2 )
+    style.configure( 'TNotebook',
+                    tabmargins = [ 0, 1, 2, 0 ],  #[left, top, right, bottom]
+                    background = 'lightgray'
     )
-    style.map( 'Input.TCombobox',
-                fieldbackground = [ ( 'focus', "#c5faff" ) ]
+
+    style.configure( 'TNotebook.Tab',
+                    padding = [ 25, 1.5 ], 
+                    font = ( 'Calibri', 13, 'bold' ),
+                    relief = 'flat'
     )
+    style.map( 'TNotebook.Tab',
+                background = [ ( 'selected', '#f1f1f1' ),
+                              ( 'active', 'lightblue' ) ],
+                padding = [ ( 'selected', ( 25, 1.5 ) ),
+                           ( 'active', ( 25, 1.5 ) ),
+                           ( '!selected', ( 25, 1.5 ) ) ],
+                foreground = [ ( 'selected', 'green' ), ( 'active', 'black' ) ]
+    )
+
+    style.layout( 'HiddenTabs.TNotebook.Tab',
+                 []
+                 )
+    style.layout('HiddenTabs.TNotebook',
+                 style.layout( 'TNotebook' )
+                 )
+
     # endregion
 
-    ###############
-    # Frame styling
-    # region
-    style.configure( 'SequenceStep.TFrame',
-                    highlightcolor = '#FFFFFF',
-                    highlightthickness = '2'
-     )
-    # endregion
+    #####################
+    # Progressbar styling
+    # region Progressbar
+    style.configure( 'TProgressbar',
+                    troughcolor='#E6E6E6',      # Light grey background
+                    background='#4DA6FF',       # Blue filled bar
+                    darkcolor='#4DA6FF',
+                    lightcolor='#80C1FF',
+                    bordercolor='#A0A0A0',
+                    thickness = 10
+    )
+    style.configure( 'RunningSmall.TProgressbar',
+                    troughcolor='#DDDDDD',      # slightly dimmer trough
+                    background='#2F8AE3',       # deeper blue for compact layout
+                    darkcolor='#2F8AE3',
+                    lightcolor='#6BB6F2',
+                    bordercolor='#888888',
+                    thickness = 8
+    )
+    style.layout('TProgressbar',
+             [ ( 'Horizontal.Progressbar.trough', { 'children': [
+                 ( 'Horizontal.Progressbar.pbar', { 'side': 'left', 'sticky': 'ns' } )
+             ],
+             'sticky': 'nswe' } ) ] )
+    style.layout('RunningSmall.TProgressbar',
+             [ ( 'Horizontal.Progressbar.trough', { 'children': [
+                 ( 'Horizontal.Progressbar.pbar', { 'side': 'left', 'sticky': 'ns' } )
+             ],
+             'sticky': 'nswe' } ) ] )
+    # endregion Progressbar

@@ -175,16 +175,40 @@ class AutomationMenuWindow:
         """ Hide UI control widgets when window is minimized during script execution """
 
         self.tabControl.config( style = 'HiddenTabs.TNotebook' )
-        self.op_buttons[ 'op_buttons_frame' ].grid_remove()
+        self.status_widgets[ 'separator' ].grid_remove()
+        self.status_widgets[ 'text_status' ].grid_remove()
         self.status_widgets[ 'status_bar' ].grid_remove()
+        self.status_widgets[ 'status_bar' ].grid_columnconfigure( index = 0, weight = 0 )
+        self.status_widgets[ 'status_bar' ].grid_columnconfigure( index = 1, weight = 0 )
+
+        self.op_buttons[ 'menu_frame' ].grid_remove()
+        self.op_buttons[ 'btnContinueBreakpoint' ].config( style = 'RunningSmall.TButton' )
+        self.op_buttons[ 'btnStopScript' ].config( style = 'RunningSmall.TButton' )
+        self.op_buttons[ 'btnPauseResumeScript' ].config( style = 'RunningSmall.TButton' )
+
+        self.status_widgets[ 'progressbar' ].config( style = 'RunningSmall.TProgressbar' )
+
+        self.root.overrideredirect( True )  # Remove window decorations
 
 
     def _minimize_show_controls( self ) -> None:
         """ Show all hidden UI control widgets when script execution has finished """
 
         self.tabControl.config( style = 'TNotebook' )
-        self.op_buttons[ 'op_buttons_frame' ].grid()
         self.status_widgets[ 'status_bar' ].grid()
+        self.status_widgets[ 'separator' ].grid()
+        self.status_widgets[ 'text_status' ].grid()
+        self.status_widgets[ 'status_bar' ].grid_columnconfigure( index = 0, weight = 1 )
+        self.status_widgets[ 'status_bar' ].grid_columnconfigure( index = 1, weight = 0 )
+
+        self.op_buttons[ 'menu_frame' ].grid()
+        self.op_buttons[ 'btnContinueBreakpoint' ].config( style = 'TButton' )
+        self.op_buttons[ 'btnStopScript' ].config( style = 'TButton' )
+        self.op_buttons[ 'btnPauseResumeScript' ].config( style = 'TButton' )
+
+        self.status_widgets[ 'progressbar' ].config( style = 'TProgressbar' )
+
+        self.root.overrideredirect( False )  # Reapply window decorations
 
 
     def _open_script_menu( self, event: Event = None ) -> None:
@@ -280,7 +304,6 @@ class AutomationMenuWindow:
         from automation_menu.utils.localization import _
 
         self.tabControl.select( 0 )
-        self._minimize_hide_controls()
         self.app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
         self.app_context.input_manager.hide_input_frame()
 
@@ -292,6 +315,7 @@ class AutomationMenuWindow:
                 } )
 
             else:
+                self._minimize_hide_controls()
                 old_geometry = {
                     'h': self.root.winfo_height(),
                     'w': self.root.winfo_width(),
@@ -526,7 +550,10 @@ class AutomationMenuWindow:
 
 
     def set_progress_determined( self, *args: Tuple ) -> None:
-        """ Set indetermined """
+        """ Set determined """
+
+        if not self.status_widgets[ 'progressbar' ].winfo_ismapped():
+            self.status_widgets[ 'progressbar' ].grid()
 
         self.status_widgets[ 'progressbar' ].config( mode = 'determinate' )
         self.status_widgets[ 'progressbar' ].stop()
@@ -535,8 +562,11 @@ class AutomationMenuWindow:
     def set_progress_indetermined( self, *args: Tuple ) -> None:
         """ Set indetermined """
 
-        self.status_widgets[ 'progressbar': Tuple ].start( interval = 10 )
-        self.status_widgets[ 'progressbar': Tuple ].config( mode = 'indeterminate' )
+        if not self.status_widgets[ 'progressbar' ].winfo_ismapped():
+            self.status_widgets[ 'progressbar' ].grid()
+
+        self.status_widgets[ 'progressbar' ].start( interval = 10 )
+        self.status_widgets[ 'progressbar' ].config( mode = 'indeterminate' )
 
 
     def show_progress( self, *args: Tuple ) -> None:
@@ -544,7 +574,6 @@ class AutomationMenuWindow:
 
         if not self._progressbar_visible:
             self.status_widgets[ 'progressbar' ].grid()
-            self.status_widgets[ 'separator' ].grid()
             self._progressbar_visible = True
 
 
@@ -556,6 +585,12 @@ class AutomationMenuWindow:
         """
 
         new_percentage = 0
+
+        if not self.status_widgets[ 'progressbar' ].master.winfo_ismapped():
+            self.status_widgets[ 'progressbar' ].master.grid()
+
+        if not self.status_widgets[ 'progressbar' ].winfo_ismapped():
+            self.status_widgets[ 'progressbar' ].grid()
 
         if isinstance( update_data, ( float, int ) ):
             if update_data >= 100:
@@ -572,7 +607,8 @@ class AutomationMenuWindow:
             self.show_progress()
 
         self.status_widgets[ 'progressbar' ].config( value = new_percentage )
-        # endregion
+
+    # endregion
 
 
     # region Settings API callbacks

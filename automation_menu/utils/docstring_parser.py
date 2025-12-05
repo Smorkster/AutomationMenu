@@ -51,9 +51,10 @@ def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
                 try:
                     ValidScriptInfoFields( current_field.lower() )
                     if current_field.lower() == 'state':
-                        current_value = ScriptState[ current_value.upper() ]
+                        fields[ current_field ] = ScriptState[ current_value.upper() ]
 
-                    fields[ current_field ] = current_value
+                    else:
+                        fields[ current_field ] = current_value if len( current_value ) > 0 else True
 
                 except KeyError:
                     warnings[ 'keys' ].append( current_value )
@@ -95,6 +96,7 @@ def _parse_parameters( field: str, value: str ) -> ScriptInputParameter:
         options_text = options_match.group( 1 )
         options_list = [ option.strip().strip( "'" ) for option in options_text.split( ',' ) ]
         options_list.insert( 0, '' )
+
     else:
         options_list = []
 
