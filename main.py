@@ -12,6 +12,7 @@ Created: 2025-09-25
 
 from __future__ import annotations
 
+import argparse
 import logging
 import sys
 
@@ -35,11 +36,12 @@ from automation_menu.utils.localization import change_language
 from automation_menu.utils.script_manager import ScriptManager
 
 
-def setup_logger() -> logging.Logger:
+def setup_logger( level: str = 'DEBUG' ) -> logging.Logger:
     """ Create a logger for debug purposes """
 
     logger = logging.getLogger( 'debug_logger' )
-    logger.setLevel( level = logging.DEBUG )
+    level = logging._nameToLevel.get( level.upper(), logging.INFO )
+    logger.setLevel( level = level )
 
     if not logger.handlers:
         handler = logging.StreamHandler()
@@ -62,11 +64,19 @@ def main() -> None:
 
         write_settingsfile( settings = obj, settings_file_path = app_state.secrets.get( 'settings_file_path' ) )
 
+    input_parser = argparse.ArgumentParser()
+    input_parser.add_argument( '--dev', action = 'store_true' )
+    input_parser.add_argument( '--loglevel' )
+
+    input_args = input_parser.parse_args()
+
     try:
         app_state = ApplicationState()
         app_context = ApplicationContext()
-        app_context.debug_logger = setup_logger()
+        for arg in input_args._get_kwargs():
+            app_context.startup_arguments[ arg[ 0] ] = arg[ 1 ]
 
+        app_context.debug_logger = setup_logger( level = app_context.startup_arguments[ 'loglevel' ] )
 
         app_state.secrets = Secrets( read_secrets_file( file_path = Path( __file__ ).resolve().parent / 'secrets.json' ) )
         read_settings = read_settingsfile( settings_file_path = app_state.secrets.get( 'settings_file_path' ), debug_logger = app_context.debug_logger )
@@ -105,7 +115,7 @@ def main() -> None:
     except Exception as e:
         from dynamicinputbox import dynamic_inputbox as inputbox
 
-        # Handle any unexpected errors
+        # Handle any unexpected/unhandled errors
         message = _( 'An unexpected error occurred:\n\n{error}\n\nThe application will now exit.' ).format( error = str( e ) )
         inputbox(
             title = _( 'Application Error' ),

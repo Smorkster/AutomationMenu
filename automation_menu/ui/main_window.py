@@ -83,7 +83,15 @@ class AutomationMenuWindow:
 
         # Create main GUI
         self.root = Tk()
-        self.root.title( string = self.app_state.secrets.get( 'mainwindowtitle' ) )
+        title_string = self.app_state.secrets.get( 'mainwindowtitle' )
+
+        if self.app_context.startup_arguments[ 'dev' ]:
+            title_string += " <DEV>"
+            self.tab_style = 'Dev.TNotebook'
+        else:
+            self.tab_style = 'TNotebook'
+
+        self.root.title( string = title_string )
 
         self.app_context.input_manager = InputManager( root = self.root,
                                                       language_manager = self.app_context.language_manager
@@ -102,19 +110,20 @@ class AutomationMenuWindow:
         self.op_buttons = get_op_buttons( self.root, self )
 
         # Add tabs
-        self.tabControl = ttk.Notebook( master = self.root )
-        self.tabControl.grid( column = 0, columnspan = 2, row = 2, sticky = ( N, S, E, W ) )
+
+        self.tab_control = ttk.Notebook( master = self.root, style = self.tab_style )
+        self.tab_control.grid( column = 0, columnspan = 2, row = 2, sticky = ( N, S, E, W ) )
 
         # Create output
-        self.tabOutput, self.tbOutput = get_output_tab( tabcontrol = self.tabControl, translate_callback = self.app_context.language_manager.add_translatable_widget )
+        self.tab_output, self.textbox_output = get_output_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
-        set_output_styles( self.tbOutput )
+        set_output_styles( self.textbox_output )
 
-        self.sequence_tab = self.app_context.sequence_manager.create_sequence_tab( tabcontrol = self.tabControl, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.language_manager.add_translatable_widget )
+        self.sequence_tab = self.app_context.sequence_manager.create_sequence_tab( tabcontrol = self.tab_control, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
         # Manage output
         self.output_controller = AsyncOutputController( output_queue = self.app_context.output_queue,
-                                                       text_widget = self.tbOutput,
+                                                       text_widget = self.textbox_output,
                                                        breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ],
                                                        history_manager = self.app_context.history_manager,
                                                        api_callbacks = self.api_callbacks
@@ -122,10 +131,10 @@ class AutomationMenuWindow:
         self.output_controller.start()
 
         # Create settings
-        self.tabSettings = get_settings_tab( tabcontrol = self.tabControl, settings = self.app_state.settings, main_self = self )
+        self.tabSettings = get_settings_tab( tabcontrol = self.tab_control, settings = self.app_state.settings, main_self = self )
 
         # Create history tab
-        self.tabHistory = self.app_context.history_manager.get_history_tab( tabcontrol = self.tabControl, translate_callback = self.app_context.language_manager.add_translatable_widget )
+        self.tabHistory = self.app_context.history_manager.get_history_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
         # Create statusbar
         self.status_widgets = get_statusbar( master_root = self.root )
@@ -142,7 +151,7 @@ class AutomationMenuWindow:
 
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
         self.center_screen()
-        self.root.focus()
+        self.root.focus_force()
         self.root.mainloop()
 
 
@@ -174,7 +183,7 @@ class AutomationMenuWindow:
     def _minimize_hide_controls( self ) -> None:
         """ Hide UI control widgets when window is minimized during script execution """
 
-        self.tabControl.config( style = 'HiddenTabs.TNotebook' )
+        self.tab_control.config( style = 'HiddenTabs.TNotebook' )
         self.status_widgets[ 'separator' ].grid_remove()
         self.status_widgets[ 'text_status' ].grid_remove()
         self.status_widgets[ 'status_bar' ].grid_remove()
@@ -194,7 +203,7 @@ class AutomationMenuWindow:
     def _minimize_show_controls( self ) -> None:
         """ Show all hidden UI control widgets when script execution has finished """
 
-        self.tabControl.config( style = 'TNotebook' )
+        self.tab_control.config( style = self.tab_style )
         self.status_widgets[ 'status_bar' ].grid()
         self.status_widgets[ 'separator' ].grid()
         self.status_widgets[ 'text_status' ].grid()
@@ -303,7 +312,7 @@ class AutomationMenuWindow:
 
         from automation_menu.utils.localization import _
 
-        self.tabControl.select( 0 )
+        self.tab_control.select( 0 )
         self.app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
         self.app_context.input_manager.hide_input_frame()
 
@@ -348,7 +357,7 @@ class AutomationMenuWindow:
         """
 
         self.app_state.settings.current_language = event.widget.get()
-        self.app_context.language_manager.change_language( new_language = event.widget.get() )
+        self.app_context.language_manager.change_app_language( new_language = event.widget.get() )
 
 
     def set_display_dev( self ) -> None:

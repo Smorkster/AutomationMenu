@@ -67,7 +67,7 @@ def get_available_languages() -> list[ str ]:
 
 
 def get_system_locale() -> str:
-    """ Get the system locale, with fallback to English """
+    """ Get the system locale, with fallback to Swedish """
 
     default_localization = 'sv_SE'
 

@@ -163,7 +163,7 @@ class LanguageManager:
         self._widgets_to_update.append( widget )
 
 
-    def change_language( self, new_language: str ) -> None:
+    def change_app_language( self, new_language: str ) -> None:
         """ Change application language and reconfigure widgets
         Loop all registered widgets that should be updated
 

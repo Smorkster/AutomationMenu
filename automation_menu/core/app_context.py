@@ -31,6 +31,7 @@ from automation_menu.utils.script_manager import ScriptManager
 @dataclass
 class ApplicationContext:
 
+    startup_arguments: dict = field( default_factory = dict )
     execution_manager: ScriptExecutionManager = None
     history_manager: HistoryManager = None
     input_manager: InputManager = None
