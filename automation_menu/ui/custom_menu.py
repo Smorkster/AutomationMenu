@@ -24,7 +24,7 @@ from automation_menu.models import ScriptInfo
 
 
 class CustomMenu:
-    def __init__( self, parent: Tk, text: str, exec_list: list[ ScriptInfo ], main_object: AutomationMenuWindow() ) -> None:
+    def __init__( self, parent: Tk, text: str, exec_list: list[ ScriptInfo ], main_object: AutomationMenuWindow ) -> None:
         """ Create a custom meny as a button. This launches a separatewindow
         containing clickable labels for each menuitem
 

@@ -158,6 +158,11 @@ def set_ui_style( style: Style ) -> None:
                     background = "#D69456"
     )
 
+    style.configure( 'Test.TNotebook',
+                    tabmargins = [ 0, 1, 2, 0 ],  #[left, top, right, bottom]
+                    background = "#52F9F1"
+    )
+
     style.configure( 'TNotebook.Tab',
                     padding = [ 25, 1.5 ], 
                     font = ( 'Calibri', 13, 'bold' ),

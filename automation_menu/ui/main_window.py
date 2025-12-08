@@ -90,6 +90,10 @@ class AutomationMenuWindow:
             title_string += " <DEV>"
             self.tab_style = 'Dev.TNotebook'
 
+        elif self.app_context.startup_arguments[ 'test_state' ]:
+            title_string += " <TEST>"
+            self.tab_style = 'Test.TNotebook'
+
         else:
             self.tab_style = 'TNotebook'
 

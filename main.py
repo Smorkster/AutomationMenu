@@ -65,7 +65,9 @@ def main() -> None:
         write_settingsfile( settings = obj, settings_file_path = app_state.secrets.get( 'settings_file_path' ) )
 
     input_parser = argparse.ArgumentParser()
-    input_parser.add_argument( '--dev', action = 'store_true' )
+    input_parser.add_argument( '--dev_state', action = 'store_true' )
+    input_parser.add_argument( '--test_state', action = 'store_true' )
+    input_parser.add_argument( '--prod_state', action = 'store_true' )
     input_parser.add_argument( '--loglevel' )
 
     input_args = input_parser.parse_args()
