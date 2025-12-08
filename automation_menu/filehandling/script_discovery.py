@@ -21,10 +21,87 @@ import re
 from queue import Queue
 
 from automation_menu.models import ScriptInfo, User
-from automation_menu.models.enums import OutputStyleTags
+from automation_menu.models.enums import OutputStyleTags, ScriptState
 from automation_menu.models.scriptmetadata import ScriptMetadata
 from automation_menu.utils.docstring_parser import extract_script_metadata
 from automation_menu.utils.scriptinfo_block_parser import scriptinfo_block_parser
+
+
+def _approve_listing( script_info: ScriptInfo, dev_state: bool, current_user: User ) -> int:
+    """ Verify that the script is valid to be listed in the menu
+
+    Args:
+        script_info (ScriptInfo): Info about the script
+        dev_state (bool): In what state is the application run
+        current_user (User): User currently running the application
+
+    Returns:
+        (int): 0 = valid, 1 = valid, but has active breakpoints (author only), 2 = not valid
+    """
+
+    meta = script_info.scriptmeta
+
+    is_author = script_info.is_author( current_user )
+
+    if meta.requires_permission_check():
+
+        required_ad_groups = script_info.get_attr( 'required_ad_groups' ) or []
+        allowed_users = script_info.get_attr( 'allowed_users' ) or []
+
+        # Is user in at least one required AD group
+        in_required_group = (
+            len( required_ad_groups ) == 0
+            or any(
+                current_user.is_member_of( group_to_check = g )
+                for g in required_ad_groups
+            )
+        )
+
+        # Is user explicitly allowed
+        in_allowed_users = (
+            len( allowed_users ) == 0
+            or current_user.UserId in allowed_users
+        )
+
+        # Author or application dev_state ignore script state
+        state = meta.state
+        state_ok = (
+            state in ( ScriptState.TEST, ScriptState.PROD )
+            or dev_state
+            or is_author
+        )
+
+        valid_script_permission = (
+            state_ok
+            and (
+                is_author
+                or dev_state
+                or in_required_group
+                or in_allowed_users
+            )
+        )
+
+    else:
+        valid_script_permission = True
+
+    if not valid_script_permission:
+
+        return 2
+
+    script_info = _check_breakpoints( script_info )
+    using_breakpoint = script_info.get_attr( 'using_breakpoint' )
+
+    if using_breakpoint:
+        # If script has active breakpoints, only the author may see it
+        if is_author:
+
+            return 1  # author sees it, but we can show a warning
+
+        else:
+
+            return 2
+
+    return 0
 
 
 def _check_breakpoints( script_info: ScriptInfo ) -> ScriptInfo:
@@ -48,6 +125,7 @@ def _check_breakpoints( script_info: ScriptInfo ) -> ScriptInfo:
 
             if not stripped.startswith( '#' ):
                 script_info.add_attr( 'using_breakpoint', True )
+                break
 
     return script_info
 
@@ -92,44 +170,16 @@ def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptI
     except Exception as e:
         raise
 
-    if script_info.scriptmeta.requires_permission_check():
-        # Permission logic
-        requiredadgroups_ok = (
-            len( script_info.get_attr( 'required_ad_groups' ) ) == 0 or
-            any( current_user.member_of( g ) for g in script_info.get_attr( 'required_ad_groups' ) )
-        )
-        allowedusers_ok = (
-            not script_info.get_attr( 'allowed_users' ) or
-            current_user.UserId in script_info.get_attr( 'allowed_users' ) if len( script_info.get_attr( 'allowed_users' ) ) > 0 else True
-        )
-        is_author_ok = (
-            not script_info.get_attr( 'author' ) or
-            current_user.AdObject.name.value == script_info.get_attr( 'author' ).replace( ' (', '(' )
-        )
-        state_ok = (
-            script_info.get_attr( 'state' ) and script_info.State in ( 'Test', 'Prod' )
-        )
-
-        permission_ok = ( requiredadgroups_ok and allowedusers_ok and state_ok ) or is_author_ok
-
-    else:
-        permission_ok = True
-
-    if permission_ok:
-        script_info = _check_breakpoints( script_info )
-
-        return script_info, warnings
-
-    else:
-        return None
+    return script_info, warnings
 
 
-def get_scripts( output_queue: Queue, app_state: ApplicationState ) -> list[ ScriptInfo ]:
+def get_scripts( output_queue: Queue, app_state: ApplicationState, dev_state: bool ) -> list[ ScriptInfo ]:
     """ Get script files and parse for any ScriptInfo
 
     Args:
         output_queue (Queue): Output queue for info output
         app_state (ApplicationState): General state of application
+        dev_state (bool): Is application launched in development state
 
     Returns:
         list[ ScriptInfo ]: A list of available scripts
@@ -153,24 +203,28 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState ) -> list[ Scr
         )
     ):
         try:
-            script_info, warnings = _read_scriptfile( file = filename, directory = script_dir, current_user = app_state.current_user )
+            script_info, parse_warnings = _read_scriptfile( file = filename, directory = script_dir, current_user = app_state.current_user )
 
-            if len( warnings[ 'keys' ] ) > 0:
-                raise ValueError( _( 'ScriptInfo contained fields that are not valid, or are misspelled: {names}' ).format( names = ', '.join( warnings[ 'keys' ] ) ) )
+            if len( parse_warnings[ 'keys' ] ) > 0:
+                raise ValueError( _( 'ScriptInfo contained fields that are not valid, or are misspelled: {names}' ).format( names = ', '.join( parse_warnings[ 'keys' ] ) ) )
 
-            if len( warnings[ 'values' ] ) > 0:
-                raise ValueError( _( 'ScriptInfo contained values that are not valid, or are misspelled: {names}' ).format( names = ', '.join( warnings[ 'values' ] ) ) )
+            if len( parse_warnings[ 'values' ] ) > 0:
+                raise ValueError( _( 'ScriptInfo contained values that are not valid, or are misspelled: {names}' ).format( names = ', '.join( parse_warnings[ 'values' ] ) ) )
 
-            if len( warnings[ 'other' ] ) > 0:
-                raise ValueError( _( 'Parsing ScriptInfo generated error for these fields: {names}' ).format( names = ', '.join( warnings[ 'other' ] ) ) )
+            if len( parse_warnings[ 'other' ] ) > 0:
+                raise ValueError( _( 'Parsing ScriptInfo generated error for these fields: {names}' ).format( names = ', '.join( parse_warnings[ 'other' ] ) ) )
 
-            if script_info:
-                #if script_info.get_attr( 'using_breakpoint' ) and ( app_state.current_user.AdObject.name.value != script_info.get_attr( 'Author' ).replace( ' (', '(' ) ):
-                if script_info.get_attr( 'using_breakpoint' ):
+            approved: int = _approve_listing( script_info = script_info, dev_state = dev_state, current_user = app_state.current_user )
+
+            if approved == 2:
+                continue
+
+            else:
+                if approved == 1:
                     scriptswithbreakpoint.append( script_info )
 
-                else:
-                    indexed_files.append( script_info )
+                indexed_files.append( script_info )
+
 
         except Exception as e:
             output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ), 'tag': OutputStyleTags.SYSWARNING } )

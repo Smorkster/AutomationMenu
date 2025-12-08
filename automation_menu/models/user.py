@@ -23,7 +23,7 @@ class User:
         self.AdObject: Entry = ad_object
 
 
-    def member_of( self, group_to_check: str ) -> bool:
+    def is_member_of( self, group_to_check: str ) -> bool:
         """ Check if the user is a member of a specific group """
 
         for g in self.AdObject.memberof:

@@ -19,6 +19,6 @@ class ScriptInputParameter:
     alternatives: Optional[ list[ str ] ] = None
     default: Optional[ str ] = None
     description: str = ''
-    name: str
+    name: str = None
     required: bool = True
-    type: Union[ str, int, bool ]
+    type: Union[ str, int, bool ] = str

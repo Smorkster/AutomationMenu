@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from automation_menu.models.scriptmetadata import ScriptMetadata
+from automation_menu.models.user import User
 
 
 @dataclass
@@ -49,6 +50,18 @@ class ScriptInfo:
 
             else:
                 return None
+
+
+    def is_author( self, user: User ) -> bool:
+        """ Verify if the user is author of this script """
+
+        author_name = self.get_attr( 'author' )
+
+        return (
+            bool( author_name )
+            and user.AdObject.name.value == author_name.replace( ' (', '(' )
+        )
+
 
 
     def set_attr( self, attr_name: str, attr_val:any, append: bool = False ) -> None:

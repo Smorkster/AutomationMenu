@@ -17,7 +17,8 @@ if TYPE_CHECKING:
 
 import logging
 
-from tkinter import E, N, S, W, Event, Tk, messagebox, ttk
+from tkinter import E, N, S, W, Event, Tk, messagebox
+from tkinter.ttk import Notebook, Style
 from typing import Tuple, Union
 
 from automation_menu.filehandling.settings_handler import write_settingsfile
@@ -85,9 +86,10 @@ class AutomationMenuWindow:
         self.root = Tk()
         title_string = self.app_state.secrets.get( 'mainwindowtitle' )
 
-        if self.app_context.startup_arguments[ 'dev' ]:
+        if self.app_context.startup_arguments[ 'dev_state' ]:
             title_string += " <DEV>"
             self.tab_style = 'Dev.TNotebook'
+
         else:
             self.tab_style = 'TNotebook'
 
@@ -98,7 +100,7 @@ class AutomationMenuWindow:
                                                       )
 
         # Setup styles
-        self._style = ttk.Style()
+        self._style = Style()
         set_ui_style( style = self._style )
 
         self.button_margin = {
@@ -111,7 +113,7 @@ class AutomationMenuWindow:
 
         # Add tabs
 
-        self.tab_control = ttk.Notebook( master = self.root, style = self.tab_style )
+        self.tab_control = Notebook( master = self.root, style = self.tab_style )
         self.tab_control.grid( column = 0, columnspan = 2, row = 2, sticky = ( N, S, E, W ) )
 
         # Create output
