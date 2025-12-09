@@ -34,7 +34,7 @@ class ScriptManager:
     def gather_scripts( self ) -> None:
         """ Call to collect available script files """
 
-        self._script_list = get_scripts( output_queue = self._app_context.output_queue, app_state = self._app_state, dev_state = self._app_context.startup_arguments[ 'dev_state' ] )
+        self._script_list = get_scripts( output_queue = self._app_context.output_queue, app_state = self._app_state, app_run_state = self._app_context.startup_arguments[ 'app_run_state' ] )
 
 
     def get_script_info_by_filename( self, filename: str ) -> ScriptInfo:

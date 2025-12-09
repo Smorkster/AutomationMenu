@@ -93,7 +93,6 @@ class InputManager:
         container_canvas = Canvas( master = param_list_frame, height = 150, highlightthickness = 0 )
         container_canvas.grid( sticky = ( N, S, W, E ) )
         container_canvas.grid_columnconfigure( index = 0, weight = 1 )
-        container_canvas.bind_all( '<MouseWheel>' , self._on_mousewheel )
 
         container_scrollbar = Scrollbar( master = param_list_frame, orient = 'vertical', command = container_canvas.yview )
         container_scrollbar.grid( column = 1, row = 0, sticky = ( N, S ) )
@@ -123,6 +122,7 @@ class InputManager:
         self._current_script_info = script_info
         self._script_name_set( script_info.filename )
         self._input_widgets[ 'input_frame' ].grid()
+        self._input_widgets[ 'input_frame' ].bind_all( '<MouseWheel>' , self._on_mousewheel )
 
 
     def _get_or_create_input_frame( self, script_info: ScriptInfo ) -> Frame:

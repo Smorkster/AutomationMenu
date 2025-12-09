@@ -11,7 +11,17 @@ Created: 2025-10-20
 from enum import Enum
 
 
+class ApplicationRunState( Enum ):
+    """ Valid application run states """
+
+    DEV = 'Dev'
+    TEST = 'Test'
+    PROD = 'Prod'
+
+
 class OutputStyleTags(Enum):
+    """ Tags for output text styling """
+
     ERROR = 'suite_error'
     INFO = 'suite_info'
     SUCCESS = 'suite_success'

@@ -28,6 +28,7 @@ from automation_menu.filehandling.exec_history_handler import write_exec_history
 from automation_menu.filehandling.secrets_handler import read_secrets_file
 from automation_menu.filehandling.settings_handler import read_settingsfile, write_settingsfile
 from automation_menu.models import Secrets, Settings, User
+from automation_menu.models.enums import ApplicationRunState
 from automation_menu.models.application_state import ApplicationState
 from automation_menu.ui.history_manager import HistoryManager
 from automation_menu.ui.sequence_manager import SequenceManager
@@ -65,18 +66,17 @@ def main() -> None:
         write_settingsfile( settings = obj, settings_file_path = app_state.secrets.get( 'settings_file_path' ) )
 
     input_parser = argparse.ArgumentParser()
-    input_parser.add_argument( '--dev_state', action = 'store_true' )
-    input_parser.add_argument( '--test_state', action = 'store_true' )
-    input_parser.add_argument( '--prod_state', action = 'store_true' )
-    input_parser.add_argument( '--loglevel' )
+    input_parser.add_argument( '--application_state', action = 'store', choices = [ 'dev', 'test', 'prod' ] )
+    input_parser.add_argument( '--loglevel', action = 'store' )
 
     input_args = input_parser.parse_args()
 
     try:
         app_state = ApplicationState()
         app_context = ApplicationContext()
-        for arg in input_args._get_kwargs():
-            app_context.startup_arguments[ arg[ 0] ] = arg[ 1 ]
+
+        app_context.startup_arguments[ 'app_run_state' ] = ApplicationRunState[ input_args.application_state.upper() ]
+        app_context.startup_arguments[ 'loglevel' ] = input_args.loglevel
 
         app_context.debug_logger = setup_logger( level = app_context.startup_arguments[ 'loglevel' ] )
 

@@ -22,7 +22,7 @@ from tkinter.ttk import Notebook, Style
 from typing import Tuple, Union
 
 from automation_menu.filehandling.settings_handler import write_settingsfile
-from automation_menu.models.enums import OutputStyleTags, SysInstructions
+from automation_menu.models.enums import ApplicationRunState, OutputStyleTags, SysInstructions
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
 from automation_menu.ui.input_manager import InputManager
@@ -86,11 +86,11 @@ class AutomationMenuWindow:
         self.root = Tk()
         title_string = self.app_state.secrets.get( 'mainwindowtitle' )
 
-        if self.app_context.startup_arguments[ 'dev_state' ]:
+        if self.app_context.startup_arguments[ 'app_run_state' ] == ApplicationRunState.DEV:
             title_string += " <DEV>"
             self.tab_style = 'Dev.TNotebook'
 
-        elif self.app_context.startup_arguments[ 'test_state' ]:
+        elif self.app_context.startup_arguments[ 'app_run_state' ] == ApplicationRunState.TEST:
             title_string += " <TEST>"
             self.tab_style = 'Test.TNotebook'
 

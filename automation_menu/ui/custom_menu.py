@@ -16,7 +16,8 @@ if TYPE_CHECKING:
 
 import tkinter as tk
 
-from tkinter import E, W, Event, Tk, ttk
+from tkinter import E, N, S, W, Canvas, Event, Scrollbar, Tk
+from tkinter.ttk import Button, Frame
 
 from automation_menu.core.sequence_menu_item import SequenceMenuItem
 from automation_menu.core.script_menu_item import ScriptMenuItem
@@ -39,22 +40,40 @@ class CustomMenu:
         self.exec_list = exec_list
         self.main_object = main_object
         self._visible = False
+        self._max_height = 500
 
-        # Create button that looks like a menu
-        self.menu_button = ttk.Button(
-            parent, 
-            text = text,
-            command = self.show_popup_menu
-        )
+        # Button that acts as menu base
+        self.menu_button = Button( master = parent, text = text, command = self.show_popup_menu )
 
         self.popup = tk.Toplevel( parent )
+
+        self._frame = Frame( master = self.popup )
+        self._frame.grid( sticky = ( N, S, W, E ) )
+        self._frame.grid_columnconfigure( 0, weight = 1 )
+        self._frame.grid_columnconfigure( 1, weight = 0 )
+        self._frame.grid_rowconfigure( 0, weight = 1 )
+
+        self._canvas = Canvas( master = self._frame, height = self._max_height, highlightthickness = 0 )
+        self._canvas.grid( row = 0, column = 0, sticky = ( N, S, W, E ) )
+
+        self._scrollbar = Scrollbar( master = self._frame, orient = 'vertical', command = self._canvas.yview )
+        self._scrollbar.grid( row = 0, column = 1, sticky = ( N, S ) )
+
+        self._canvas.configure( yscrollcommand = self._scrollbar.set )
+
+        self._menu_container = Frame( master = self._canvas )
+        self._window_id = self._canvas.create_window( ( 0, 0 ), window = self._menu_container, anchor = 'nw' )
+
         self.popup.withdraw()
         self.popup.overrideredirect( True )  # Remove window decorations
-        self.popup.config( relief = 'flat', borderwidth = 2, highlightcolor = '#909597', highlightthickness = 2 )
+        self.popup.config( relief = 'flat', borderwidth = 2, highlightcolor = "#6F7577", highlightthickness = 2 )
 
         self.popup.bind( '<Escape>', self.hide_popup_menu )
         self.popup.bind( '<FocusOut>', self.hide_popup_menu )
         self.popup.bind( '<Button-1>', self._check_click_outside )
+
+        self._menu_container.bind( '<Configure>', self._on_container_config )
+        self._canvas.bind( '<Configure>', self._on_canvas_config )
 
         self._create_popup_content()
 
@@ -73,15 +92,50 @@ class CustomMenu:
 
         for i, item_info in enumerate( self.exec_list ):
             if isinstance( item_info, ScriptInfo ):
-                menu_object = ScriptMenuItem( script_menu = self.popup, script_info = item_info, main_object = self.main_object )
+                menu_item = ScriptMenuItem( script_menu = self._menu_container, script_info = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
 
             else:
-                menu_object = SequenceMenuItem( sequence_menu = self.popup, sequence = item_info, main_object = self.main_object )
+                menu_item = SequenceMenuItem( sequence_menu = self._menu_container, sequence = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
 
-            menu_object.menu_button.bind( '<Enter>' , menu_object.on_enter )
-            menu_object.menu_button.bind( '<Leave>' , menu_object.on_leave )
+            menu_item.menu_button.bind( '<Enter>' , menu_item.on_enter )
+            menu_item.menu_button.bind( '<Leave>' , menu_item.on_leave )
+            menu_item.menu_button.bind_all( '<MouseWheel>', self._on_mousewheel )
 
-            menu_object.menu_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
+            menu_item.menu_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
+
+
+    def _on_canvas_config( self, event: Event ) -> None:
+        """ Canvas got a resize, set inner window to same size
+
+        Args:
+            event (Event): Event that triggered handler
+        """
+
+        self._canvas.itemconfig( self._window_id, width = event.width )
+
+
+    def _on_container_config( self, event: Event ):
+        """ Update scrollregion, clamp height, and toggle scrollbar """
+
+        self._canvas.configure( scrollregion = self._canvas.bbox( self._window_id ) )
+
+        content_height = event.height
+        visible_height = min( content_height, self._max_height )
+        self._canvas.configure( height = visible_height )
+        self._canvas.configure( width = event.width )
+
+        # Toggle scrollbar visibility
+        if content_height > self._max_height:
+            self._scrollbar.grid( row = 0, column = 1, sticky = ( N, S ) )
+
+        else:
+            self._scrollbar.grid_remove()
+
+
+    def _on_mousewheel( self, event: Event ) -> None:
+        """ Bind mouse wheel scrolling """
+
+        self._canvas.yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
 
 
     def hide_popup_menu( self, *args: Any ) -> None:
@@ -98,13 +152,17 @@ class CustomMenu:
             self.popup.withdraw()
             self._visible = False
 
-        else:
-            # Position popup below the button
-            x = self.menu_button.winfo_rootx()
-            y = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
+            return
 
-            self.popup.geometry( f'+{ x }+{ y }' )
-            self.popup.deiconify() # Show popup
+        self.popup.update_idletasks()
 
-            self.popup.focus_set()
-            self._visible = True
+        # Position popup below the button
+        x = self.menu_button.winfo_rootx()
+        y = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
+
+        self.popup.geometry( f'+{ x }+{ y }' )
+        self.popup.deiconify()
+        self.popup.focus_set()
+        self.popup.bind_all( '<MouseWheel>', self._on_mousewheel )
+        self._visible = True
+

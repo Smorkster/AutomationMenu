@@ -10,7 +10,7 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
@@ -25,7 +25,7 @@ from automation_menu.models.enums import OutputStyleTags, ScriptState
 
 
 class ScriptMenuItem:
-    def __init__ ( self, script_menu: Toplevel, script_info: ScriptInfo, main_object: AutomationMenuWindow ) -> None:
+    def __init__ ( self, script_menu: Toplevel, script_info: ScriptInfo, main_object: AutomationMenuWindow, menu_hide_callback: Callable ) -> None:
         """ Object for representing a script in the menu
 
         Args:
@@ -42,6 +42,8 @@ class ScriptMenuItem:
         self.script_info = script_info
         self.script_path = script_info.get_attr( 'fullpath' )
         self.master_self = main_object
+        self._hide_menu = menu_hide_callback
+
         self.master_self.app_state.running_automation = self
         self.process = None
         self.label_text = ''
@@ -82,7 +84,7 @@ class ScriptMenuItem:
     def _check_input_params( self ) -> None:
         """ Verify if script takes input and if widgets are created """
 
-        self.script_menu.withdraw()
+        self._hide_menu()
 
         if len( self.script_info.scriptmeta.script_input_parameters ) > 0:
             self.master_self.app_context.input_manager.show_for_script( script_info = self.script_info, submit_input_callback = self.run_script )
