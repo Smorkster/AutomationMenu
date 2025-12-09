@@ -144,11 +144,14 @@ class LanguageManager:
             widget (tuple[ AlwaysOnTopToolTip, str, bool ]): Tuple of tooltip to update, a string, as translation key and boolean determining if development information should be added
         """
 
+        new_text = self._translate( widget[ 1 ] )
         if widget[ 2 ]:
-            new_text = '{desc}\n\n{dev}'.format( desc = widget[1], dev = self._translate( 'In development, and should only be run by its developer.' ) )
+            dev_text = self._translate( 'In development, and should only be run by its developer.' )
+            new_text += f'\n\n{ dev_text }'
 
-        else:
-            new_text = self._translate( widget[ 1 ] )
+        elif widget[ 3 ]:
+            test_text = self._translate( 'Application test script, only used to test application functionality' )
+            new_text += f'\n\n{ test_text }'
 
         widget[ 0 ].config( new_text = new_text )
 

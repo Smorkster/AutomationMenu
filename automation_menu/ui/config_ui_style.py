@@ -102,6 +102,16 @@ def set_ui_style( style: Style ) -> None:
     ###############
     # Label styling
     # region
+    style.configure( 'AppTestNormal.TLabel',
+                    background = 'SystemButtonFace',
+                    font = ( 'Calibri', 12, 'italic' ),
+                    foreground = "#0054BB"
+    )
+    style.configure( 'AppTestHover.TLabel',
+                    background = '#c2e6f3',
+                    font = ( 'Calibri', 12, 'italic' ),
+                    foreground = "#0054BB"
+    )
     style.configure( 'ScriptHover.TLabel',
                     background = '#c2e6f3',
                     font = ( 'Calibri', 12, 'normal' )

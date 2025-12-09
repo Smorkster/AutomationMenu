@@ -48,7 +48,6 @@ class ScriptMenuItem:
         self.process = None
         self.label_text = ''
         self._in_debug = False
-        style = 'TButton'
 
         if self.script_info.get_attr( 'synopsis' ):
             self.label_text = self.script_info.get_attr( 'synopsis' )
@@ -56,14 +55,19 @@ class ScriptMenuItem:
         else:
             self.label_text = self.script_info.get_attr( 'filename' )
 
-        if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
+        self._style_normal = 'ScriptNormal.TLabel'
+        self._style_hover = 'ScriptHover.TLabel'
+
+        if self.script_info.filename.startswith( 'AMTest_' ):
+            self._style_normal = 'AppTestNormal.TLabel'
+            self._style_hover = 'AppTestHover.TLabel'
+
+        elif self.script_info.get_attr( 'state' ) == ScriptState.DEV:
             self.label_text = self.label_text + _( ' (Dev)' )
-            style = 'DevNormal.TLabel'
+            self._style_normal = 'DevNormal.TLabel'
+            self._style_hover = 'DevHover.TLabel'
 
-        else:
-            style = 'ScriptNormal.TLabel'
-
-        self.menu_button = Label( self.script_menu, text = self.label_text, style = style, borderwidth = 1 )
+        self.menu_button = Label( self.script_menu, text = self.label_text, style = self._style_normal, borderwidth = 1 )
         self.menu_button.bind( '<Button-1>' , lambda e: self._check_input_params() )
 
         # Add tooltip to this button
@@ -72,13 +76,18 @@ class ScriptMenuItem:
 
             desc = self.script_info.get_attr( 'description' )
             dev = False
+            app_test = False
 
             if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
                 desc += f'\n\n{ _( 'In development, and should only be run by its developer.' ) }'
                 dev = True
 
-            tt = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc )
-            self.master_self.app_context.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev ) )
+            if self.script_info.filename.startswith( 'AMTest_' ):
+                desc += f'\n\n{ _( 'Application test script, only used to test application functionality' ) }'
+                app_test = True
+
+            tt = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc, delay = 0 )
+            self.master_self.app_context.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev, app_test ) )
 
 
     def _check_input_params( self ) -> None:
@@ -109,11 +118,7 @@ class ScriptMenuItem:
             event: Event triggering the function
         """
 
-        if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
-            event.widget.configure( style = 'DevHover.TLabel' )
-
-        else:
-            event.widget.configure( style = 'ScriptHover.TLabel' )
+        event.widget.configure( style = self._style_hover )
 
 
     def on_leave( self, event: Event ) -> None:
@@ -123,11 +128,7 @@ class ScriptMenuItem:
             event: Event triggering the function
         """
 
-        if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
-            event.widget.configure( style = 'DevNormal.TLabel' )
-
-        else:
-            event.widget.configure( style = 'ScriptNormal.TLabel' )
+        event.widget.configure( style = self._style_normal )
 
 
     def run_script( self ) -> None:

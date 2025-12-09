@@ -97,9 +97,8 @@ class CustomMenu:
             else:
                 menu_item = SequenceMenuItem( sequence_menu = self._menu_container, sequence = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
 
-            menu_item.menu_button.bind( '<Enter>' , menu_item.on_enter )
-            menu_item.menu_button.bind( '<Leave>' , menu_item.on_leave )
-            menu_item.menu_button.bind_all( '<MouseWheel>', self._on_mousewheel )
+            menu_item.menu_button.bind( '<Enter>' , menu_item.on_enter, add = '+' )
+            menu_item.menu_button.bind( '<Leave>' , menu_item.on_leave, add = '+' )
 
             menu_item.menu_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
 
