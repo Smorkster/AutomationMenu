@@ -19,6 +19,7 @@ class Sequence:
     """ Define an automatic run sequence """
 
     description: str
+    id: str
     name: str
     steps: list[ SequenceStep ]
     stop_on_error: bool

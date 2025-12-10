@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-09 13:21+0100\n"
+"POT-Creation-Date: 2025-12-10 14:40+0100\n"
 "PO-Revision-Date: 2025-09-18 15:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_US\n"
@@ -61,7 +61,7 @@ msgstr ""
 "{main_label_text}"
 
 #: automation_menu/core/auth.py:46 automation_menu/ui/input_manager.py:80
-#: automation_menu/ui/sequence_manager.py:349
+#: automation_menu/ui/sequence_manager.py:351
 msgid "Abort"
 msgstr "Abort"
 
@@ -96,15 +96,15 @@ msgstr ""
 msgid "Not connected to LDAP"
 msgstr "Not connected to LDAP"
 
-#: automation_menu/core/script_menu_item.py:66
+#: automation_menu/core/script_menu_item.py:67
 msgid " (Dev)"
 msgstr " (Dev)"
 
-#: automation_menu/core/script_menu_item.py:82
+#: automation_menu/core/script_menu_item.py:83
 msgid "In development, and should only be run by its developer."
 msgstr "In development, and should only be run by its developer."
 
-#: automation_menu/core/script_menu_item.py:86
+#: automation_menu/core/script_menu_item.py:87
 msgid "Application test script, only used to test application functionality"
 msgstr "Application test script, only used to test application functionality"
 
@@ -251,7 +251,7 @@ msgid "Started"
 msgstr "Started"
 
 #: automation_menu/ui/history_manager.py:139
-#: automation_menu/ui/sequence_manager.py:188
+#: automation_menu/ui/sequence_manager.py:189
 msgid "Name"
 msgstr "Name"
 
@@ -335,91 +335,91 @@ msgstr "Pause script"
 msgid "Script output"
 msgstr "Script output"
 
-#: automation_menu/ui/sequence_manager.py:99
+#: automation_menu/ui/sequence_manager.py:100
 msgid "Create new sequence"
 msgstr "Create new sequence"
 
-#: automation_menu/ui/sequence_manager.py:107
+#: automation_menu/ui/sequence_manager.py:108
 msgid "Edit"
 msgstr "Edit"
 
-#: automation_menu/ui/sequence_manager.py:119
+#: automation_menu/ui/sequence_manager.py:120
 msgid "Run selected"
 msgstr "Run selected"
 
-#: automation_menu/ui/sequence_manager.py:137
+#: automation_menu/ui/sequence_manager.py:138
 msgid "Add step"
 msgstr "Add step"
 
-#: automation_menu/ui/sequence_manager.py:145
+#: automation_menu/ui/sequence_manager.py:146
 msgid "Save sequence"
 msgstr "Save sequence"
 
-#: automation_menu/ui/sequence_manager.py:153
+#: automation_menu/ui/sequence_manager.py:154
 msgid "Delete sequence"
 msgstr "Delete sequence"
 
-#: automation_menu/ui/sequence_manager.py:161
+#: automation_menu/ui/sequence_manager.py:162
 msgid "Abort edit"
 msgstr "Abort edit"
 
-#: automation_menu/ui/sequence_manager.py:197
+#: automation_menu/ui/sequence_manager.py:198
 msgid "Description"
 msgstr "Description"
 
-#: automation_menu/ui/sequence_manager.py:206
-#: automation_menu/ui/sequence_manager.py:306
+#: automation_menu/ui/sequence_manager.py:207
+#: automation_menu/ui/sequence_manager.py:308
 msgid "Stop on error"
 msgstr "Script error"
 
-#: automation_menu/ui/sequence_manager.py:248
+#: automation_menu/ui/sequence_manager.py:250
 msgid "Steps in sequence"
 msgstr "Steps in sequence"
 
-#: automation_menu/ui/sequence_manager.py:294
+#: automation_menu/ui/sequence_manager.py:296
 msgid "Script for this step"
 msgstr "Script for this step"
 
-#: automation_menu/ui/sequence_manager.py:316
+#: automation_menu/ui/sequence_manager.py:318
 msgid "Script input parameters"
 msgstr "Script input parameters"
 
-#: automation_menu/ui/sequence_manager.py:337
+#: automation_menu/ui/sequence_manager.py:339
 msgid "Save step"
 msgstr "Save step"
 
-#: automation_menu/ui/sequence_manager.py:343
+#: automation_menu/ui/sequence_manager.py:345
 msgid "Remove step"
 msgstr "Remove step"
 
-#: automation_menu/ui/sequence_manager.py:493
+#: automation_menu/ui/sequence_manager.py:514
 msgid "Input not specified"
 msgstr "Input not specified"
 
-#: automation_menu/ui/sequence_manager.py:571
+#: automation_menu/ui/sequence_manager.py:605
 #, python-brace-format
 msgid "Aborted by user at step {i}"
 msgstr "Aborted by user at step {i}"
 
-#: automation_menu/ui/sequence_manager.py:581
+#: automation_menu/ui/sequence_manager.py:615
 #, python-brace-format
 msgid "Stopped on error at step {i} (exit code: {e})"
 msgstr "Stopped on error at step {i} (exit code: {e})"
 
-#: automation_menu/ui/sequence_manager.py:590
+#: automation_menu/ui/sequence_manager.py:624
 #, python-brace-format
 msgid "Step {i} failed (exit code {e})"
 msgstr "Step {i} failed (exit code {e})"
 
-#: automation_menu/ui/sequence_manager.py:601
+#: automation_menu/ui/sequence_manager.py:635
 msgid "Sequence stopped due to individual step error"
 msgstr "Sequence stopped due to individual step error"
 
-#: automation_menu/ui/sequence_manager.py:727
+#: automation_menu/ui/sequence_manager.py:768
 msgid "Automation sequence"
 msgstr "Steps in sequence"
 
-#: automation_menu/ui/sequence_manager.py:843
+#: automation_menu/ui/sequence_manager.py:880
 #, python-brace-format
 msgid "Starting sequence {name}, with {step_count} steps"
 msgstr "Starting sequence {name}, with {step_count} steps"
@@ -539,3 +539,4 @@ msgstr "<strong>Error message</strong>"
 #: automation_menu/utils/email_handler.py:64
 msgid "This is an automatic message sent from AutomationMenu"
 msgstr "This is an automatic message sent from AutomationMenu"
+

@@ -11,6 +11,7 @@ Created: 2025-11-20
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
+import uuid
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
@@ -20,11 +21,10 @@ if TYPE_CHECKING:
 import alwaysontop_tooltip
 import threading
 
-from tkinter import E, END, N, S, W, BooleanVar, Canvas, Event, Listbox, Scrollbar
-from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Notebook
+from tkinter import E, N, S, W, BooleanVar, Canvas, Event, Scrollbar
+from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Notebook, Treeview
 from typing import Callable
 
-from automation_menu.core import script_execution_manager
 from automation_menu.models.enums import OutputStyleTags, SysInstructions
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 from automation_menu.models.sequence import Sequence
@@ -62,12 +62,13 @@ class SequenceManager:
                 step.script_info = self._app_context.script_manager.get_script_info_by_path( path = step.script_file )
 
             sequence = Sequence(
-                name = s[ 'name' ],
+                id = s.get( 'id', str( uuid.uuid4() ) ),
+                name = s.get( 'name', '' ),
                 description = s.get( 'description', '<Description not set>' ),
                 steps = steps,
                 stop_on_error = s.get( 'stop_on_error', False )
             )
-            self._sequences[ s[ 'name' ] ] = sequence
+            self._sequences[ sequence.id ] = sequence
 
 
     def _clear_sequence_info( self ) -> None:
@@ -215,8 +216,10 @@ class SequenceManager:
     def _create_sequence_list( self ) -> None:
         """ Define a list to display available sequences """
 
-        sequence_list = Listbox( master = self._sequence_widgets[ 'main_frame' ], width = 50, font = ( 'Calibri', 13 ), selectbackground = '#C5fAFF', selectforeground = '#000000', selectborderwidth = 2, activestyle = 'none' )
-        sequence_list.bind( '<Button-1>', self._on_listbox_click )
+        sequence_list = Treeview( master = self._sequence_widgets[ 'main_frame' ], columns = ( 'name', 'id' ), displaycolumns = 'name', show = '', selectmode = 'browse' )
+        sequence_list.column( 'name', anchor = 'w' )
+        sequence_list.column( 'id', anchor = 'w' )
+        sequence_list.bind( '<ButtonRelease-1>', self._on_listbox_click )
         sequence_list.grid( column = 0, row = 0, sticky = ( N, S, W, E ) )
         self._sequence_widgets[ 'sequence_list' ] = sequence_list
 
@@ -227,8 +230,7 @@ class SequenceManager:
 
         list_scrollbar.config( command = sequence_list.yview )
 
-        for k in self._sequences.keys():
-            sequence_list.insert( 'end', k )
+        self._list_sequences()
 
 
     def _create_steps_display( self ) -> None:
@@ -353,13 +355,21 @@ class SequenceManager:
 
 
     def _on_canvas_config( self, event: Event ) -> None:
-        """ Eventhandler for when sequence step canvas changes size """
+        """ Eventhandler for when sequence step canvas changes size
+
+        Args:
+            event (Event): Event that triggered handler
+        """
 
         self._sequence_widgets[ 'container_canvas' ].itemconfig( self._sequence_widgets[ 'window_id' ], width = event.width, height = event.height )
 
 
     def _on_frame_config( self, event: Event ) -> None:
-        """ Eventhandler for when sequence step frame changes size """
+        """ Eventhandler for when sequence step frame changes size
+
+        Args:
+            event (Event): Event that triggered handler
+        """
 
         self._sequence_widgets[ 'container_canvas' ].configure( scrollregion = self._sequence_widgets[ 'container_canvas' ].bbox( 'all' ) )
 
@@ -368,40 +378,46 @@ class SequenceManager:
         """ Verify if an item or empty area was clicked in the listbox
 
         Args:
-            event (tk.Event): The event that called this handler
+            event (Event): Event that triggered handler
         """
 
-        sequence_listbox: Listbox = event.widget
-        index = sequence_listbox.nearest( event.y )
-        bbox = sequence_listbox.bbox( index )
+        sequence_listbox: Treeview = event.widget
 
-        if index >= sequence_listbox.size() or not bbox or not ( bbox[ 1 ] <= event.y <= bbox[ 1 ] + bbox[ 3 ] ):
-            sequence_listbox.selection_clear( first = 0, last = END )
+        if item_focused := sequence_listbox.focus():
+            sequence_listbox.item( item_focused )[ 'values' ][ 1 ]
+            self._sequence_widgets[ 'edit_sequence_btn' ].config( state = 'normal' )
+            self._sequence_widgets[ 'run_sequence_btn' ].config( state = 'normal' )
 
-            self._sequence_widgets[ 'edit_sequence_btn' ].config( state = 'disable' )
-            self._sequence_widgets[ 'run_sequence_btn' ].config( state = 'disable' )
-
-            return 'break'
-
-        self._sequence_widgets[ 'edit_sequence_btn' ].config( state = 'normal' )
-        self._sequence_widgets[ 'run_sequence_btn' ].config( state = 'normal' )
+        return
 
 
     def _on_mousewheel( self, event: Event ) -> None:
-        """ Eventhandler for mouse wheel scrolling in the steps list """
+        """ Eventhandler for mouse wheel scrolling in the steps list
+
+        Args:
+            event (Event): Event that triggered handler
+        """
 
         self._sequence_widgets[ 'container_canvas' ].yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
 
 
     def _on_step_click( self, step_index: int ) -> None:
-        """ Eventhandler for click on step row """
+        """ Eventhandler for click on step row
+
+        Args:
+            step_index (int): Index of the step that got clicked
+        """
 
         self._current_step_for_edit = self._current_sequence.steps[ step_index ]
         self._show_step_form()
 
 
     def _on_step_script_selected( self, event: Event ) -> None:
-        """ Eventhandler for when a script is selected for a sequence step """
+        """ Eventhandler for when a script is selected for a sequence step
+
+        Args:
+            event (Event): Event that triggered handler
+        """
 
         selected_name = event.widget.get()
 
@@ -422,6 +438,7 @@ class SequenceManager:
         for s in self._sequences.values():
             sequences_list.append(
                 {
+                    'id': s.id,
                     'name': s.name,
                     'description': s.description,
                     'stop_on_error': s.stop_on_error,
@@ -466,7 +483,11 @@ class SequenceManager:
 
 
     def _populate_sequence_steps( self, sequence: Sequence ) -> None:
-        """ Create widgets per sequence step and populate display frame """
+        """ Create widgets per sequence step and populate display frame
+
+        Args:
+            sequence (Sequence): Sequence to take step list from
+        """
 
         from automation_menu.utils.localization import _
 
@@ -502,6 +523,19 @@ class SequenceManager:
             step[ 1 ].step_index = step[ 0 ]
 
 
+    def _list_sequences( self ) -> None:
+        """ List available sequences """
+
+        tree: Treeview = self._sequence_widgets[ 'sequence_list' ]
+
+        tree.delete( *tree.get_children() )
+
+        for k in self._sequences.items():
+            tree.insert( '', 'end', values = ( k[ 1 ].name, k[ 0 ] ) )
+
+        self._app_context.main_window.op_buttons[ 'sequence_menu' ].rebuild_menu( exec_list = self._sequences )
+
+
     def _save_edited_step( self ) -> None:
         """ Save the currently edited step """
 
@@ -525,8 +559,8 @@ class SequenceManager:
         if self._sequence_widgets.get( 'input_params_frame', False ):
             ipf = self._sequence_widgets[ 'input_params_frame' ]
             if ipf.winfo_exists():
-                step_input = self._app_context.input_manager.collect_input_values(
-                    frame_name_to_search = ipf
+                step_input = self._app_context.input_manager.collect_entered_input(
+                    frame_to_search = ipf
                 )
                 self._current_step_for_edit.pre_set_parameters = step_input
 
@@ -647,6 +681,7 @@ class SequenceManager:
         Args:
             input (list[ ScriptInputParameter ]): List of input parameters to display
             pre_set (list[ dict ]): List of pre set parameter values
+            show (bool): Should the input frame be shown
         """
 
         if show:
@@ -698,17 +733,23 @@ class SequenceManager:
 
 
     def create_new_sequence( self ) -> None:
-        """ Display new sequence form """
+        """ Display empty sequence form """
 
-        self._sequence_widgets[ 'name_field' ].config( state = 'normal' )
-        self._sequence_widgets[ 'description_field' ].config( state = 'normal' )
-        self._sequence_widgets[ 'stop_sequence_on_error_field' ].config( state = 'normal' )
+        new_id = str( uuid.uuid4() )
+        self._current_sequence = Sequence( id = new_id, description = '', name = '', stop_on_error = False, steps = [] )
+        self._sequences[ new_id ] = self._current_sequence
 
-        self._sequence_widgets[ 'sequence_ops' ].grid()
+        self._populate_sequence_form()
 
 
     def create_sequence_tab( self, tabcontrol: Notebook, sequence_callbacks: list[ Callable ], translate_callback: Callable ) -> Frame:
-        """ Create a Frame that displays and creates sequences """
+        """ Create a Frame that displays and creates sequences
+
+        Args:
+            tabcontrol (Notebook): Parent widget to attach frame to
+            sequence_callbacks (list[ Callable ]): Function callbacks for UI execution wrappers
+            translatable_callback (Callable): Function callback for localization translation
+        """
 
         from automation_menu.utils.localization import _
 
@@ -742,30 +783,22 @@ class SequenceManager:
     def delete_sequence( self ) -> None:
         """ Delete sequence """
 
-        name = self._current_sequence.name
+        sequence_id = self._current_sequence.id
 
-        del self._sequences[ name ]
+        del self._sequences[ sequence_id ]
 
         self.abort_sequence_edit()
+        self._persist_sequences()
+        self._list_sequences()
 
 
     def edit_sequence( self ) -> None:
         """ Load selected sequence for editing """
 
-        name = self._sequence_widgets[ 'sequence_list' ].get( self._sequence_widgets[ 'sequence_list' ].curselection() )
-        self._current_sequence = self._sequences[ name ]
+        id = self._sequence_widgets[ 'sequence_list' ].item( self._sequence_widgets[ 'sequence_list' ].focus() )[ 'values' ][ 1 ]
+        self._current_sequence = self._sequences[ id ]
 
         self._populate_sequence_form( sequence = self._current_sequence )
-
-
-    def get_sequence_by_name( self, name: str ) -> Sequence:
-        """ Get sequence with the given name
-
-        Returns:
-            (Sequence): A Sequence with the asked name
-        """
-
-        return self._sequences[ name ]
 
 
     def get_sequence_list( self ) -> list[ Sequence ]:
@@ -785,7 +818,10 @@ class SequenceManager:
             (list[ str ]): List of names of sequences
         """
 
-        list = self._sequences.keys()
+        list = []
+
+        for i, s in [ ( i , s ) for i, s in self._sequences.items() ]:
+            list.append( s.name )
 
         return sorted( list )
 
@@ -812,11 +848,12 @@ class SequenceManager:
         self.hide_step_form()
 
 
-    def run_sequence( self, name: str | None = None, on_finished: Callable = None ) -> None:
+    def run_sequence( self, id: str | None = None, on_finished: Callable = None ) -> None:
         """ Run selected sequence
 
         Args:
-            name (str): Name of sequence to run
+            id (str): Id of sequence to run
+            on_finished (Callable): Function callback to run after sequence finished execution
         """
 
         def _mini_runner() -> None:
@@ -832,10 +869,10 @@ class SequenceManager:
         from automation_menu.utils.localization import _
 
         # Use the sequence selected in list
-        if not name:
-            name = self._sequence_widgets[ 'sequence_list' ].get( self._sequence_widgets[ 'sequence_list' ].curselection() )
+        if not id:
+            id = self._sequence_widgets[ 'sequence_list' ].item( self._sequence_widgets[ 'sequence_list' ].focus() )[ 'values' ][ 1 ]
 
-        seq: Sequence = self._sequences[ name ]
+        seq: Sequence = self._sequences[ id ]
 
         self._app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
 
@@ -851,7 +888,12 @@ class SequenceManager:
     def save_sequence( self ) -> None:
         """ Save sequence data and steps, as it is """
 
+        self._current_sequence.name = self._sequence_widgets[ 'name_field' ].get()
+        self._current_sequence.description = self._sequence_widgets[ 'description_field' ].get()
+
+        self._sequences[ self._current_sequence.id ] = self._current_sequence
         self._persist_sequences()
+        self._list_sequences()
 
 
     def toggle_step_form( self ) -> None:

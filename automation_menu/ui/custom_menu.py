@@ -79,7 +79,11 @@ class CustomMenu:
 
 
     def _check_click_outside( self, event: Event ) -> None:
-        """ Check if click was outside popup bounds """
+        """ Check if click was outside popup bounds
+
+        Args:
+            event (Event): Event that triggered handler
+        """
 
         widget = event.widget.winfo_containing( event.x_root, event.y_root )
 
@@ -95,12 +99,16 @@ class CustomMenu:
                 menu_item = ScriptMenuItem( script_menu = self._menu_container, script_info = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
 
             else:
-                menu_item = SequenceMenuItem( sequence_menu = self._menu_container, sequence = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
+                menu_item = SequenceMenuItem( sequence_menu = self._menu_container, sequence = self.exec_list[ item_info ], main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
 
             menu_item.menu_button.bind( '<Enter>' , menu_item.on_enter, add = '+' )
             menu_item.menu_button.bind( '<Leave>' , menu_item.on_leave, add = '+' )
 
             menu_item.menu_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
+
+        self._menu_container.update_idletasks()
+        self._canvas.update_idletasks()
+        self.popup.update_idletasks()
 
 
     def _on_canvas_config( self, event: Event ) -> None:
@@ -114,7 +122,11 @@ class CustomMenu:
 
 
     def _on_container_config( self, event: Event ):
-        """ Update scrollregion, clamp height, and toggle scrollbar """
+        """ Update scrollregion, clamp height, and toggle scrollbar
+
+        Args:
+            event (Event): Event that triggered handler
+        """
 
         self._canvas.configure( scrollregion = self._canvas.bbox( self._window_id ) )
 
@@ -132,16 +144,58 @@ class CustomMenu:
 
 
     def _on_mousewheel( self, event: Event ) -> None:
-        """ Bind mouse wheel scrolling """
+        """ Bind mouse wheel scrolling
+
+        Args:
+            event (Event): Event that triggered handler
+        """
 
         self._canvas.yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
 
 
     def hide_popup_menu( self, *args: Any ) -> None:
-        """ Hide the popup menu """
+        """ Hide the popup menu
+
+        Args:
+            args: Any arguments catcher
+        """
 
         self.popup.withdraw()
         self._visible = False
+
+
+    def rebuild_menu( self, exec_list: dict | list[ ScriptInfo ] ) -> None:
+        """ Rebuild the popup menu when the script/sequence list changes
+
+        Args:
+            exec_list (dict | list[ ScriptInfo ]): Content to display in menu
+        """
+
+        self.exec_list = exec_list
+
+        for c in self._menu_container.winfo_children():
+            c.destroy()
+
+        self._create_popup_content()
+
+        self._menu_container.update_idletasks()
+
+        content_width  = self._menu_container.winfo_reqwidth()
+        content_height = self._menu_container.winfo_reqheight()
+
+        visible_height = min( content_height, self._max_height )
+
+        self._canvas.configure(
+            width = content_width,
+            height = visible_height,
+            scrollregion = self._canvas.bbox( self._window_id )
+        )
+
+        if self._visible:
+            self.popup.update_idletasks()
+            x = self.menu_button.winfo_rootx()
+            y = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
+            self.popup.geometry( f'+{ x }+{ y }' )
 
 
     def show_popup_menu( self ) -> None:
@@ -153,15 +207,34 @@ class CustomMenu:
 
             return
 
+        self._menu_container.update_idletasks()
         self.popup.update_idletasks()
 
-        # Position popup below the button
+        content_width  = self._menu_container.winfo_reqwidth()
+        content_height = self._menu_container.winfo_reqheight()
+
+        visible_height = min( content_height, self._max_height )
+        self._canvas.configure( height = visible_height )
+
+        if content_height > self._max_height:
+            self.main_object.app_context.debug_logger.debug( 'Scrollbar is mapped' )
+            scrollbar_width = self._scrollbar.winfo_reqwidth() + 10
+
+        else:
+            self.main_object.app_context.debug_logger.debug( 'Scrollbar is NOT mapped' )
+            scrollbar_width = 10
+
+        total_width = content_width + scrollbar_width
+
+        self._canvas.itemconfig( self._window_id, width = content_width )
+        self._canvas.configure( width = content_width )
+
         x = self.menu_button.winfo_rootx()
         y = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
 
-        self.popup.geometry( f'+{ x }+{ y }' )
+        self.popup.geometry( f'{ total_width }x{ visible_height + 10 }+{ x }+{ y }' )
         self.popup.deiconify()
         self.popup.focus_set()
         self.popup.bind_all( '<MouseWheel>', self._on_mousewheel )
-        self._visible = True
 
+        self._visible = True

@@ -18,18 +18,19 @@ if TYPE_CHECKING:
 import logging
 import threading
 
-from tkinter import Event, Toplevel
-from tkinter.ttk import Label
-from automation_menu.models import ScriptInfo, SysInstructions
-from automation_menu.models.enums import OutputStyleTags, ScriptState
+from tkinter import Event
+from tkinter.ttk import Frame, Label
+
+from automation_menu.models import ScriptInfo
+from automation_menu.models.enums import ScriptState
 
 
 class ScriptMenuItem:
-    def __init__ ( self, script_menu: Toplevel, script_info: ScriptInfo, main_object: AutomationMenuWindow, menu_hide_callback: Callable ) -> None:
+    def __init__ ( self, script_menu: Frame, script_info: ScriptInfo, main_object: AutomationMenuWindow, menu_hide_callback: Callable ) -> None:
         """ Object for representing a script in the menu
 
         Args:
-            script_menu (Menu): Menu widget to attach menu item to
+            script_menu (Frame): Frame to attach menu item to
             script_info (ScriptInfo): Information about the script
             main_object (AutomationMenuWindow): The main window
         """
@@ -115,7 +116,7 @@ class ScriptMenuItem:
         """ Change label background on mouse enter
 
         Args:
-            event: Event triggering the function
+            event (Event): Event that triggered handler
         """
 
         event.widget.configure( style = self._style_hover )
@@ -125,7 +126,7 @@ class ScriptMenuItem:
         """ Change label background on mouse leave
 
         Args:
-            event: Event triggering the function
+            event (Event): Event that triggered handler
         """
 
         event.widget.configure( style = self._style_normal )
