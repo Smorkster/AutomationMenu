@@ -40,11 +40,11 @@ def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
 
         if match:
 
-            current_field = match.group( 1 ).strip()
-            current_value = match.group( 2 ).strip() if match.group( 2 ).strip() else ''
+            current_field: str = match.group( 1 ).strip()
+            current_value: str = match.group( 2 ).strip() if match.group( 2 ).strip() else ''
 
             if current_field.startswith( 'param ' ):
-                param = _parse_parameters( field = current_field, value = current_value )
+                param: ScriptInputParameter = _parse_parameter( field = current_field, value = current_value )
                 parameters.append( param )
 
             else:
@@ -52,6 +52,9 @@ def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
                     ValidScriptInfoFields( current_field.lower() )
                     if current_field.lower() == 'state':
                         fields[ current_field ] = ScriptState[ current_value.upper() ]
+
+                    elif current_field.lower() in ( 'required_ad_groups', 'allowed_users' ):
+                        fields[ current_field ] = current_value.split( ';' )
 
                     else:
                         fields[ current_field ] = current_value if len( current_value ) > 0 else True
@@ -70,7 +73,7 @@ def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
     return fields, warnings
 
 
-def _parse_parameters( field: str, value: str ) -> ScriptInputParameter:
+def _parse_parameter( field: str, value: str ) -> ScriptInputParameter:
     """ Extract script input parameters info
 
     Parse fields like:
@@ -133,9 +136,10 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
         ValueError for any exception when trying to read docstring in file
     """
 
-    docstring_dict = {}
+    docstring_dict: dict = {}
 
     if not raw_docstring:
+
         return docstring_dict
 
     lines = raw_docstring.strip().split( '\n' )
@@ -144,6 +148,7 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
     for i, line in enumerate( lines ):
         if line.strip().startswith( ':' ):
             fields_start_idx = i
+
             break
 
     if fields_start_idx:

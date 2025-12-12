@@ -11,14 +11,16 @@ Created: 2025-09-25
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+import dynamicinputbox
+
+from automation_menu.utils.decorators import ui_guard_method
+
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.models.application_state import ApplicationState
 
-import logging
-
 from tkinter import E, N, S, W, Event, Tk, messagebox
-from tkinter.ttk import Notebook, Style
+from tkinter.ttk import Combobox, Notebook, Style
 from typing import Tuple, Union
 
 from automation_menu.filehandling.settings_handler import write_settingsfile
@@ -80,11 +82,10 @@ class AutomationMenuWindow:
             'op_abort_sequence_edit': self.op_abort_sequence_edit,
             'op_run_sequence': self.op_run_sequence
         }
-        logging.basicConfig( level = logging.DEBUG )
 
         # Create main GUI
         self.root = Tk()
-        title_string = self.app_state.secrets.get( 'mainwindowtitle' )
+        title_string: str = self.app_state.secrets.get( 'mainwindowtitle' )
 
         if self.app_context.startup_arguments[ 'app_run_state' ] == ApplicationRunState.DEV:
             title_string += " <DEV>"
@@ -123,7 +124,7 @@ class AutomationMenuWindow:
         # Create output
         self.tab_output, self.textbox_output = get_output_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
-        set_output_styles( self.textbox_output )
+        set_output_styles( widget = self.textbox_output )
 
         self.sequence_tab = self.app_context.sequence_manager.create_sequence_tab( tabcontrol = self.tab_control, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
@@ -132,7 +133,8 @@ class AutomationMenuWindow:
                                                        text_widget = self.textbox_output,
                                                        breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ],
                                                        history_manager = self.app_context.history_manager,
-                                                       api_callbacks = self.api_callbacks
+                                                       api_callbacks = self.api_callbacks,
+                                                       logger = self.app_context.debug_logger
                                                        )
         self.output_controller.start()
 
@@ -153,12 +155,29 @@ class AutomationMenuWindow:
         self.root.rowconfigure( index = 3, weight = 0 ) # Status bar
 
         # Shortcuts bindings
-        self.root.bind( '<Control-m>', self._open_script_menu )
+        self.root.bind( '<Control-m>', self._on_script_menu_shortcut )
 
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
-        self.center_screen()
+        self._center_screen()
         self.root.focus_force()
         self.root.mainloop()
+
+
+    @ui_guard_method( when_message = 'Centering window on screen' )
+    def _center_screen( self ) -> None:
+        """ Center main window on screen """
+
+        self.root.update_idletasks()
+        width = self.root.winfo_width()
+        frm_width = self.root.winfo_rootx() - self.root.winfo_x()
+        win_width = width + 2 * frm_width
+        height = self.root.winfo_height()
+        titlebar_height = self.root.winfo_rooty() - self.root.winfo_y()
+        win_height = height + titlebar_height + frm_width
+        x = self.root.winfo_screenwidth() // 2 - win_width // 2
+        y = self.root.winfo_screenheight() // 2 - win_height // 2
+        self.root.geometry( newGeometry = f'{ width }x{ height }+{ x }+{ y }' )
+        self.root.update_idletasks()
 
 
     def _confirm_close_process( self ) -> bool:
@@ -226,12 +245,18 @@ class AutomationMenuWindow:
         self.root.overrideredirect( False )  # Reapply window decorations
 
 
-    def _open_script_menu( self, event: Event = None ) -> None:
-        """ Open script menu with shortcut """
+    @ui_guard_method( when_message = 'Opening script menu with shortcut' )
+    def _on_script_menu_shortcut( self, event: Event = None ) -> None:
+        """ Open script menu with shortcut
+
+        Args:
+            event (Event): Event triggering the handler
+        """
 
         self.op_buttons[ 'script_menu' ].show_popup_menu()
 
 
+    @ui_guard_method( when_message = 'Changing language' )
     def _on_language_change( self, new_lang: str ) -> None:
         """ Eventhandler for when application changes by the user
 
@@ -243,6 +268,7 @@ class AutomationMenuWindow:
         write_settingsfile( settings = self.app_state.settings, settings_file_path = self.settings_file_path )
 
 
+    @ui_guard_method( when_message = 'Pausing/resuming execution' )
     def _pause_resume_script( self ) -> None:
         """ Pause script execution """
 
@@ -250,7 +276,9 @@ class AutomationMenuWindow:
 
         if self.app_context.execution_manager.is_paused():
             if self.app_context.execution_manager.resume_current_script():
-                self.app_context.output_queue.put( { 'line': _( 'Process was resumed' ), 'tag': OutputStyleTags.SYSINFO } )
+                self.app_context.output_queue.put( { 'line': _( 'Process was resumed' ),
+                                                    'tag': OutputStyleTags.SYSINFO
+                                                    } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
 
                 self._blink_active = False
@@ -258,12 +286,15 @@ class AutomationMenuWindow:
 
         else:
             if self.app_context.execution_manager.pause_current_script():
-                self.app_context.output_queue.put( { 'line': _( 'Process was paused' ), 'tag': OutputStyleTags.SYSINFO } )
+                self.app_context.output_queue.put( { 'line': _( 'Process was paused' ),
+                                                    'tag': OutputStyleTags.SYSINFO
+                                                    } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Resume' ) )
                 self._blink_active = True
                 self._pause_button_blinking()
 
 
+    @ui_guard_method( when_message = 'Pausing button blinking' )
     def _pause_button_blinking( self ) -> None:
         """ Initiate blinking effect of pause button during breakpoint pause """
 
@@ -279,6 +310,7 @@ class AutomationMenuWindow:
         self._blink_job = self.root.after( 600, self._pause_button_blinking )
 
 
+    @ui_guard_method( when_message = 'Stopping script' )
     def _stop_script( self ) -> None:
         """ Eventhandler for when user clicks button stop script """
 
@@ -286,21 +318,7 @@ class AutomationMenuWindow:
         self.stop_pause_button_blinking()
 
 
-    def center_screen( self ) -> None:
-        """ Center main window on screen """
-
-        self.root.update_idletasks()
-        width = self.root.winfo_width()
-        frm_width = self.root.winfo_rootx() - self.root.winfo_x()
-        win_width = width + 2 * frm_width
-        height = self.root.winfo_height()
-        titlebar_height = self.root.winfo_rooty() - self.root.winfo_y()
-        win_height = height + titlebar_height + frm_width
-        x = self.root.winfo_screenwidth() // 2 - win_width // 2
-        y = self.root.winfo_screenheight() // 2 - win_height // 2
-        self.root.geometry( newGeometry = f'{ width }x{ height }+{ x }+{ y }' )
-
-
+    @ui_guard_method( when_message = 'Doing execution post work' )
     def execution_post_work( self, disable_minimize: bool = False, is_sequence: bool = False ) -> None:
         """ Reset UI and controls after script/sequence execution """
 
@@ -312,7 +330,11 @@ class AutomationMenuWindow:
 
         self._minimize_show_controls()
 
+        if self.app_state.settings.force_focus_post_execution:
+            self.root.focus_force()
 
+
+    @ui_guard_method( when_message = 'Doing execution pre work' )
     def execution_pre_work( self, disable_minimize: bool = False, is_sequence: bool = False ) -> None:
         """ Set UI and controls according to preferences before execution """
 
@@ -340,17 +362,30 @@ class AutomationMenuWindow:
                 self.min_max_on_running( old_geometry )
 
 
+    @ui_guard_method( when_message = 'Closing main window' )
     def on_closing( self ) -> None:
         """ Window close event. Handle if a script is still running """
 
+        from automation_menu.utils.localization import _
+
         if not self._close_confirmed and self.app_context.execution_manager.is_running():
             if not self._confirm_close_process():
+
                 return
 
-        write_settingsfile( settings = self.app_state.settings, settings_file_path = self.app_state.secrets.get( 'settings_file_path' ) )
+        try:
+            write_settingsfile( settings = self.app_state.settings, settings_file_path = self.app_state.secrets.get( 'settings_file_path' ) )
+
+        except Exception as e:
+
+            dynamicinputbox.dynamic_inputbox( title = _( 'Write settings error' ), message = _( 'Could not save settings to file: {e}' ).format( e = e ) )
 
         if hasattr( self, 'output_controller' ):
-            self.output_controller.closedown()
+            try:
+                self.output_controller.closedown()
+
+            except Exception as e:
+                self.app_context.debug_logger.warning( _( 'Error shutting down output controller: {e}' ).format( e = e ) )
 
         self.root.destroy()
 
@@ -362,8 +397,28 @@ class AutomationMenuWindow:
             event: Event actualizing the function
         """
 
+        if not event or not ( event.widget is Combobox):
+
+            return
+
         self.app_state.settings.current_language = event.widget.get()
         self.app_context.language_manager.change_app_language( new_language = event.widget.get() )
+
+
+    def set_force_focus_post_execution( self, new_value: bool ) -> None:
+        """ Save setting to user_settings file
+
+        Args:
+            new_value (bool): New value to save
+        """
+
+        self.app_state.settings.force_focus_post_execution = new_value
+
+        if new_value:
+            self.settings_ui[ 'chb_force_focus_post_execution' ].config( state = 'normal' )
+
+        else:
+            self.settings_ui[ 'chb_force_focus_post_execution' ].config( state = 'disabled' )
 
 
     def set_display_dev( self ) -> None:
@@ -411,6 +466,7 @@ class AutomationMenuWindow:
         self.app_state.settings.minimize_on_running = new_value
 
 
+    @ui_guard_method( when_message = 'Down-/resizing window before/after script execution' )
     def min_max_on_running( self, old_geometry: dict = None ) -> None:
         """ Resize window during script execution
 
@@ -433,6 +489,7 @@ class AutomationMenuWindow:
         self.root.update_idletasks()
 
 
+    @ui_guard_method( when_message = 'Setting window \'on top\'' )
     def set_on_top( self, new_value: bool ) -> None:
         """ Save setting to user_settings and set/unset the window as top most
 
@@ -446,18 +503,21 @@ class AutomationMenuWindow:
 
 
     # region Button ops
+    @ui_guard_method( when_message = 'Enabling breakpoint continue button' )
     def enable_breakpoint_button( self ) -> None:
         """ Enable the breakpoint button """
 
         self.op_buttons[ 'btnContinueBreakpoint' ].state( [ '!disabled' ] )
 
 
+    @ui_guard_method( when_message = 'Enabling pause/resume button' )
     def enable_pause_script_button( self ) -> None:
         """ Enable the stop script button """
 
         self.op_buttons[ 'btnPauseResumeScript' ].state( [ '!disabled' ] )
 
 
+    @ui_guard_method( when_message = 'Disabling pause/resume button' )
     def disable_pause_script_button( self ) -> None:
         """ Enable the stop script button """
 
@@ -467,12 +527,14 @@ class AutomationMenuWindow:
         self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
 
 
+    @ui_guard_method( when_message = 'Enabling stop button' )
     def enable_stop_script_button( self ) -> None:
         """ Enable the stop script button """
 
         self.op_buttons[ 'btnStopScript' ].state( [ '!disabled' ] )
 
 
+    @ui_guard_method( when_message = 'Disabling stop button' )
     def disable_stop_script_button( self ) -> None:
         """ Disable the stop script button """
 
@@ -480,6 +542,7 @@ class AutomationMenuWindow:
         self._pause_button_blinking()
 
 
+    @ui_guard_method( when_message = 'Stopping blinking of pause button' )
     def stop_pause_button_blinking( self ) -> None:
         """ Stop blinking effect for button when script execution continues """
 
@@ -492,48 +555,56 @@ class AutomationMenuWindow:
 
 
     # region Sequence UI ops
+    @ui_guard_method( when_message = 'Call for displaying step form' )
     def op_add_sequence_step( self, *args: Tuple ) -> None:
         """ Call for view toggle of sequence step form """
 
         self.app_context.sequence_manager.toggle_step_form()
 
 
+    @ui_guard_method( when_message = 'Call for creating new sequence' )
     def op_create_new_sequence( self, *args: Tuple ) -> None:
         """ Call for creation of new sequence """
 
         self.app_context.sequence_manager.create_new_sequence()
 
 
+    @ui_guard_method( when_message = 'Call for aborting step editing' )
     def op_abort_add_sequence_step( self, *args: Tuple ) -> None:
         """ Call to hide step form, i.e. ending editing of step """
 
         self.app_context.sequence_manager.hide_step_form()
 
 
+    @ui_guard_method( when_message = 'Call for aborting sequence editing' )
     def op_abort_sequence_edit( self, *args: Tuple ) -> None:
         """ Call to stop editing sequence """
 
         self.app_context.sequence_manager.abort_sequence_edit()
 
 
+    @ui_guard_method( when_message = 'Call for deleting sequence' )
     def op_delete_sequence( self, *args: Tuple ) -> None:
         """ Call to delete sequence """
 
         self.app_context.sequence_manager.delete_sequence()
 
 
+    @ui_guard_method( when_message = 'Call for start editing sequence' )
     def op_edit_sequence( self, *args: Tuple ) -> None:
         """ Call to edit selected sequence """
 
         self.app_context.sequence_manager.edit_sequence()
 
 
+    @ui_guard_method( when_message = 'Call for deleting sequence step' )
     def op_remove_sequence_step( self, *args: Tuple ) -> None:
         """ Call to remove step from sequence """
 
         self.app_context.sequence_manager.remove_sequence_step()
 
 
+    @ui_guard_method( when_message = 'Call for running sequence' )
     def op_run_sequence( self, *args: Tuple ) -> None:
         """ Call to run selected sequence """
 
@@ -547,6 +618,7 @@ class AutomationMenuWindow:
         self.app_context.sequence_manager.run_sequence( on_finished = on_finished )
 
 
+    @ui_guard_method( when_message = 'Call for saving sequence' )
     def op_save_sequence( self, *args: Tuple ) -> None:
         """ Call to save sequence """
 
@@ -555,6 +627,7 @@ class AutomationMenuWindow:
 
 
     # region Progressbar API callbacks
+    @ui_guard_method( when_message = 'API hide progressbar' )
     def hide_progress( self, *args: Tuple ) -> None:
         """ Hide execution progressbar """
 
@@ -564,6 +637,7 @@ class AutomationMenuWindow:
             self._progressbar_visible = False
 
 
+    @ui_guard_method( when_message = 'API set progressbar determinate' )
     def set_progress_determined( self, *args: Tuple ) -> None:
         """ Set determined """
 
@@ -574,6 +648,7 @@ class AutomationMenuWindow:
         self.status_widgets[ 'progressbar' ].stop()
 
 
+    @ui_guard_method( when_message = 'API set progressbar indeterminate' )
     def set_progress_indetermined( self, *args: Tuple ) -> None:
         """ Set indetermined """
 
@@ -584,6 +659,7 @@ class AutomationMenuWindow:
         self.status_widgets[ 'progressbar' ].config( mode = 'indeterminate' )
 
 
+    @ui_guard_method( when_message = 'API show progressbar' )
     def show_progress( self, *args: Tuple ) -> None:
         """ Show execution progressbar """
 
@@ -592,11 +668,12 @@ class AutomationMenuWindow:
             self._progressbar_visible = True
 
 
+    @ui_guard_method( when_message = 'API update progressbar' )
     def update_progress( self, update_data: Union[ float, int, dict ] ) -> None:
         """ Update progressbar
 
         Args:
-            percent (float): Precalculated value to set in the progressbar
+            update_data (Union[ float, int, dict ]): Precalculated value to set in the progressbar
         """
 
         new_percentage = 0
@@ -610,11 +687,14 @@ class AutomationMenuWindow:
         if isinstance( update_data, ( float, int ) ):
             if update_data >= 100:
                 new_percentage = 99.99999999999
+
             else:
                 new_percentage = update_data
+
         else:
             if update_data[ 'percent' ] >= 100:
                 new_percentage = 99.99999999999
+
             else:
                 new_percentage = update_data[ 'percent' ]
 
@@ -627,8 +707,13 @@ class AutomationMenuWindow:
 
 
     # region Settings API callbacks
-    def setting( self, key_dict: dict ) -> dict:
-        """ Return setting through the API """
+    @ui_guard_method( when_message = 'API setting retrieval' )
+    def setting( self, key_dict: dict ) -> None:
+        """ Return setting through the API
+
+        Args:
+            key_dict (dict): Dict for specifying setting to retrieve
+        """
 
         if self.app_context.execution_manager.current_runner:
             setting = self.app_state.settings.get( key_dict[ 'key' ] )
@@ -638,12 +723,14 @@ class AutomationMenuWindow:
 
 
     # region Textstatus API callbacks
+    @ui_guard_method( when_message = 'API clear status' )
     def clear_status( self, *args: Tuple ) -> None:
         """ Remove all statustext """
 
         self.status_widgets[ 'text_status' ].config( text = '' )
 
 
+    @ui_guard_method( when_message = 'API get status' )
     def get_status( self, *args: Tuple ) -> None:
         """ Return current statustext """
 
@@ -652,6 +739,7 @@ class AutomationMenuWindow:
             self.root.after( 10, lambda: self.app_context.execution_manager.current_runner.send_api_response( response = status ) )
 
 
+    @ui_guard_method( when_message = 'API get status' )
     def set_status( self, set_data: dict ) -> None:
         """ Set statustext
 

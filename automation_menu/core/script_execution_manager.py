@@ -20,6 +20,7 @@ import threading
 
 from contextlib import contextmanager
 from psutil import NoSuchProcess
+from queue import Queue
 
 from automation_menu.core.script_runner import ScriptRunner
 from automation_menu.models.application_state import ApplicationState
@@ -29,7 +30,7 @@ from automation_menu.ui.main_window import AutomationMenuWindow
 
 
 class ScriptExecutionManager:
-    def __init__( self, output_queue: queue.Queue, app_state: ApplicationState ) -> None:
+    def __init__( self, output_queue: Queue, app_state: ApplicationState ) -> None:
         """ Provides a contextmanager for running a script
 
         Args:
@@ -37,8 +38,8 @@ class ScriptExecutionManager:
             app_state (ApplicationState): General state of application
         """
 
-        self._output_queue = output_queue
-        self.app_state = app_state
+        self._output_queue: Queue = output_queue
+        self.app_state: ApplicationState = app_state
         self.current_runner: ScriptRunner = None
         self._lock = threading.Lock()
         self._paused = False

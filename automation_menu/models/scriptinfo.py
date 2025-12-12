@@ -55,7 +55,7 @@ class ScriptInfo:
     def is_author( self, user: User ) -> bool:
         """ Verify if the user is author of this script """
 
-        author_name = self.get_attr( 'author' )
+        author_name: str = self.get_attr( 'author' )
 
         return (
             bool( author_name )

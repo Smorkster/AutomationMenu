@@ -133,15 +133,18 @@ class LanguageManager:
             widget (tuple[ Toplevel, (str) ]): Tuple of Toplevel to update and string, as translation key
         """
 
+        widget[ 0 ].title(self._translate( widget[ 1 ] ) )
         widget[ 0 ].update_idletasks()
         pass
 
 
-    def _update_tt( self, widget: tuple[ AlwaysOnTopToolTip, str, bool ] ) -> None:
+    def _update_tt( self, widget: tuple[ AlwaysOnTopToolTip, str, bool, bool ] ) -> None:
         """ Update text for AlwaysOnTopTooltip
 
         Args:
-            widget (tuple[ AlwaysOnTopToolTip, str, bool ]): Tuple of tooltip to update, a string, as translation key and boolean determining if development information should be added
+            widget (tuple[ AlwaysOnTopToolTip, str, bool, bool ]): Tuple of tooltip to update, a string, as translation key and two booleans:
+                if development information should be added
+                if application test information should be aded
         """
 
         new_text = self._translate( widget[ 1 ] )

@@ -19,7 +19,7 @@ class User:
     def __init__( self, ad_object: Entry = None ) -> None:
         """ Initialize User with an Active Directory object """
 
-        self.UserId:str = os.getenv( key = 'USERNAME' ,default = 'DefaultUser' )
+        self.UserId: str = os.getenv( key = 'USERNAME' ,default = 'DefaultUser' )
         self.AdObject: Entry = ad_object
 
 

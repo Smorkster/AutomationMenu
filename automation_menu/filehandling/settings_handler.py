@@ -37,7 +37,7 @@ def read_settingsfile( settings_file_path: str, debug_logger: Logger ) -> dict:
     except Exception as e:
         debug_logger.error( msg = f'Error reading settings file:\n{ e }' )
 
-        return { 'on_top' : False, 'minimize_on_running' : False, 'send_mail_on_error': False, 'include_ss_in_error_mail': False, 'current_language': 'sv_SE' }
+        return {}
 
 
 def write_settingsfile( settings: Settings, settings_file_path: str ) -> None:

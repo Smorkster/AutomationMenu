@@ -62,24 +62,41 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     main_self.settings_ui[ 'chbTopMost' ] = chb_on_top
 
     tt = AlwaysOnTopToolTip( widget = chb_on_top, msg = _ ( 'Shall the window be set as topmost, above all other windows' ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Shall the window be set as topmost, above all other windows' , False ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Shall the window be set as topmost, above all other windows' , False, False ) )
 
     row += 1
 
     app_settings_group.rowconfigure( index = row, weight = 0 )
-    chb_minimize_on_running_title = Label( master = app_settings_group, text = _( 'Minimize size during script execution' ), padding = ( 5, 10 ) )
-    chb_minimize_on_running_title.grid( column = 0, row = row, sticky = ( W, E ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( chb_minimize_on_running_title, 'Minimize size during script execution' ) )
+    chb_force_focus_post_execution_title = Label( master = app_settings_group, text = _( 'Minimize size during script execution' ), padding = ( 5, 10 ) )
+    chb_force_focus_post_execution_title.grid( column = 0, row = row, sticky = ( W, E ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( chb_force_focus_post_execution_title, 'Minimize size during script execution' ) )
 
-    val_chb_minimize_on_running = BooleanVar( value = settings.get( 'minimize_on_running' ) )
-    chb_minimize_on_running = Checkbutton( master = app_settings_group,
-                                          variable = val_chb_minimize_on_running,
-                                          command = lambda: main_self.set_minimize_on_running( val_chb_minimize_on_running.get() ) )
-    chb_minimize_on_running.grid( column = 1, row = row, sticky = ( N, W ) )
-    main_self.settings_ui[ 'chbMinimizeOnRunning' ] = chb_minimize_on_running
+    val_chb_force_focus_post_execution = BooleanVar( value = settings.get( 'minimize_on_running' ) )
+    chb_force_focus_post_execution = Checkbutton( master = app_settings_group,
+                                          variable = val_chb_force_focus_post_execution,
+                                          command = lambda: main_self.set_minimize_on_running( val_chb_force_focus_post_execution.get() ) )
+    chb_force_focus_post_execution.grid( column = 1, row = row, sticky = ( N, W ) )
+    main_self.settings_ui[ 'chbMinimizeOnRunning' ] = chb_force_focus_post_execution
 
-    tt = AlwaysOnTopToolTip( widget = chb_minimize_on_running, msg = _( 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' , False ) )
+    tt = AlwaysOnTopToolTip( widget = chb_force_focus_post_execution, msg = _( 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.', False, False ) )
+
+    row += 1
+
+    app_settings_group.rowconfigure( index = row, weight = 0 )
+    chb_force_focus_post_execution_title = Label( master = app_settings_group, text = _( 'Main window focus post execution' ), padding = ( 5, 10 ) )
+    chb_force_focus_post_execution_title.grid( column = 0, row = row, sticky = ( W, E ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( chb_force_focus_post_execution_title, 'Main window focus post execution' ) )
+
+    val_chb_force_focus_post_execution = BooleanVar( value = settings.get( 'force_focus_post_execution' ) )
+    chb_force_focus_post_execution = Checkbutton( master = app_settings_group,
+                                          variable = val_chb_force_focus_post_execution,
+                                          command = lambda: main_self.set_force_focus_post_execution( val_chb_force_focus_post_execution.get() ) )
+    chb_force_focus_post_execution.grid( column = 1, row = row, sticky = ( N, W ) )
+    main_self.settings_ui[ 'chb_force_focus_post_execution' ] = chb_force_focus_post_execution
+
+    tt = AlwaysOnTopToolTip( widget = chb_force_focus_post_execution, msg = _( 'Should the main window be forced back to focus after execution of script or sequence have finished' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Should the main window be forced back to focus after execution of script or sequence have finished', False, False ) )
 
     row += 1
 
@@ -94,11 +111,20 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                        textvariable = val_cmb_current_language.get )
     cmb_current_language.bind( '<<ComboboxSelected>>', main_self.set_current_language )
     cmb_current_language.grid( column = 1, row = row, padx = 5, pady = 5, sticky = ( W, E ) )
-    cmb_current_language.current( cmb_current_language[ 'values' ].index( val_cmb_current_language.get() ) )
+
+    # Guard if current language from settings does not exist in available language list
+    try:
+        idx = cmb_current_language[ 'values' ].index( val_cmb_current_language.get() )
+
+    except:
+        idx = 0
+
+    cmb_current_language.current( idx )
+
     main_self.settings_ui[ 'cmbCurrentLanguage' ] = cmb_current_language
 
     tt = AlwaysOnTopToolTip( widget = cmb_current_language, msg = _( 'Language to use in the application' ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Language to use in the application' , False ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Language to use in the application' , False, False ) )
 
     row += 1
 
@@ -153,7 +179,7 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     keepass_shortcut_key.update_idletasks()
 
     tt = AlwaysOnTopToolTip( widget = keepass_shortcut_key, msg = _( 'Shortcut used to activate KeePass for auto typing' ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Shortcut used to activate KeePass for auto typing' , False ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Shortcut used to activate KeePass for auto typing' , False, False ) )
 
     keepass_shortcut_value_frame.update_idletasks()
 
@@ -183,14 +209,14 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     main_self.settings_ui[ 'chbSendMailOnError' ] = chb_send_mail_on_error
 
     tt = AlwaysOnTopToolTip( widget = chb_send_mail_on_error, msg = _( 'Should an mail be sent to its developer if an error occurs in the script?' ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Should an mail be sent to its developer if an error occurs in the script?' , False ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Should an mail be sent to its developer if an error occurs in the script?' , False, False ) )
 
     row += 1
 
     error_group.rowconfigure( index = row, weight = 0 )
     chb_include_screenshot_in_errormail_title = Label( master = error_group, text = _( 'Include screenshot in mail when reporting error' ), padding = ( 5, 10 ) )
     chb_include_screenshot_in_errormail_title.grid( column = 0, row = row, sticky = ( W, E ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( chb_include_screenshot_in_errormail_title, 'Include screenshot in mail when reporting error' ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( chb_include_screenshot_in_errormail_title, 'Include screenshot in mail when reporting error', False, False ) )
 
     val_chb_include_ss_in_error_mail = BooleanVar( value = main_self.app_state.settings.get( 'include_ss_in_error_mail' ) )
     chb_include_screenshot_in_errormail = Checkbutton( master = error_group,
@@ -200,7 +226,7 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     main_self.settings_ui[ 'chbIncludeSsInErrorMail' ] = chb_include_screenshot_in_errormail
 
     tt = AlwaysOnTopToolTip( widget = chb_include_screenshot_in_errormail, msg = _( 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' ) )
-    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' , False ) )
+    main_self.app_context.language_manager.add_translatable_widget( ( tt, 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' , False, False ) )
 
     if not val_chb_send_mail_on_error.get():
         chb_include_screenshot_in_errormail.config( state = 'disabled' )

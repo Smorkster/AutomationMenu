@@ -16,6 +16,7 @@ import threading
 import tkinter as tk
 
 from datetime import datetime
+from logging import Logger
 from tkinter.ttk import Button
 from typing import Optional
 
@@ -30,7 +31,8 @@ class AsyncOutputController:
                 text_widget: tk.Text,
                 breakpoint_button: Button,
                 history_manager: HistoryManager,
-                api_callbacks: dict
+                api_callbacks: dict,
+                logger: Logger
                 ) -> None:
         """ Controller for output queue
 
@@ -46,6 +48,7 @@ class AsyncOutputController:
         self.text_widget = text_widget
         self.breakpoint_button = breakpoint_button
         self.api_callbacks = api_callbacks
+        self._logger = logger
 
         self.loop: Optional[ asyncio.AbstractEventLoop ] = None
 
@@ -97,6 +100,7 @@ class AsyncOutputController:
         """
 
         if queue_item == 'timeout':
+
             return None
 
         elif queue_item == SysInstructions.CLEAROUTPUT:
@@ -128,32 +132,53 @@ class AsyncOutputController:
             queue_item (dict | str)
         """
 
+        from automation_menu.utils.localization import _
+
         if queue_item == SysInstructions.CLEAROUTPUT:
             self.text_widget.config( state = 'normal' )
             self.text_widget.delete( '1.0', tk.END )
             self.text_widget.config( state = 'disabled' )
 
-        elif queue_item.get( 'type' ) == 'api':
-            self._api_handler( handler = queue_item[ 'handler' ] , data = queue_item[ 'data' ] )
+        elif isinstance( queue_item, dict ):
 
-        else:
-            self.text_widget.config( state = 'normal' )
-            self.text_widget.insert( 'end', queue_item[ 'line' ] + '\n', queue_item[ 'tag' ].value )
-            self.text_widget.config( state = 'disabled' )
-            self.text_widget.see( 'end' )
+            if queue_item.get( 'type' ) == 'api':
+                handler = queue_item.get( 'handler' )
+                data = queue_item.get( 'data', {} )
 
-            if not queue_item[ 'tag' ].name.startswith( 'SYS' ):
-                queue_item[ 'exec_item' ].append_output( {
-                    'out_time': datetime.now(),
-                    'output': queue_item[ 'line' ]
-                } )
+                if handler in self.api_callbacks:
+                    self._api_handler( handler = queue_item[ 'handler' ] , data = queue_item[ 'data' ] )
 
-            if queue_item.get( 'breakpoint' ):
-                self.breakpoint_button.config( state = 'normal' )
+                else:
+                    self._logger.warning( _( 'Unknown API handler {h}' ).format( h = handler ) )
 
-            elif queue_item.get( 'finished' ):
-                queue_item[ 'exec_item' ].end = datetime.now()
-                self.history_manager.add_history_item( queue_item[ 'exec_item' ] )
+            else:
+                line: str = queue_item.get( 'line' )
+                tag: OutputStyleTags = queue_item.get( 'tag', OutputStyleTags.SYSINFO )
+
+                if line is None:
+                    self._logger.warning( _( 'Queue item missing \'line\': {q}' ).format( q = queue_item ) )
+
+                    return
+
+                else:
+                    self.text_widget.config( state = 'normal' )
+                    self.text_widget.insert( 'end', queue_item[ 'line' ] + '\n', tag.value )
+                    self.text_widget.config( state = 'disabled' )
+                    self.text_widget.see( 'end' )
+
+                    # Log queue output in exec history
+                    if not queue_item[ 'tag' ].name.startswith( 'SYS' ):
+                        queue_item[ 'exec_item' ].append_output( {
+                            'out_time': datetime.now(),
+                            'output': queue_item[ 'line' ]
+                        } )
+
+                    if queue_item.get( 'breakpoint' ):
+                        self.breakpoint_button.config( state = 'normal' )
+
+                    elif queue_item.get( 'finished' ):
+                        queue_item[ 'exec_item' ].end = datetime.now()
+                        self.history_manager.add_history_item( queue_item[ 'exec_item' ] )
 
 
     def _normalize_queue_item( self, queue_item: str | dict ) -> dict:
@@ -167,6 +192,7 @@ class AsyncOutputController:
         """
 
         if isinstance( queue_item, str ):
+
             return {
                 'line': queue_item.rstrip(),
                 'tag': OutputStyleTags.INFO
@@ -177,9 +203,11 @@ class AsyncOutputController:
                 return self._parse_api_message( queue_item )
 
             else:
+
                 return queue_item
 
         else:
+
             return queue_item
 
 
@@ -236,8 +264,10 @@ class AsyncOutputController:
         try:
             self.loop.run_until_complete( self._async_processor() )
 
-        except:
-            pass
+        except Exception as e:
+            from automation_menu.utils.localization import _
+
+            logging.exception( _( 'Error in async loop: %s' ).format( e = e ) )
 
         finally:
             self.loop.close()
@@ -271,10 +301,14 @@ class AsyncOutputController:
 
         self._running = False
 
-        if self.loop.is_running():
+        if self.loop and self.loop.is_running():
             self._loop_thread.join( timeout = 3 )
-            self.loop.stop()
-            self.loop.close()
+
+            try:
+                self.loop.call_soon_threadsafe( self.loop.stop )
+
+            except:
+                raise
 
 
     def start( self ) -> None:

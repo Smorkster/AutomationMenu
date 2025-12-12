@@ -11,6 +11,7 @@ Created: 2025-10-08
 from __future__ import annotations
 
 from datetime import timedelta
+from logging import Logger
 from tkinter import END, N, S, W, E, Event, Text
 from tkinter.ttk import Frame, Label, Notebook, Treeview
 from typing import Callable
@@ -19,10 +20,15 @@ from automation_menu.models import ExecHistory
 
 
 class HistoryManager:
-    def __init__( self ) -> None:
-        """ Manage execution history items UI widgets for display """
+    def __init__( self, logger: Logger ) -> None:
+        """ Manage execution history items UI widgets for display
 
-        self._historylist = []
+        Args:
+            logger (Logger): Logging object
+        """
+
+        self._historylist: list[ ExecHistory ] = []
+        self._logger: Logger = logger
 
 
     def _format_duration( self, duration: timedelta ) -> None:
@@ -36,8 +42,8 @@ class HistoryManager:
 
         from automation_menu.utils.localization import _
 
-        text_parts = []
-        days = duration.days
+        text_parts: list[ str ] = []
+        days: int = duration.days
         hours, remainder = divmod( duration.seconds, 3600 )
         minutes, seconds = divmod( remainder, 60 )
 
@@ -59,33 +65,56 @@ class HistoryManager:
     def _history_item_selected( self, event: Event ) -> None:
         """ Eventhandler for when tree item has been selected """
 
+        selection = event.widget.selection()
+        if not selection:
+
+            return
+
         from automation_menu.utils.localization import _
-        id = event.widget.selection()[ 0 ]
 
-        self.duration.config( state = 'normal' )
+        id = selection()[ 0 ]
 
-        item = [ a for a in self._historylist if a['id'] == id ][ 0 ][ 'item' ]
+        list_item = [ a for a in self._historylist if a['id'] == id ]
 
+        if not list_item:
+            self._logger.warning( _( 'No history item for {i}' ).format( i = id ) )
+
+            return
+
+        item = list_item[ 0 ][ 'item' ]
+
+        # Display start
         self.item_start.config( state = 'normal' )
         self.item_start.delete( '1.0', END )
+
         self.item_start.insert( 'end', item.start.strftime( '%Y-%m-%d : %H:%M:%S' ) )
+
         self.item_start.config( state = 'disabled' )
 
+        # Display end
         self.item_end.config( state = 'normal' )
         self.item_end.delete( '1.0', END )
+
         self.item_end.insert( 'end', item.end.strftime( '%Y-%m-%d : %H:%M:%S' ) )
+
         self.item_end.config( state = 'disabled' )
 
+        # Display duration
         self.duration.config( state = 'normal' )
         self.duration.delete( '1.0', END )
+
         duration = self._format_duration( duration = ( item.end - item.start ) )
         self.duration.insert( 'end', duration )
+
         self.duration.config( state = 'disabled' )
 
+        # Display execution output
         self.item_output.config( state = 'normal' )
         self.item_output.delete( '1.0', END )
+
         for o in item.output:
             self.item_output.insert( 'end', f'{ str( o ) }\n' )
+
         self.item_output.config( state = 'disabled' )
 
 

@@ -8,11 +8,12 @@ Version: 1.0
 Created: 2025-09-25
 """
 
-from tkinter import E, N, S, W, Text, ttk
+from tkinter import E, N, S, W, Text
+from tkinter.ttk import Entry, Frame, Notebook, Scrollbar
 from typing import Callable
 
 
-def get_output_tab( tabcontrol: ttk.Notebook, translate_callback: Callable ) -> tuple[ ttk.Frame, Text ]:
+def get_output_tab( tabcontrol: Notebook, translate_callback: Callable ) -> tuple[ Frame, Entry ]:
     """ Create a frame used as tab to display output data from script execution
 
     Args:
@@ -21,7 +22,7 @@ def get_output_tab( tabcontrol: ttk.Notebook, translate_callback: Callable ) -> 
 
     from automation_menu.utils.localization import _
 
-    tabOutput = ttk.Frame( master = tabcontrol , padding = ( 5, 5, 5, 5 ) )
+    tabOutput = Frame( master = tabcontrol , padding = ( 5, 5, 5, 5 ) )
     tabOutput.columnconfigure( index = 0, weight = 1 )
     tabOutput.rowconfigure( index = 0, weight = 1 )
     tabOutput.grid( sticky = ( N, S, E, W ) )
@@ -33,7 +34,7 @@ def get_output_tab( tabcontrol: ttk.Notebook, translate_callback: Callable ) -> 
     output.config( state = 'disabled' )
     output.grid( column = 0, row = 0, sticky = ( N, S, E, W ) )
 
-    scrollbar = ttk.Scrollbar( master = tabOutput, orient='vertical', command = output.yview )
+    scrollbar = Scrollbar( master = tabOutput, orient='vertical', command = output.yview )
     scrollbar.grid( column = 1, row = 0, sticky = ( N , S , E ) )
     output.config( yscrollcommand = scrollbar.set )
 

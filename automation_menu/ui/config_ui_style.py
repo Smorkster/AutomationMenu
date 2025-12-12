@@ -10,10 +10,11 @@ Created: 2025-10-08
 
 from __future__ import annotations
 
-from tkinter.ttk import Entry, Style
+from tkinter import Text
+from tkinter.ttk import Style
 
 
-def set_output_styles( widget: Entry ) -> None:
+def set_output_styles( widget: Text ) -> None:
     """ Setup Text widget tag configurations
 
     Args:

@@ -10,7 +10,7 @@ Created: 2025-11-20
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 import uuid
 
 if TYPE_CHECKING:
@@ -48,12 +48,12 @@ class SequenceManager:
         self._current_sequence: Sequence = None
         self._current_step_for_edit: SequenceStep = None
         self._parent: Notebook = None
-        self._sequences: dict = {}
+        self._sequences: Dict[ str, Sequence ] = {}
         self._sequence_widgets: dict = {}
         self._sequence_callbacks: dict = {}
 
         for s in sorted( saved_sequences, key = lambda x: x[ 'name' ] ):
-            steps = [
+            steps: list[ SequenceStep ] = [
                 SequenceStep( **y )
                 for y in sorted( s[ 'steps' ], key = lambda i: i[ 'step_index' ] )
             ]
@@ -61,7 +61,7 @@ class SequenceManager:
             for step in steps:
                 step.script_info = self._app_context.script_manager.get_script_info_by_path( path = step.script_file )
 
-            sequence = Sequence(
+            sequence: Sequence = Sequence(
                 id = s.get( 'id', str( uuid.uuid4() ) ),
                 name = s.get( 'name', '' ),
                 description = s.get( 'description', '<Description not set>' ),
@@ -384,7 +384,15 @@ class SequenceManager:
         sequence_listbox: Treeview = event.widget
 
         if item_focused := sequence_listbox.focus():
-            sequence_listbox.item( item_focused )[ 'values' ][ 1 ]
+            values = sequence_listbox.item( item_focused ).get( 'values', [] )
+
+            if len( values ) < 2:
+                from automation_menu.utils.localization import _
+
+                self._app_context.debug_logger.warning( _( 'Sequence list item missing id: {item}' ).format( item = values ) )
+
+                return
+
             self._sequence_widgets[ 'edit_sequence_btn' ].config( state = 'normal' )
             self._sequence_widgets[ 'run_sequence_btn' ].config( state = 'normal' )
 
@@ -407,6 +415,13 @@ class SequenceManager:
         Args:
             step_index (int): Index of the step that got clicked
         """
+
+        if not self._current_sequence or not ( 0 <= step_index < len( self._current_sequence.steps ) ):
+            from automation_menu.utils.localization import _
+
+            self._app_context.debug_logger.warning( _( 'Invalid step index {s}' ).format( s = step_index ) )
+
+            return
 
         self._current_step_for_edit = self._current_sequence.steps[ step_index ]
         self._show_step_form()
@@ -433,26 +448,15 @@ class SequenceManager:
     def _persist_sequences( self ) -> None:
         """ Transform sequence data to dict and save to settings """
 
-        sequences_list = []
+        from automation_menu.utils.localization import _
+
+        sequences_list: list[ dict ] = []
 
         for s in self._sequences.values():
-            sequences_list.append(
-                {
-                    'id': s.id,
-                    'name': s.name,
-                    'description': s.description,
-                    'stop_on_error': s.stop_on_error,
-                    'steps': [
-                        {
-                            'script_file': step.script_file,
-                            'pre_set_parameters': step.pre_set_parameters,
-                            'stop_on_error': step.stop_on_error,
-                            'step_index': step.step_index,
-                        }
-                        for step in s.steps
-                    ],
-                }
-            )
+
+            jsoned_sequence = s.to_dict()
+
+            sequences_list.append( jsoned_sequence )
 
         self._app_state.settings.saved_sequences = sequences_list
 
@@ -550,14 +554,17 @@ class SequenceManager:
         self._current_step_for_edit.stop_on_error = self._sequence_widgets[ 'stop_step_on_error_var' ].get()
 
         try:
-            self._current_step_for_edit.step_index = self._current_sequence.steps.index( self._current_step_for_edit )
+            index: int = self._current_sequence.steps.index( self._current_step_for_edit )
 
         except:
             self._current_sequence.steps.append( self._current_step_for_edit )
-            self._current_step_for_edit.step_index = self._current_sequence.steps.index( self._current_step_for_edit )
+            index: int = len( self._current_sequence.steps ) - 1
+
+        self._current_step_for_edit.step_index = index
 
         if self._sequence_widgets.get( 'input_params_frame', False ):
             ipf = self._sequence_widgets[ 'input_params_frame' ]
+
             if ipf.winfo_exists():
                 step_input = self._app_context.input_manager.collect_entered_input(
                     frame_to_search = ipf
@@ -580,64 +587,74 @@ class SequenceManager:
 
         for step in sequence.steps:
             exec_mgr: ScriptExecutionManager = self._app_context.execution_manager
-
             run_args = build_run_args( step.pre_set_parameters )
+            run_success = 0
 
-            with exec_mgr.create_runner() as runner:
-                runner.run_script( script_info = step.script_info,
-                                main_window = self._app_context.main_window.root,
-                                api_callbacks = self._app_context.main_window.api_callbacks,
-                                enable_stop_button_callback = self._app_context.main_window.enable_stop_script_button,
-                                enable_pause_button_callback = self._app_context.main_window.enable_pause_script_button,
-                                stop_pause_button_blinking_callback = self._app_context.main_window.stop_pause_button_blinking,
-                                run_input = run_args
-                )
+            try:
+                with exec_mgr.create_runner() as runner:
+                    runner.run_script( script_info = step.script_info,
+                                    main_window = self._app_context.main_window.root,
+                                    api_callbacks = self._app_context.main_window.api_callbacks,
+                                    enable_stop_button_callback = self._app_context.main_window.enable_stop_script_button,
+                                    enable_pause_button_callback = self._app_context.main_window.enable_pause_script_button,
+                                    stop_pause_button_blinking_callback = self._app_context.main_window.stop_pause_button_blinking,
+                                    run_input = run_args
+                    )
 
-                runner.current_process.wait()
-                exit_code = runner._exec_item.exit_code
-                terminated = runner._terminated
+                    runner.current_process.wait()
+                    exit_code = runner._exec_item.exit_code
+                    terminated = runner._terminated
 
-                effective_stop = step.stop_on_error or sequence.stop_on_error
+                    effective_stop = step.stop_on_error or sequence.stop_on_error
 
-                if terminated:
-                    # Manual stop, abort sequence
-                    self._app_context.output_queue.put({
-                        "line": _( 'Aborted by user at step {i}' ).format( i = step.step_index ),
-                        "tag": OutputStyleTags.SYSINFO,
-                        "exec_item": runner._exec_item,
-                    })
-
-                    run_success = 1
-
-                elif exit_code != 0:
-                    if effective_stop:
+                    if terminated:
+                        # Manual stop, abort sequence
                         self._app_context.output_queue.put({
-                            "line": _( 'Stopped on error at step {i} (exit code: {e})' ).format( i = step.step_index, e = exit_code ),
-                            "tag": OutputStyleTags.SYSERROR,
+                            "line": _( 'Aborted by user at step {i}' ).format( i = step.step_index ),
+                            "tag": OutputStyleTags.SYSINFO,
                             "exec_item": runner._exec_item,
                         })
 
-                        run_success = 2
+                        run_success = 1
 
-                    else:
-                        self._app_context.output_queue.put({
-                            "line": _( 'Step {i} failed (exit code {e})' ).format( i = step.step_index, e = exit_code ),
-                            "tag": OutputStyleTags.SYSWARNING,
-                            "exec_item": runner._exec_item,
-                        })
+                    elif exit_code != 0:
+                        if effective_stop:
+                            self._app_context.output_queue.put({
+                                "line": _( 'Stopped on error at step {i} (exit code: {e})' ).format( i = step.step_index, e = exit_code ),
+                                "tag": OutputStyleTags.SYSERROR,
+                                "exec_item": runner._exec_item,
+                            })
 
-                        run_success = 3
+                            run_success = 2
 
-                run_success = 0
+                        else:
+                            self._app_context.output_queue.put({
+                                "line": _( 'Step {i} failed (exit code {e})' ).format( i = step.step_index, e = exit_code ),
+                                "tag": OutputStyleTags.SYSWARNING,
+                                "exec_item": runner._exec_item,
+                            })
 
-            if run_success > 0:
+                            run_success = 3
+
+            except Exception as e:
                 self._app_context.output_queue.put( {
-                    'line': _( 'Sequence stopped due to individual step error' ),
-                    'tag': OutputStyleTags.SYSWARNING,
-                    'exec_item': None
+                    'line': _( 'Error in {f}, step {s} of {c}' ).format( f = step.script_info.filename, s = step.step_index, c = len( sequence.steps ) ),
+                    'tag': OutputStyleTags.SYSERROR,
+                    'exec_item': getattr( runner, '_exec_item', None )
                 } )
 
-                break
+                if sequence.stop_on_error or step.stop_on_error:
+                    break
+
+            else:
+                if run_success > 0:
+                    self._app_context.output_queue.put( {
+                        'line': _( 'Sequence stopped at step {i} due to individual step error' ).format( i = step.step_index ),
+                        'tag': OutputStyleTags.SYSWARNING,
+                        'exec_item': None
+                    } )
+
+                    break
 
 
     def _show_step_form( self ) -> None:

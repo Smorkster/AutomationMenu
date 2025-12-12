@@ -11,7 +11,8 @@ Created: 2025-09-25
 import gettext
 import locale
 
-from pathlib import Path
+from gettext import GNUTranslations
+from pathlib import Path, WindowsPath
 from typing import Callable
 
 
@@ -32,11 +33,11 @@ def find_locales_directory() -> str:
         locale_dir (str): Path of the locale directory
     """
 
-    current_file = Path( __file__ )
+    current_file: WindowsPath = Path( __file__ )
 
     # Go up two levels to reach root directory
-    project_root = current_file.parent.parent.parent
-    locale_dir = project_root / 'locales'
+    project_root: WindowsPath = current_file.parent.parent.parent
+    locale_dir: WindowsPath = project_root / 'locales'
 
     if not locale_dir.exists():
         print( f'Creating locales directory at: { locale_dir }' )
@@ -103,14 +104,14 @@ def setup_localization( domain: str = 'messages', language: str = None ) -> Call
 
     # Determine which language to use
     if language is None:
-        language = get_system_locale()
+        language: str = get_system_locale()
 
     # Find locale directory
-    locale_dir = find_locales_directory()
+    locale_dir: WindowsPath = find_locales_directory()
 
     try:
         # Try to load the translation
-        translation = gettext.translation(
+        translation: GNUTranslations = gettext.translation(
             domain,
             localedir = str( locale_dir ),
             languages = [ language ],

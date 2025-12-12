@@ -17,7 +17,7 @@ from automation_menu.models.sequence import Sequence
 
 
 class Settings:
-    def __init__( self, settings_dict: dict, save_callback: Callable = None ) -> None:
+    def __init__( self, settings_dict: dict = None, save_callback: Callable = None ) -> None:
         """ Class to hold application settings """
 
         self._save_callback = save_callback
@@ -26,6 +26,7 @@ class Settings:
         self._send_mail_on_error = settings_dict.get( 'send_mail_on_error', False )
         self._include_ss_in_error_mail = settings_dict.get( 'include_ss_in_error_mail', False )
         self._current_language = settings_dict.get( 'current_language', 'sv_SE' )
+        self._force_focus_post_execution = settings_dict.get( 'force_focus_post_execution', False )
         self._keepass_shortcut = settings_dict.get( 'keepass_shortcut', { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } )
 
         self._saved_sequences = settings_dict.get( 'saved_sequences', [] )
@@ -43,6 +44,23 @@ class Settings:
         """ Property setter function to set 'current_language' """
 
         self._current_language = value
+
+        if self._save_callback:
+            self._save_callback( self )
+
+
+    @property
+    def force_focus_post_execution( self ) -> str:
+        """ Property function to get 'force_focus_post_execution' """
+
+        return self.get( 'force_focus_post_execution' )
+
+
+    @force_focus_post_execution.setter
+    def force_focus_post_execution( self, value: bool ) -> None:
+        """ Property setter function to set 'current_language' """
+
+        self._force_focus_post_execution = value
 
         if self._save_callback:
             self._save_callback( self )

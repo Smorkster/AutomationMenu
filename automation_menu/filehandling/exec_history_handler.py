@@ -9,18 +9,19 @@ Created: 2025-10-31
 """
 
 import json
+from logging import Logger
 import os
 
 from datetime import datetime
-from pathlib import Path
+from pathlib import Path, WindowsPath
 
 
-def write_exec_history( exec_items: str, root_dir: str ) -> None:
+def write_exec_history( exec_items: list[ dict ], root_dir: WindowsPath, logger: Logger ) -> None:
     """ Write settings to JSON file
     
     Args:
-        exec_items (str): String representation of execution history
-        root_dir (str): Path to file to write
+        exec_items (list[ dict ]): String representation of execution history
+        root_dir (WindowsPath): Path to file to write
 
     Raises:
         FileNotFoundError when the path is not valid
@@ -48,7 +49,12 @@ def write_exec_history( exec_items: str, root_dir: str ) -> None:
                     'execution': item
                 }
 
-                f.write( json.dumps( log_entry ) )
+                try:
+                    f.write( json.dumps( log_entry ) )
+
+                except:
+                    logger.warning( _( 'Failed to serialize history item {h} ' ).format( h = item ) )
+
                 f.write( '\n')
 
     except FileNotFoundError as e:

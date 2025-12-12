@@ -121,7 +121,7 @@ class CustomMenu:
         self._canvas.itemconfig( self._window_id, width = event.width )
 
 
-    def _on_container_config( self, event: Event ):
+    def _on_container_config( self, event: Event ) -> None:
         """ Update scrollregion, clamp height, and toggle scrollbar
 
         Args:
@@ -217,11 +217,9 @@ class CustomMenu:
         self._canvas.configure( height = visible_height )
 
         if content_height > self._max_height:
-            self.main_object.app_context.debug_logger.debug( 'Scrollbar is mapped' )
             scrollbar_width = self._scrollbar.winfo_reqwidth() + 10
 
         else:
-            self.main_object.app_context.debug_logger.debug( 'Scrollbar is NOT mapped' )
             scrollbar_width = 10
 
         total_width = content_width + scrollbar_width

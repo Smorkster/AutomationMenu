@@ -23,3 +23,23 @@ class Sequence:
     name: str
     steps: list[ SequenceStep ]
     stop_on_error: bool
+
+
+    def to_dict( self ) -> dict:
+        """ Transform sequence to a dict
+
+        Returns:
+            (dict): Sequence as a dict
+        """
+
+        steps: list[ dict ] = []
+        for step in self.steps:
+            steps.append( step.to_dict() )
+
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'stop_on_error': self.stop_on_error,
+            'steps': steps
+        }

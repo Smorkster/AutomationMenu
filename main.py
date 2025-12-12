@@ -12,15 +12,18 @@ Created: 2025-09-25
 
 from __future__ import annotations
 
-import argparse
-import logging
 import sys
 
-from pathlib import Path
+from pathlib import Path, WindowsPath
 
 # Add the project root to Python path if needed
 project_root = Path( __file__ ).parent.parent
 sys.path.insert( 0, str( project_root ) )
+
+import argparse
+import logging
+
+from logging import Formatter, Logger, StreamHandler
 
 from automation_menu.core.app_context import ApplicationContext
 from automation_menu.core.script_execution_manager import ScriptExecutionManager
@@ -34,25 +37,38 @@ from automation_menu.ui.history_manager import HistoryManager
 from automation_menu.ui.sequence_manager import SequenceManager
 from automation_menu.utils.language_manager import LanguageManager
 from automation_menu.utils.localization import change_language
+from automation_menu.utils.logging_utils import JsonFileHandler
 from automation_menu.utils.script_manager import ScriptManager
 
 
-def setup_logger( level: str = 'DEBUG' ) -> logging.Logger:
-    """ Create a logger for debug purposes """
+def setup_logger( level: str = 'DEBUG' ) -> Logger:
+    """ Create a logger with set logging level
+    Defaults to DEBUG
 
-    logger = logging.getLogger( 'debug_logger' )
-    level = logging._nameToLevel.get( level.upper(), logging.INFO )
+    Returns:
+        logger (logging.Logger): General purpose logging object
+    """
+
+    logger: Logger = logging.getLogger( 'debug_logger' )
+    level: int = logging._nameToLevel.get( level.upper(), logging.INFO )
     logger.setLevel( level = level )
+    logger.propagate = False
 
     if not logger.handlers:
-        handler = logging.StreamHandler()
+        # General purpose logging to terminal
+        handler: StreamHandler = StreamHandler()
 
-        formater = logging.Formatter(
+        formater: Formatter = Formatter(
             "[%(levelname)s] %(filename)s:%(lineno)d - %(message)s"
         )
 
         handler.setFormatter( formater )
         logger.addHandler( handler )
+
+        # Logging errors to file
+        project_root: WindowsPath = Path( __file__ ).resolve().parent
+        json_handler: JsonFileHandler = JsonFileHandler( project_root )
+        logger.addHandler( json_handler )
 
         return logger
 
@@ -81,7 +97,7 @@ def main() -> None:
         app_context.debug_logger = setup_logger( level = app_context.startup_arguments[ 'loglevel' ] )
 
         app_state.secrets = Secrets( read_secrets_file( file_path = Path( __file__ ).resolve().parent / 'secrets.json' ) )
-        read_settings = read_settingsfile( settings_file_path = app_state.secrets.get( 'settings_file_path' ), debug_logger = app_context.debug_logger )
+        read_settings: dict = read_settingsfile( settings_file_path = app_state.secrets.get( 'settings_file_path' ), debug_logger = app_context.debug_logger )
         app_state.settings = Settings( settings_dict = read_settings, save_callback = save_settings )
         app_context.debug_logger.debug( msg = f'sequence list loaded with "{ len( app_state.settings.saved_sequences ) }" sequences' )
 
@@ -95,7 +111,7 @@ def main() -> None:
         app_context.script_manager = ScriptManager( app_context = app_context, app_state = app_state )
         app_context.execution_manager = ScriptExecutionManager( output_queue = app_context.output_queue, app_state = app_state )
         app_context.sequence_manager = SequenceManager( app_context = app_context, app_state = app_state, saved_sequences = app_state.settings.saved_sequences )
-        app_context.history_manager = HistoryManager()
+        app_context.history_manager = HistoryManager( logger = app_context.debug_logger )
 
         # Launch the main application window
         from automation_menu.ui.main_window import AutomationMenuWindow
@@ -122,7 +138,7 @@ def main() -> None:
         inputbox(
             title = _( 'Application Error' ),
             message = message,
-            buttons=[ 'OK' ]
+            buttons = [ 'OK' ]
         )
         logging.error( str( e ) )
         sys.exit( 1 )

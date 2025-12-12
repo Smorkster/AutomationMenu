@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from automation_menu.models.scriptinfo import ScriptInfo
+
 
 @dataclass
 class SequenceStep:
@@ -19,6 +21,34 @@ class SequenceStep:
 
     pre_set_parameters: dict[ str, str ] = None
     script_file: str = None
-    script_info: str = None
-    step_index: int = 0
+    script_info: ScriptInfo = None
+    step_index: int = None
     stop_on_error: bool = False
+
+
+    def to_dict( self ) -> dict:
+        """ Return step as JSON (dict)
+
+        Returns:
+            (dict): Sequence step as a dict
+        """
+
+        from automation_menu.utils.localization import _
+
+        parameters: list[ dict ] = []
+        for param in self.pre_set_parameters:
+            if not isinstance( param, dict ) or 'name' not in param or 'set' not in param:
+
+                raise ValueError( _( 'Invalid pre_set_parameters for step {f}: {p}' ).format( f = self.script_file, p = param ) )
+
+            parameters.append( {
+                'name': param.name,
+                'set': param.set
+            } )
+
+        return {
+            'script_file': self.script_file,
+            'stop_on_error': self.stop_on_error,
+            'step_index': self.step_index,
+            'pre_set_parameters': parameters
+        }

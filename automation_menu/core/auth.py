@@ -32,28 +32,28 @@ def connect_to_AD( app_state: ApplicationState, app_context: ApplicationContext 
 
     from automation_menu.utils.localization import _
 
-    AD_loginattempts = 0
-    main_input_text = _( 'Enter password for AD-domain\nP.S.\nThe password will not be stored' )
+    AD_loginattempts: int = 0
+    main_input_text: str = _( 'Enter password for AD-domain\nP.S.\nThe password will not be stored' )
 
     while ( AD_loginattempts < 3 ):
         try:
             if AD_loginattempts == 0:
-                inputbox_label_text = main_input_text
+                inputbox_label_text: str = main_input_text
 
             else:
-                inputbox_label_text = _( 'Wrong password. Try again\n{main_label_text}' ).format( main_label_text = main_input_text )
+                inputbox_label_text: str = _( 'Wrong password. Try again\n{main_label_text}' ).format( main_label_text = main_input_text )
 
-            abort_string = _( 'Abort' )
-            ok_string = _( 'Ok' )
-            password = inputbox( message = inputbox_label_text, title = _( 'AD password' ), input = True, input_show = '*', buttons = [ ok_string, abort_string ] ).get( dictionary = True )
+            abort_string: str = _( 'Abort' )
+            ok_string: str = _( 'Ok' )
+            password: dict = inputbox( message = inputbox_label_text, title = _( 'AD password' ), input = True, input_show = '*', buttons = [ ok_string, abort_string ] ).get( dictionary = True )
 
             if password.get( 'button' ) == abort_string or password.get( 'button' ) == 'Cancel':
                 inputbox( message = _( 'No password was entered. Exiting.' ) )
                 AD_loginattempts = 3
                 sys.exit()
 
-            server = Server( host = app_state.secrets.get( 'ldap_server' ), get_info = ALL )
-            con = Connection( server,
+            server: Server = Server( host = app_state.secrets.get( 'ldap_server' ), get_info = ALL )
+            con: Connection = Connection( server,
                                user = f'{ app_state.secrets.get( 'domain_name' ) }\\{ os.getenv( key = 'USERNAME', default = 'DefaultUser' ) }',
                                password = password.get('inputs')['Input'].get().decode(),
                                auto_bind = True
@@ -87,10 +87,10 @@ def get_user_adobject( id: str = None, app_state: ApplicationState = None, app_c
     from automation_menu.utils.localization import _
 
     if id == None:
-        user = os.getenv( key = 'USERNAME', default = 'DefaultUser' )
+        user: str = os.getenv( key = 'USERNAME', default = 'DefaultUser' )
 
     else:
-        user = id
+        user: str = id
 
     if not app_context.is_ldap_connected():
         raise ConnectionError( _( 'Not connected to LDAP' ) )
