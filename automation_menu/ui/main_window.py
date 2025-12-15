@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 from tkinter import E, N, S, W, Event, Tk, messagebox
 from tkinter.ttk import Combobox, Notebook, Style
-from typing import Tuple, Union
+from typing import Tuple
 
 from automation_menu.filehandling.settings_handler import write_settingsfile
 from automation_menu.models.enums import ApplicationRunState, OutputStyleTags, SysInstructions
@@ -40,6 +40,7 @@ class AutomationMenuWindow:
 
         Args:
             app_state (ApplicationState): State object for various application states
+            app_context (ApplicationContext): Context vault for function managers and various states
         """
 
         from automation_menu.utils.localization import _
@@ -320,7 +321,12 @@ class AutomationMenuWindow:
 
     @ui_guard_method( when_message = 'Doing execution post work' )
     def execution_post_work( self, disable_minimize: bool = False, is_sequence: bool = False ) -> None:
-        """ Reset UI and controls after script/sequence execution """
+        """ Reset UI and controls after script/sequence execution
+
+        Args:
+            disable_minimize (bool): Is minimization disabled through settings
+            is_sequence (bool): Is caller a sequence
+        """
 
         self.disable_pause_script_button()
         self.disable_stop_script_button()
@@ -336,7 +342,12 @@ class AutomationMenuWindow:
 
     @ui_guard_method( when_message = 'Doing execution pre work' )
     def execution_pre_work( self, disable_minimize: bool = False, is_sequence: bool = False ) -> None:
-        """ Set UI and controls according to preferences before execution """
+        """ Set UI and controls according to preferences before execution
+
+        Args:
+            disable_minimize (bool): Is minimization disabled through settings
+            is_sequence (bool): Is caller a sequence
+        """
 
         from automation_menu.utils.localization import _
 
@@ -394,7 +405,7 @@ class AutomationMenuWindow:
         """ Change the language in the application
 
         Args:
-            event: Event actualizing the function
+            event (Event): Event actualizing the function
         """
 
         if not event or not ( event.widget is Combobox):
@@ -669,11 +680,11 @@ class AutomationMenuWindow:
 
 
     @ui_guard_method( when_message = 'API update progressbar' )
-    def update_progress( self, update_data: Union[ float, int, dict ] ) -> None:
+    def update_progress( self, update_data: float | int | dict ) -> None:
         """ Update progressbar
 
         Args:
-            update_data (Union[ float, int, dict ]): Precalculated value to set in the progressbar
+            update_data (float | int | dict): Precalculated value to set in the progressbar
         """
 
         new_percentage = 0

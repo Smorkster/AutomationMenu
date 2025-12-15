@@ -9,7 +9,7 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from automation_menu.core.script_execution_manager import ScriptExecutionManager
@@ -37,8 +37,8 @@ class ScriptRunner:
         """" A script runner, managing bootup, process output and termination
 
         Args:
-            output_queue (queue.Queue): Queue for gathering output data
-            app_state (ApplicationSate): General state of application
+            output_queue (Queue): Queue for gathering output data
+            app_state (ApplicationState): General state of application
             exec_manager (ScriptExecutionManager): Running manager to handle context for script process
         """
 
@@ -47,7 +47,7 @@ class ScriptRunner:
         self.script_execution_manager: ScriptExecutionManager = exec_manager
         self.main_window = None
 
-        self.current_process: Optional[ subprocess.Popen ] = None
+        self.current_process: subprocess.Popen | None = None
         self._tasks = []
         self._script_info = None
         self._in_breakpoint = False
@@ -253,6 +253,7 @@ class ScriptRunner:
             enable_stop_button_callback (Callable): A callback function for enabling the stop script button
             enable_pause_button_callback (Callable): A callback function for enabling the pause/resume script button
             stop_pause_button_blinking_callback (Callable): A callback function for stopping any current button blinking
+            run_input (list[ str ]): List of input arguments to send the script
         """
 
         from automation_menu.utils.localization import _
@@ -307,7 +308,11 @@ class ScriptRunner:
         """ Force the running process to terminate """
 
         def _process_reaper( p: subprocess.Popen ) -> None:
-            """ Find and end any child process """
+            """ Find and end any child process
+
+            Args:
+                p (subprocess.Popen): Process referense to kill
+            """
 
             children = psutil.Process( p.pid ).children( recursive = True )
 

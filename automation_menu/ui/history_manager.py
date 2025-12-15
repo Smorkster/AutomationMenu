@@ -63,7 +63,11 @@ class HistoryManager:
 
 
     def _history_item_selected( self, event: Event ) -> None:
-        """ Eventhandler for when tree item has been selected """
+        """ Eventhandler for when tree item has been selected
+
+        Args:
+            event (Event): Event triggering handler
+        """
 
         selection = event.widget.selection()
         if not selection:
@@ -144,8 +148,8 @@ class HistoryManager:
         """ Creates the widgets to display execution history
 
         Args:
-            tabcontrol (ttk.Notebook): A notebook widget to attach the widgets to
-            main_self (AutomationMenuWindow): Main window, and object, to make language manager available
+            tabcontrol (Notebook): A notebook widget to attach the widgets to
+            translate_callback (Callable): Function callback to add widget for translation
 
         Returns:
             tabHistory (Frame): Frame containing history UI

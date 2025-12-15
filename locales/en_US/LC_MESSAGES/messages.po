@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-10 14:40+0100\n"
+"POT-Creation-Date: 2025-12-15 13:21+0100\n"
 "PO-Revision-Date: 2025-09-18 15:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_US\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: main.py:111
+#: main.py:127
 msgid "Application interrupted by user"
 msgstr "Application interrupted by user"
 
-#: main.py:121
+#: main.py:137
 #, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
@@ -37,7 +37,7 @@ msgstr ""
 "\n"
 "The application will now exit."
 
-#: main.py:123
+#: main.py:139
 msgid "Application Error"
 msgstr "Application Error"
 
@@ -169,46 +169,58 @@ msgstr "Termination - CalledProcessError: {e}"
 msgid "Termination - Exception: {e}"
 msgstr "Termination - Exception: {e}"
 
-#: automation_menu/filehandling/exec_history_handler.py:55
+#: automation_menu/filehandling/exec_history_handler.py:56
+#, python-brace-format
+msgid "Failed to serialize history item {h} "
+msgstr "Failed to serialize history item {h} "
+
+#: automation_menu/filehandling/exec_history_handler.py:61
 #, python-brace-format
 msgid "Writing execution history error; file not found: {file_path}"
 msgstr "Writing execution history error; file not found: {file_path}"
 
-#: automation_menu/filehandling/script_discovery.py:153
-#, python-brace-format
-msgid "File not found: {error}"
-msgstr "File not found: {error}"
+#: automation_menu/filehandling/script_discovery.py:154
+#, fuzzy, python-brace-format
+msgid "File not found"
+msgstr "File not found"
 
-#: automation_menu/filehandling/script_discovery.py:156
+#: automation_menu/filehandling/script_discovery.py:157
 #, python-brace-format
 msgid "Could not read file: {error}"
 msgstr "Could not read file: {error}"
 
-#: automation_menu/filehandling/script_discovery.py:165
+#: automation_menu/filehandling/script_discovery.py:166
 msgid "No valid ScriptInfo was found in the script"
 msgstr "No valid ScriptInfo was found in the script"
 
-#: automation_menu/filehandling/script_discovery.py:214
+#: automation_menu/filehandling/script_discovery.py:217
+#, python-brace-format
+msgid "parse_warnings missing key {key}"
+msgstr "parse_warnings missing key {key}"
+
+#: automation_menu/filehandling/script_discovery.py:220
 #, python-brace-format
 msgid "ScriptInfo contained fields that are not valid, or are misspelled: {names}"
 msgstr "ScriptInfo contained fields that are not valid, or are misspelled: {names}"
 
-#: automation_menu/filehandling/script_discovery.py:217
+#: automation_menu/filehandling/script_discovery.py:223
 #, python-brace-format
 msgid "ScriptInfo contained values that are not valid, or are misspelled: {names}"
 msgstr "ScriptInfo contained values that are not valid, or are misspelled: {names}"
 
-#: automation_menu/filehandling/script_discovery.py:220
+#: automation_menu/filehandling/script_discovery.py:226
 #, python-brace-format
 msgid "Parsing ScriptInfo generated error for these fields: {names}"
 msgstr "Parsing ScriptInfo generated error for these fields: {names}"
 
-#: automation_menu/filehandling/script_discovery.py:239
+#: automation_menu/filehandling/script_discovery.py:244
+#: automation_menu/filehandling/script_discovery.py:250
+#: automation_menu/filehandling/script_discovery.py:256
 #, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr "{filename} not loaded: {e}"
 
-#: automation_menu/filehandling/script_discovery.py:243
+#: automation_menu/filehandling/script_discovery.py:264
 msgid ""
 "Some script have an active breakpoint in the code, handling this has not "
 "been implemented, so these will not be available:"
@@ -221,49 +233,74 @@ msgstr ""
 msgid "Writing settings error; file not found: {file_path}"
 msgstr "Writing settings error; file not found: {file_path}"
 
-#: automation_menu/ui/history_manager.py:45
+#: automation_menu/models/sequencestep.py:45
+#, python-brace-format
+msgid "Invalid pre_set_parameters for step {f}: {p}"
+msgstr "Invalid pre_set_parameters for step {f}: {p}"
+
+#: automation_menu/ui/async_output_controller.py:151
+#, python-brace-format
+msgid "Unknown API handler {h}"
+msgstr "Unknown API handler {h}"
+
+#: automation_menu/ui/async_output_controller.py:158
+#, python-brace-format
+msgid "Queue item missing 'line': {q}"
+msgstr "Queue item missing 'line': {q}"
+
+#: automation_menu/ui/async_output_controller.py:269
+#, python-format
+msgid "Error in async loop: %s"
+msgstr "Error in async loop: %s"
+
+#: automation_menu/ui/history_manager.py:51
 #, python-brace-format
 msgid "{d} d"
 msgstr "{d} d"
 
-#: automation_menu/ui/history_manager.py:48
+#: automation_menu/ui/history_manager.py:54
 #, python-brace-format
 msgid "{h} h"
 msgstr "{h} h"
 
-#: automation_menu/ui/history_manager.py:51
+#: automation_menu/ui/history_manager.py:57
 #, python-brace-format
 msgid "{m} m"
 msgstr "{m} m"
 
-#: automation_menu/ui/history_manager.py:54
+#: automation_menu/ui/history_manager.py:60
 #, python-brace-format
 msgid "{s} s"
 msgstr "{s} s"
 
-#: automation_menu/ui/history_manager.py:133
+#: automation_menu/ui/history_manager.py:84
+#, python-brace-format
+msgid "No history item for {i}"
+msgstr "No history item for {i}"
+
+#: automation_menu/ui/history_manager.py:166
 msgid "Execution history"
 msgstr ""
 
-#: automation_menu/ui/history_manager.py:137
-#: automation_menu/ui/history_manager.py:153
+#: automation_menu/ui/history_manager.py:170
+#: automation_menu/ui/history_manager.py:186
 msgid "Started"
 msgstr "Started"
 
-#: automation_menu/ui/history_manager.py:139
+#: automation_menu/ui/history_manager.py:172
 #: automation_menu/ui/sequence_manager.py:189
 msgid "Name"
 msgstr "Name"
 
-#: automation_menu/ui/history_manager.py:160
+#: automation_menu/ui/history_manager.py:193
 msgid "Ended"
 msgstr "Ended"
 
-#: automation_menu/ui/history_manager.py:167
+#: automation_menu/ui/history_manager.py:200
 msgid "Duration"
 msgstr "Duration"
 
-#: automation_menu/ui/history_manager.py:174
+#: automation_menu/ui/history_manager.py:207
 msgid "Generated output"
 msgstr "Generated output"
 
@@ -275,7 +312,7 @@ msgstr "Input parameters for "
 msgid "Send to script"
 msgstr "Send to script"
 
-#: automation_menu/ui/main_window.py:169
+#: automation_menu/ui/main_window.py:188
 msgid ""
 "There is a script running. Do you want to terminate the script process "
 "before closing the application?"
@@ -283,33 +320,47 @@ msgstr ""
 "There is a script running. Do you want to terminate the script process "
 "before closing the application?"
 
-#: automation_menu/ui/main_window.py:171
+#: automation_menu/ui/main_window.py:190
 msgid "Script still runnning"
 msgstr "Script still runnning"
 
-#: automation_menu/ui/main_window.py:253
+#: automation_menu/ui/main_window.py:279
 msgid "Process was resumed"
 msgstr "Process was resumed"
 
-#: automation_menu/ui/main_window.py:254 automation_menu/ui/main_window.py:467
+#: automation_menu/ui/main_window.py:282 automation_menu/ui/main_window.py:527
 msgid "Pause"
 msgstr "Pause"
 
-#: automation_menu/ui/main_window.py:261
+#: automation_menu/ui/main_window.py:289
 msgid "Process was paused"
 msgstr "Process was paused"
 
-#: automation_menu/ui/main_window.py:262
+#: automation_menu/ui/main_window.py:292
 msgid "Resume"
 msgstr "Resume"
 
-#: automation_menu/ui/main_window.py:328
+#: automation_menu/ui/main_window.py:350
 msgid ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
 msgstr ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
+
+#: automation_menu/ui/main_window.py:381
+msgid "Write settings error"
+msgstr "Write settings error"
+
+#: automation_menu/ui/main_window.py:381
+#, fuzzy, python-brace-format
+msgid "Could not save settings to file: {e}"
+msgstr "Could not save settings to file: {e}"
+
+#: automation_menu/ui/main_window.py:388
+#, python-brace-format
+msgid "Error shutting down output controller: {e}"
+msgstr "Error shutting down output controller: {e}"
 
 #: automation_menu/ui/op_buttons.py:50
 msgid "Script ..."
@@ -331,7 +382,7 @@ msgstr "Stop script"
 msgid "Pause script"
 msgstr "Pause script"
 
-#: automation_menu/ui/output_tab.py:29
+#: automation_menu/ui/output_tab.py:30
 msgid "Script output"
 msgstr "Script output"
 
@@ -392,34 +443,50 @@ msgstr "Save step"
 msgid "Remove step"
 msgstr "Remove step"
 
-#: automation_menu/ui/sequence_manager.py:514
+#: automation_menu/ui/sequence_manager.py:392
+#, python-brace-format
+msgid "Sequence list item missing id: {item}"
+msgstr "Sequence list item missing id: {item}"
+
+#: automation_menu/ui/sequence_manager.py:422
+#, python-brace-format
+msgid "Invalid step index {s}"
+msgstr "Invalid step index {s}"
+
+#: automation_menu/ui/sequence_manager.py:518
 msgid "Input not specified"
 msgstr "Input not specified"
 
-#: automation_menu/ui/sequence_manager.py:605
+#: automation_menu/ui/sequence_manager.py:613
 #, python-brace-format
 msgid "Aborted by user at step {i}"
 msgstr "Aborted by user at step {i}"
 
-#: automation_menu/ui/sequence_manager.py:615
+#: automation_menu/ui/sequence_manager.py:623
 #, python-brace-format
 msgid "Stopped on error at step {i} (exit code: {e})"
 msgstr "Stopped on error at step {i} (exit code: {e})"
 
-#: automation_menu/ui/sequence_manager.py:624
+#: automation_menu/ui/sequence_manager.py:632
 #, python-brace-format
 msgid "Step {i} failed (exit code {e})"
 msgstr "Step {i} failed (exit code {e})"
 
-#: automation_menu/ui/sequence_manager.py:635
-msgid "Sequence stopped due to individual step error"
-msgstr "Sequence stopped due to individual step error"
+#: automation_menu/ui/sequence_manager.py:641
+#, python-brace-format
+msgid "Error in {f}, step {s} of {c}"
+msgstr "Error in {f}, step {s} of {c}"
 
-#: automation_menu/ui/sequence_manager.py:768
+#: automation_menu/ui/sequence_manager.py:652
+#, fuzzy, python-brace-format
+msgid "Sequence stopped at step {i} due to individual step error"
+msgstr "Sequence stopped at step {i} due to individual step error"
+
+#: automation_menu/ui/sequence_manager.py:785
 msgid "Automation sequence"
 msgstr "Steps in sequence"
 
-#: automation_menu/ui/sequence_manager.py:880
+#: automation_menu/ui/sequence_manager.py:897
 #, python-brace-format
 msgid "Starting sequence {name}, with {step_count} steps"
 msgstr "Starting sequence {name}, with {step_count} steps"
@@ -451,50 +518,62 @@ msgstr ""
 "'DisableMinimizeOnRunning'."
 
 #: automation_menu/ui/settings_tab.py:87
+msgid "Main window focus post execution"
+msgstr "Main window focus post execution"
+
+#: automation_menu/ui/settings_tab.py:98
+msgid ""
+"Should the main window be forced back to focus after execution of script "
+"or sequence have finished"
+msgstr "
+"Should the main window be forced back to focus after execution of script "
+"or sequence have finished"
+
+#: automation_menu/ui/settings_tab.py:104
 msgid "Application language"
 msgstr "Application language"
 
-#: automation_menu/ui/settings_tab.py:100
+#: automation_menu/ui/settings_tab.py:126
 msgid "Language to use in the application"
 msgstr "Language to use in the application"
 
-#: automation_menu/ui/settings_tab.py:106
+#: automation_menu/ui/settings_tab.py:132
 msgid "KeePass shortcut"
 msgstr "KeePass shortcut"
 
-#: automation_menu/ui/settings_tab.py:115
+#: automation_menu/ui/settings_tab.py:141
 msgid "CTRL"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:126
+#: automation_menu/ui/settings_tab.py:152
 msgid "ALT"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:137
+#: automation_menu/ui/settings_tab.py:163
 msgid "Shift"
 msgstr ""
 
-#: automation_menu/ui/settings_tab.py:155
+#: automation_menu/ui/settings_tab.py:181
 msgid "Shortcut used to activate KeePass for auto typing"
 msgstr "Shortcut used to activate KeePass for auto typing"
 
-#: automation_menu/ui/settings_tab.py:164
+#: automation_menu/ui/settings_tab.py:190
 msgid "Errorhandling"
 msgstr "Errorhandling"
 
-#: automation_menu/ui/settings_tab.py:174
+#: automation_menu/ui/settings_tab.py:200
 msgid "Send mail to developer on script error"
 msgstr "Send mail to developer on script error"
 
-#: automation_menu/ui/settings_tab.py:185
+#: automation_menu/ui/settings_tab.py:211
 msgid "Should an mail be sent to its developer if an error occurs in the script?"
 msgstr "Should an mail be sent to its developer if an error occurs in the script?"
 
-#: automation_menu/ui/settings_tab.py:191
+#: automation_menu/ui/settings_tab.py:217
 msgid "Include screenshot in mail when reporting error"
 msgstr "Include screenshot in mail when reporting error"
 
-#: automation_menu/ui/settings_tab.py:202
+#: automation_menu/ui/settings_tab.py:228
 msgid ""
 "Should the mail sent to script developer when reporting that an error "
 "occured, have a screenshot of main window attached?"
@@ -502,7 +581,7 @@ msgstr ""
 "Should the mail sent to script developer when reporting that an error "
 "occured, have a screenshot of main window attached?"
 
-#: automation_menu/ui/settings_tab.py:223
+#: automation_menu/ui/settings_tab.py:249
 msgid "Settings"
 msgstr "Settings"
 

@@ -18,7 +18,6 @@ import tkinter as tk
 from datetime import datetime
 from logging import Logger
 from tkinter.ttk import Button
-from typing import Optional
 
 from automation_menu.models import SysInstructions
 from automation_menu.models.enums import OutputStyleTags
@@ -40,7 +39,9 @@ class AsyncOutputController:
             output_queue (queue.Queue): Queue to handle
             text_widget (tk.Text): Tk Text widget to recieve output text
             breakpoint_button (Button): The button to return execution after breakpoint in script
+            history_manager (HistoryManager): History manager to access history list
             api_callbacks (dict): Dictionary with API callbacks
+            logger (Logger): General purpose logging object used through out application
        """
 
         self.history_manager = history_manager
@@ -50,7 +51,7 @@ class AsyncOutputController:
         self.api_callbacks = api_callbacks
         self._logger = logger
 
-        self.loop: Optional[ asyncio.AbstractEventLoop ] = None
+        self.loop: asyncio.AbstractEventLoop | None = None
 
         self._running = False
         self._executor = None
@@ -129,7 +130,7 @@ class AsyncOutputController:
         """ Do the actual UI update
 
         Args:
-            queue_item (dict | str)
+            queue_item (dict | str): Queued item to update UI from
         """
 
         from automation_menu.utils.localization import _
@@ -185,7 +186,7 @@ class AsyncOutputController:
         """ Normalize message to a dict
 
         Args:
-            message (dict | str): Message from queue to normalize
+            queue_item (dict | str): Queued item to normalize
 
         Returns:
             (dict): A normalized message dict
@@ -277,7 +278,7 @@ class AsyncOutputController:
         """ Schedule UI update with the processed message
 
         Args:
-            processed_message (Any): Message to update output with
+            processed_queue_item (dict): Queued item to schedule update for
         """
 
         if processed_queue_item:

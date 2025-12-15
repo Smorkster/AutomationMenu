@@ -16,8 +16,12 @@ from pathlib import Path
 class Secrets:
     secret_dict = {}
 
-    def __init__( self, new_dict: dict ) -> None:
-        """ An enum like class to hold data customizable from a config file """
+    def __init__( self, new_dict: dict | None ) -> None:
+        """ An enum like class to hold data customizable from a config file
+
+        Args:
+            new_dict (dict | None): Saved data dictionary read from file
+        """
 
         Secrets.secret_dict[ 'error_ss_prefix' ] = new_dict[ 'error_ss_prefix' ]
         Secrets.secret_dict[ 'ldap_search_base' ] = new_dict[ 'ldap_search_base' ]

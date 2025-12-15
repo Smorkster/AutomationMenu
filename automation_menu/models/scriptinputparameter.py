@@ -9,16 +9,15 @@ Created: 2025-10-17
 """
 
 from dataclasses import dataclass
-from typing import Optional, Union
 
 
 @dataclass
 class ScriptInputParameter:
     """ Represents a single input parameter """
 
-    alternatives: Optional[ list[ str ] ] = None
-    default: Optional[ str ] = None
+    alternatives: list[ str ] | None = None
+    default: str = ''
     description: str = ''
-    name: str = None
+    name: str = ''
     required: bool = True
-    type: Union[ str, int, bool ] = str
+    type: str | int | bool = str
