@@ -18,7 +18,12 @@ from automation_menu.models.sequence import Sequence
 
 class Settings:
     def __init__( self, settings_dict: dict = None, save_callback: Callable = None ) -> None:
-        """ Class to hold application settings """
+        """ Class to hold application settings
+
+        Args:
+            settings_dict (dict): Settings read from file
+            save_callback (Callable): Callback function for saving to file
+        """
 
         self._save_callback = save_callback
         self._on_top = settings_dict.get( 'on_top', False )
@@ -40,8 +45,12 @@ class Settings:
 
 
     @current_language.setter
-    def current_language( self, value: bool ) -> None:
-        """ Property setter function to set 'current_language' """
+    def current_language( self, value: str ) -> None:
+        """ Property setter function to set 'current_language'
+
+        Args:
+            value (str): Language tag string to set
+        """
 
         self._current_language = value
 
@@ -58,7 +67,11 @@ class Settings:
 
     @force_focus_post_execution.setter
     def force_focus_post_execution( self, value: bool ) -> None:
-        """ Property setter function to set 'current_language' """
+        """ Property setter function to set 'force_focus_post_execution'
+
+        Args:
+            value (bool): Value to set
+        """
 
         self._force_focus_post_execution = value
 
@@ -117,7 +130,11 @@ class Settings:
 
     @minimize_on_running.setter
     def minimize_on_running( self, value: bool ) -> None:
-        """ Property setter function to set 'minimize_on_running' """
+        """ Property setter function to set 'minimize_on_running'
+
+        Args:
+            value (bool): Value to set
+        """
 
         self._minimize_on_running = value
 
@@ -134,7 +151,11 @@ class Settings:
 
     @on_top.setter
     def on_top( self, value: bool ) -> None:
-        """ Property setter function to set 'on_top' """
+        """ Property setter function to set 'on_top'
+
+        Args:
+            value (bool): Value to set
+        """
 
         self._on_top = value
 
@@ -144,14 +165,22 @@ class Settings:
 
     @property
     def saved_sequences( self ) -> list[ Sequence ]:
-        """ Property function to get 'saved_sequences' """
+        """ Property function to get 'saved_sequences'
+
+        Returns:
+            (list[ Sequence ]): List of available sequences
+        """
 
         return self.get( 'saved_sequences' )
 
 
     @saved_sequences.setter
     def saved_sequences( self, value: list[ Sequence ] ) -> None:
-        """ Property setter function to set 'saved_sequences' """
+        """ Property setter function to set 'saved_sequences'
+
+        Args:
+            value (list[ Sequence ]): List of sequences to save
+        """
 
         self._saved_sequences = value
 
@@ -191,7 +220,11 @@ class Settings:
 
 
     def set_keepass_shortcut( self, value_tup: tuple ) -> None:
-        """ Set value of 'keepass_shortcut' """
+        """ Set value of 'keepass_shortcut'
+
+        Args:
+            value_tup (tuple[ bool, bool, bool, str ]): Shortcut definition to safe
+        """
 
         self._keepass_shortcut[ value_tup[ 0 ] ] = value_tup[ 1 ]
 
@@ -200,9 +233,14 @@ class Settings:
 
 
     def to_json( self ) -> dict:
-        """ Convert settings to a JSON-serializable dictionary """
+        """ Convert settings to a JSON-serializable dictionary
+
+        Returns:
+            (dict): Json formated dict of setting object
+        """
 
         d = { k.lstrip( '_' ): v
              for k, v in self.__dict__.items()
              if not callable( self.__dict__[ k ] ) }
+
         return json.dumps( d, indent = 2 )

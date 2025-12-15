@@ -10,7 +10,8 @@ Created: 2025-11-20
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Dict
 
 from automation_menu.models.scriptinfo import ScriptInfo
 
@@ -19,7 +20,7 @@ from automation_menu.models.scriptinfo import ScriptInfo
 class SequenceStep:
     """ Definition of a sequence step """
 
-    pre_set_parameters: dict[ str, str ] = None
+    pre_set_parameters: Dict[ str, str ] = field( default_factory = Dict[ str, str ] )
     script_file: str = None
     script_info: ScriptInfo = None
     step_index: int = None
@@ -36,15 +37,17 @@ class SequenceStep:
         from automation_menu.utils.localization import _
 
         parameters: list[ dict ] = []
-        for param in self.pre_set_parameters:
-            if not isinstance( param, dict ) or 'name' not in param or 'set' not in param:
 
-                raise ValueError( _( 'Invalid pre_set_parameters for step {f}: {p}' ).format( f = self.script_file, p = param ) )
+        if self.pre_set_parameters:
+            for i, param in enumerate( self.pre_set_parameters ):
+                if not isinstance( param, dict ) or 'name' not in param or 'set' not in param:
 
-            parameters.append( {
-                'name': param.name,
-                'set': param.set
-            } )
+                    raise ValueError( _( 'Invalid pre_set_parameters for step {f}: {p}' ).format( f = self.script_file, p = param ) )
+
+                parameters.append( {
+                    'name': param[ 'name' ],
+                    'set': param[ 'set' ]
+                } )
 
         return {
             'script_file': self.script_file,
