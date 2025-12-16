@@ -53,8 +53,8 @@ def get_available_languages() -> list[ str ]:
         languages (list[ str ]): A list of available languages
     """
 
-    locale_dir = find_locales_directory()
-    languages = []
+    locale_dir: str = find_locales_directory()
+    languages: list[ str ] = []
 
     try:
         for item in locale_dir.iterdir():
@@ -70,12 +70,13 @@ def get_available_languages() -> list[ str ]:
 def get_system_locale() -> str:
     """ Get the system locale, with fallback to Swedish """
 
-    default_localization = 'sv_SE'
+    default_localization: str = 'sv_SE'
 
     try:
         system_locale, _ = locale.getdefaultlocale()
 
         if system_locale is None:
+
             return default_localization
 
         # Convert locale format if needed (sv_SE.UTF-8 -> sv_SE)
@@ -93,8 +94,8 @@ def setup_localization( domain: str = 'messages', language: str = None ) -> Call
     Set up localization for the application.
 
     Args:
-        domain: The translation domain
-        language: Force a specific language, or None for auto-detect
+        domain (str): The translation domain
+        language (str): Force a specific language, or None for auto-detect
 
     Returns:
         (Callable): Translation function to use as _()
@@ -128,4 +129,4 @@ def setup_localization( domain: str = 'messages', language: str = None ) -> Call
         # Return a function that just returns the original string
         return lambda text: text
 
-_ = setup_localization()
+_: GNUTranslations = setup_localization()

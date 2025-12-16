@@ -12,13 +12,14 @@ from __future__ import annotations
 
 from tkinter import Text
 from tkinter.ttk import Style
+from typing import Literal
 
 
 def set_output_styles( widget: Text ) -> None:
     """ Setup Text widget tag configurations
 
     Args:
-        widget (ttk.Entry): Widget to set text tags for
+        widget (Text): Widget to set text tags for
     """
 
     widget.tag_config( tagName = 'suite_error', foreground = 'Red', font = ( 'Arial', 12, 'bold' ) )
@@ -34,7 +35,7 @@ def set_ui_style( style: Style ) -> None:
     """ Configure widget styles
 
     Args:
-        style (ttk.Style): Main style to set
+        style (Style): Main style to set
     """
 
     style.theme_use( 'clam' )
@@ -42,7 +43,7 @@ def set_ui_style( style: Style ) -> None:
     ################
     # Button styling
     # region
-    btn_padding = ( 10, 5 )
+    btn_padding: tuple[ Literal[ 10 ], Literal[ 5 ] ] = ( 10, 5 )
     style.configure( 'TButton',
                     font = ( 'Calibri', 12, 'normal' ),
                     padding = btn_padding
@@ -201,19 +202,19 @@ def set_ui_style( style: Style ) -> None:
     # Progressbar styling
     # region Progressbar
     style.configure( 'TProgressbar',
-                    troughcolor='#E6E6E6',      # Light grey background
-                    background='#4DA6FF',       # Blue filled bar
-                    darkcolor='#4DA6FF',
-                    lightcolor='#80C1FF',
-                    bordercolor='#A0A0A0',
+                    troughcolor = '#E6E6E6', # Light grey background
+                    background = '#4DA6FF',  # Blue filled bar
+                    darkcolor = '#4DA6FF',
+                    lightcolor = '#80C1FF',
+                    bordercolor = '#A0A0A0',
                     thickness = 10
     )
     style.configure( 'RunningSmall.TProgressbar',
-                    troughcolor='#DDDDDD',      # slightly dimmer trough
-                    background='#2F8AE3',       # deeper blue for compact layout
-                    darkcolor='#2F8AE3',
-                    lightcolor='#6BB6F2',
-                    bordercolor='#888888',
+                    troughcolor = '#DDDDDD', # slightly dimmer trough
+                    background = '#2F8AE3',  # deeper blue for compact layout
+                    darkcolor = '#2F8AE3',
+                    lightcolor = '#6BB6F2',
+                    bordercolor = '#888888',
                     thickness = 8
     )
     style.layout('TProgressbar',

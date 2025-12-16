@@ -10,7 +10,8 @@ Created: 2025-11-20
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
 from automation_menu.models.sequencestep import SequenceStep
 
 
@@ -18,11 +19,11 @@ from automation_menu.models.sequencestep import SequenceStep
 class Sequence:
     """ Define an automatic run sequence """
 
-    description: str
-    id: str
-    name: str
-    steps: list[ SequenceStep ]
-    stop_on_error: bool
+    description: str = ''
+    id: str = ''
+    name: str = ''
+    steps: list[ SequenceStep ] = field( default_factory = list[ SequenceStep ] )
+    stop_on_error: bool = False
 
 
     def to_dict( self ) -> dict:

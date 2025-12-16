@@ -13,8 +13,12 @@ from typing import Any
 
 class ScriptInfoError( ValueError ):
     def __init__( self, message: str, *args: Any ) -> None:
-        """ Exception for error in script info block/docstring """
+        """ Exception for error in script info block/docstring
+        
+        Args:
+            message (str): Error message
+        """
 
-        self.message = message
+        self.message: str = message
 
-        super( ScriptInfoError, self ).__init__( message, *args )
+        super( ScriptInfoError, self ).__init__( self.message, *args )

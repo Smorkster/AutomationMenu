@@ -11,6 +11,8 @@ Created: 2025-10-08
 import ast
 import re
 
+from re import Match
+
 from automation_menu.models.enums import ScriptState, ValidScriptInfoFields
 from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
@@ -24,24 +26,24 @@ def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
 
     from automation_menu.utils.localization import _
 
-    current_field = None
-    current_value = []
-    fields = {}
-    parameters = []
+    current_field: str = None
+    current_value: bool | list[ str ] | str = ''
+    fields: dict[ str, bool | list[ str ] | str ] = {}
+    parameters: list[ ScriptInputParameter ] = []
     warnings = {
         'keys': [],
         'values': [],
         'other': [],
     }
-    field_pattern = re.compile( r'^:([^:]+):\s*(.*)\s*(\[.*\])*$' )
+    field_pattern: re.Pattern = re.compile( r'^:([^:]+):\s*(.*)\s*(\[.*\])*$' )
 
     for line in lines:
-        match = field_pattern.match( line.strip() )
+        match: Match = field_pattern.match( line.strip() )
 
         if match:
 
-            current_field: str = match.group( 1 ).strip()
-            current_value: str = match.group( 2 ).strip() if match.group( 2 ).strip() else ''
+            current_field = match.group( 1 ).strip()
+            current_value = match.group( 2 ).strip() if match.group( 2 ).strip() else ''
 
             if current_field.startswith( 'param ' ):
                 param: ScriptInputParameter = _parse_parameter( field = current_field, value = current_value )
@@ -86,29 +88,29 @@ def _parse_parameter( field: str, value: str ) -> ScriptInputParameter:
         value (str): Field value from docstring
     """
 
-    param_name = field[ 6 : ].strip()
+    param_name: str = field[ 6 : ].strip()
 
-    default_match = re.search( r'\(default:\s*([^)]+)\)', value, re.IGNORECASE )
-    default_value = default_match.group( 1 ).strip() if default_match else None
+    default_match: str = re.search( r'\(default:\s*([^)]+)\)', value, re.IGNORECASE )
+    default_value: str | None = default_match.group( 1 ).strip() if default_match else None
 
-    required_match = re.search( r'\(required\)', value, re.IGNORECASE ) != None
+    required_match: Match = re.search( r'\(required\)', value, re.IGNORECASE ) != None
 
-    options_match = re.search( r'\[([^]]+)\]', value, re.IGNORECASE )
+    options_match: Match = re.search( r'\[([^]]+)\]', value, re.IGNORECASE )
 
     if options_match:
-        options_text = options_match.group( 1 )
-        options_list = [ option.strip().strip( "'" ) for option in options_text.split( ',' ) ]
+        options_text: str = options_match.group( 1 )
+        options_list: list[ str ] = [ option.strip().strip( "'" ) for option in options_text.split( ',' ) ]
         options_list.insert( 0, '' )
 
     else:
         options_list = []
 
     # Remove options; [ ... ]
-    description = re.sub( r'\s*\[[^]]+\]', '', value.strip() ).strip()
+    description: str = re.sub( r'\s*\[[^]]+\]', '', value.strip() ).strip()
     # Remove (default: ...)
-    description = re.sub( r'\s*\(default:[^)]+\)', '', description ).strip()
+    description: str = re.sub( r'\s*\(default:[^)]+\)', '', description ).strip()
     # Remove (required)
-    description = re.sub( r'\s*\(required\)', '', description ).strip()
+    description: str = re.sub( r'\s*\(required\)', '', description ).strip()
 
     return ScriptInputParameter(
         name = param_name,
@@ -142,9 +144,9 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
 
         return docstring_dict
 
-    lines = raw_docstring.strip().split( '\n' )
+    lines: list[ str ] = raw_docstring.strip().split( '\n' )
 
-    fields_start_idx = None
+    fields_start_idx: int = None
     for i, line in enumerate( lines ):
         if line.strip().startswith( ':' ):
             fields_start_idx = i
@@ -152,12 +154,12 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
             break
 
     if fields_start_idx:
-        description_lines = lines[ : fields_start_idx ]
-        fields_lines = lines[ fields_start_idx : ]
+        description_lines: list[ str ] = lines[ : fields_start_idx ]
+        fields_lines: list[ str ] = lines[ fields_start_idx : ]
 
     else:
-        description_lines = lines
-        fields_lines = []
+        description_lines: list[ str ] = lines
+        fields_lines: list[ str ] = []
 
     fields, warnings = _parse_fields( fields_lines )
 
@@ -173,7 +175,7 @@ def extract_script_metadata( script_info: ScriptInfo ) -> tuple[ dict, dict ]:
     """ Extract the docstring for script
 
     Args:
-        scriptinfo (ScriptInfo): ScriptInfo object for found script file
+        script_info (ScriptInfo): ScriptInfo object for found script file
 
     Returns:
         parsed_data (dict): Description and fields, including script input parameters,
@@ -184,7 +186,7 @@ def extract_script_metadata( script_info: ScriptInfo ) -> tuple[ dict, dict ]:
 
     try:
         with open( script_info.get_attr( 'fullpath' ), 'r', encoding = 'utf-8' ) as f:
-            tree = ast.parse( f.read() )
+            tree: ast.Module = ast.parse( f.read() )
 
         if ( tree.body
             and isinstance( tree.body[ 0 ], ast.Expr )

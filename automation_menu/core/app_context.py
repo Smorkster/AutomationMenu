@@ -32,16 +32,16 @@ from automation_menu.utils.script_manager import ScriptManager
 class ApplicationContext:
 
     startup_arguments: dict = field( default_factory = dict )
-    execution_manager: ScriptExecutionManager = None
-    history_manager: HistoryManager = None
-    input_manager: InputManager = None
-    language_manager: LanguageManager = None
-    script_manager: ScriptManager = None
-    sequence_manager: SequenceManager = None
+    execution_manager: ScriptExecutionManager | None = None
+    history_manager: HistoryManager | None = None
+    input_manager: InputManager | None = None
+    language_manager: LanguageManager | None = None
+    script_manager: ScriptManager | None = None
+    sequence_manager: SequenceManager | None = None
 
-    debug_logger: Logger = None
-    ldap_connection: Connection = None
-    main_window: AutomationMenuWindow = None
+    debug_logger: Logger | None = None
+    ldap_connection: Connection | None = None
+    main_window: AutomationMenuWindow | None = None
     output_queue: queue.Queue = field( default_factory = queue.Queue )
 
 

@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 import alwaysontop_tooltip
 
-from tkinter import Event, Toplevel
+from tkinter import Event
 from tkinter.ttk import Frame, Label
 
 
@@ -35,16 +35,16 @@ class SequenceMenuItem:
 
         from automation_menu.utils.localization import _
 
-        self._sequence_menu = sequence_menu
-        self._sequence = sequence
-        self._main_object = main_object
-        self._hide_menu = menu_hide_callback
+        self._sequence_menu: Frame = sequence_menu
+        self._sequence: Sequence = sequence
+        self._main_object: AutomationMenuWindow = main_object
+        self._hide_menu: Callable = menu_hide_callback
 
-        style = 'ScriptNormal.TLabel'
-        label_text = self._sequence.name
-        label_tt = self._sequence.description
+        style: str = 'ScriptNormal.TLabel'
+        label_text: str = self._sequence.name
+        label_tt: str = self._sequence.description
 
-        self.menu_button = Label( master = self._sequence_menu, text = label_text, style = style, borderwidth = 1, name = str( self._sequence.id ) )
+        self.menu_button: Label = Label( master = self._sequence_menu, text = label_text, style = style, borderwidth = 1, name = str( self._sequence.id ) )
         self.menu_button.bind( '<Button-1>', self._on_click )
 
         alwaysontop_tooltip.alwaysontop_tooltip.AlwaysOnTopToolTip( widget = self.menu_button, msg = label_tt )
@@ -65,7 +65,7 @@ class SequenceMenuItem:
         """ Change label background on mouse enter
 
         Args:
-            event: Event triggering the function
+            event (Event): Event triggering the function
         """
 
         event.widget.configure( style = 'ScriptHover.TLabel' )
@@ -75,7 +75,7 @@ class SequenceMenuItem:
         """ Change label background on mouse leave
 
         Args:
-            event: Event triggering the function
+            event (Event): Event triggering the function
         """
 
         event.widget.configure( style = 'ScriptNormal.TLabel' )

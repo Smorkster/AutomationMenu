@@ -11,7 +11,6 @@ Created: 2025-11-20
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict
 
 from automation_menu.models.scriptinfo import ScriptInfo
 
@@ -20,11 +19,11 @@ from automation_menu.models.scriptinfo import ScriptInfo
 class SequenceStep:
     """ Definition of a sequence step """
 
-    pre_set_parameters: Dict[ str, str ] = field( default_factory = Dict[ str, str ] )
-    script_file: str = None
-    script_info: ScriptInfo = None
-    step_index: int = None
-    stop_on_error: bool = False
+    pre_set_parameters: dict[ str, str ] = field( default_factory = dict[ str, str ] )
+    script_file: str | None = None
+    script_info: ScriptInfo | None = None
+    step_index: int | None = None
+    stop_on_error: bool | None = False
 
 
     def to_dict( self ) -> dict:

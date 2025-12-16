@@ -18,9 +18,9 @@ MESSAGE_END = '__API_END__'
 def _get_api_response() -> None:
     """ Send API call and wait for response """
 
-    response = []
-    in_message = False
-    buffer = ""
+    response: list[ str ] = []
+    in_message: bool = False
+    buffer: str = ""
 
     for line in sys.stdin:
         buffer += line
@@ -57,7 +57,7 @@ def _send( msg_type: str, data: dict ) -> None:
         data (dict): API data
     """
 
-    msg = {
+    msg: dict[ str, dict ] = {
         'type': msg_type,
         'data': data
     }
@@ -69,7 +69,7 @@ def _send( msg_type: str, data: dict ) -> None:
 def determinate_progress() -> None:
     """ API entry to set progressbar as determinate """
 
-    data = {
+    data: dict[ str ] = {
         'set': 'determinate'
     }
 
@@ -79,7 +79,7 @@ def determinate_progress() -> None:
 def hide_progress() -> None:
     """ API entry to hide progressbar """
 
-    data = {
+    data: dict[ str ] = {
         'set': 'hide'
     }
 
@@ -89,7 +89,7 @@ def hide_progress() -> None:
 def indeterminate_progress() -> None:
     """ API entry to set progressbar as indeterminate """
 
-    data = {
+    data: dict[ str ] = {
         'set': 'indeterminate'
     }
 
@@ -103,7 +103,7 @@ def set_progress( percent: float ) -> None:
         percent (float): Precalculated value to set in the progressbar
     """
 
-    data = {
+    data: dict[ int ] = {
         'percent': percent
     }
 
@@ -113,7 +113,7 @@ def set_progress( percent: float ) -> None:
 def show_progress() -> None:
     """ API entry to show progressbar """
 
-    data = {
+    data: dict[ str ] = {
         'set': 'show'
     }
 
@@ -143,7 +143,7 @@ def get_keepass_shortcut() -> dict:
 def clear_status() -> None:
     """ Remove current status """
 
-    data = {
+    data: dict[ str ] = {
         'set': 'clear'
     }
 
@@ -157,11 +157,12 @@ def get_status() -> str:
         str: The currently displayed statustext
     """
 
-    data = {
+    data: dict[ str ] = {
         'set': 'get'
     }
 
     _send( msg_type = 'status', data = data )
+
     return _get_api_response()
 
 
@@ -171,9 +172,10 @@ def set_status( text: str, append: bool = False ) -> None:
 
     Args:
         text (str): Text to set as status
+        append (bool): Should status text be appended to current status
     """
 
-    data = {
+    data: dict[ str, bool ] = {
         'set': text,
         'append': append
     }

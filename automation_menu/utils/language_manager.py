@@ -10,7 +10,8 @@ Created: 2025-09-25
 
 from __future__ import annotations
 
-from tkinter import Menu, Toplevel
+from gettext import GNUTranslations
+from tkinter import Menu, Toplevel, Widget
 from tkinter.ttk import Button, Checkbutton, Combobox, Frame, Label, Notebook
 
 from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
@@ -27,9 +28,10 @@ class LanguageManager:
 
         from automation_menu.utils.localization import _
 
-        self._widgets_to_update = []
-        self._current_language = current_language
-        self._ = _
+        self._widgets_to_update: list[ tuple[ str, Widget, bool, bool ] ] = []
+        self._current_language: str = current_language
+        self._: GNUTranslations = _
+        self._current_language: str = current_language
 
 
     def _translate( self, text: str ) -> str:
@@ -42,8 +44,8 @@ class LanguageManager:
             tt (str): The translated string
         """
 
-        t = '{}'.format( text )
-        tt = self._( message = t )
+        t: str = '{}'.format( text )
+        tt: str = self._( message = t )
 
         return tt
 
@@ -85,7 +87,7 @@ class LanguageManager:
             widget (tuple[ Frame, str ]): Tuple of frame to update and string, as translation key
         """
 
-        idx = widget[ 0 ].master.winfo_children().index( widget[ 0 ] )
+        idx: int = widget[ 0 ].master.winfo_children().index( widget[ 0 ] )
         widget[ 0 ].master.tab( idx, text = self._translate( text = widget[ 1 ] ) )
         widget[ 0 ].update_idletasks()
 
@@ -105,11 +107,11 @@ class LanguageManager:
         Enumerate the strings and translate each topmenu (cascade) with the corresponding enum index
 
         Args:
-            widget (tuple[ Menu, (str) ]): Tuple of menu to update and tuple of strings corresponding to topmenus, as translation key
+            widget (tuple[ Menu, tuple[ str, Ellipsis ] ]): Tuple of menu to update and tuple of strings corresponding to topmenus, as translation key
         """
 
         for i, translation_key in enumerate( widget[ 1 ] ):
-            t = self._translate( text = translation_key )
+            t: str = self._translate( text = translation_key )
             a: Menu = widget[ 0 ]
             a.entryconfigure( i+1, label = t )
             a.update_idletasks()
@@ -119,7 +121,7 @@ class LanguageManager:
         """ Update text for ttk.Notebook
 
         Args:
-            widget (tuple[ Notebook, tuple[ str, ... ] ]): Tuple of Notebook to update and a tuple of strings, as translation keys
+            widget (tuple[ Notebook, tuple[ str, Ellipsis ] ]): Tuple of Notebook to update and a tuple of strings, as translation keys
         """
 
         for i, t in enumerate( widget[ 1 ] ):
@@ -130,7 +132,7 @@ class LanguageManager:
         """ Update text for Toplevel
 
         Args:
-            widget (tuple[ Toplevel, (str) ]): Tuple of Toplevel to update and string, as translation key
+            widget (tuple[ Toplevel, str ]): Tuple of Toplevel to update and string, as translation key
         """
 
         widget[ 0 ].title(self._translate( widget[ 1 ] ) )
@@ -147,13 +149,13 @@ class LanguageManager:
                 if application test information should be aded
         """
 
-        new_text = self._translate( widget[ 1 ] )
+        new_text: str = self._translate( widget[ 1 ] )
         if widget[ 2 ]:
-            dev_text = self._translate( 'In development, and should only be run by its developer.' )
+            dev_text: str = self._translate( 'In development, and should only be run by its developer.' )
             new_text += f'\n\n{ dev_text }'
 
         elif widget[ 3 ]:
-            test_text = self._translate( 'Application test script, only used to test application functionality' )
+            test_text: str = self._translate( 'Application test script, only used to test application functionality' )
             new_text += f'\n\n{ test_text }'
 
         widget[ 0 ].config( new_text = new_text )
@@ -163,7 +165,7 @@ class LanguageManager:
         """ Add a widget to list for later translation
 
         Args:
-            widget (tuple(widget, str | tuple)): Tuple of widget to translate and one or more strings, as translation keys, depending och widget type
+            widget (any): Tuple of widget to translate and one or more strings, as translation keys, depending och widget type
         """
 
         self._widgets_to_update.append( widget )
@@ -181,6 +183,7 @@ class LanguageManager:
         change_language( language_code = new_language )
 
         from automation_menu.utils.localization import _
+
         self._ = _
 
         for widget in self._widgets_to_update:

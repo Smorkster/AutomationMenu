@@ -11,13 +11,15 @@ Created: 2025-09-25
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
+from automation_menu.models.sequence import Sequence
+
 if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
 
 import tkinter as tk
 
-from tkinter import E, N, S, W, Canvas, Event, Scrollbar, Tk
-from tkinter.ttk import Button, Frame
+from tkinter import E, N, S, W, Canvas, Event, Scrollbar, Tk, Toplevel
+from tkinter.ttk import Button, Frame, Widget
 
 from automation_menu.core.sequence_menu_item import SequenceMenuItem
 from automation_menu.core.script_menu_item import ScriptMenuItem
@@ -32,37 +34,37 @@ class CustomMenu:
         Args:
             parent (Tk): The parent window/widget to attach the button to
             text (str): String to display in the button
-            scripts (list[ ScriptInfo ]): A list of items to be displayed in the menu
+            exec_list (list[ ScriptInfo ]): A list of items to be displayed in the menu
             main_object (AutomationMenuWindow): The main object, is used in each menuitem
         """
 
-        self.parent = parent
-        self.exec_list = exec_list
-        self.main_object = main_object
-        self._visible = False
-        self._max_height = 500
+        self.parent: Tk = parent
+        self.exec_list: dict[ str, Sequence ] | list[ ScriptInfo ] = exec_list
+        self.main_object: AutomationMenuWindow = main_object
+        self._visible: bool = False
+        self._max_height: bool = 500
 
         # Button that acts as menu base
-        self.menu_button = Button( master = parent, text = text, command = self.show_popup_menu )
+        self.menu_button: Button = Button( master = parent, text = text, command = self.show_popup_menu )
 
-        self.popup = tk.Toplevel( parent )
+        self.popup: Toplevel = Toplevel( parent )
 
-        self._frame = Frame( master = self.popup )
+        self._frame: Frame = Frame( master = self.popup )
         self._frame.grid( sticky = ( N, S, W, E ) )
         self._frame.grid_columnconfigure( 0, weight = 1 )
         self._frame.grid_columnconfigure( 1, weight = 0 )
         self._frame.grid_rowconfigure( 0, weight = 1 )
 
-        self._canvas = Canvas( master = self._frame, height = self._max_height, highlightthickness = 0 )
+        self._canvas: Canvas = Canvas( master = self._frame, height = self._max_height, highlightthickness = 0 )
         self._canvas.grid( row = 0, column = 0, sticky = ( N, S, W, E ) )
 
-        self._scrollbar = Scrollbar( master = self._frame, orient = 'vertical', command = self._canvas.yview )
+        self._scrollbar: Scrollbar = Scrollbar( master = self._frame, orient = 'vertical', command = self._canvas.yview )
         self._scrollbar.grid( row = 0, column = 1, sticky = ( N, S ) )
 
         self._canvas.configure( yscrollcommand = self._scrollbar.set )
 
-        self._menu_container = Frame( master = self._canvas )
-        self._window_id = self._canvas.create_window( ( 0, 0 ), window = self._menu_container, anchor = 'nw' )
+        self._menu_container: Frame = Frame( master = self._canvas )
+        self._window_id: int = self._canvas.create_window( ( 0, 0 ), window = self._menu_container, anchor = 'nw' )
 
         self.popup.withdraw()
         self.popup.overrideredirect( True )  # Remove window decorations
@@ -85,7 +87,7 @@ class CustomMenu:
             event (Event): Event that triggered handler
         """
 
-        widget = event.widget.winfo_containing( event.x_root, event.y_root )
+        widget: Widget = event.widget.winfo_containing( event.x_root, event.y_root )
 
         if widget not in [ self.popup ] + list( self.popup.winfo_children() ):
             self.hide_popup_menu()
@@ -96,10 +98,10 @@ class CustomMenu:
 
         for i, item_info in enumerate( self.exec_list ):
             if isinstance( item_info, ScriptInfo ):
-                menu_item = ScriptMenuItem( script_menu = self._menu_container, script_info = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
+                menu_item: ScriptMenuItem = ScriptMenuItem( script_menu = self._menu_container, script_info = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
 
             else:
-                menu_item = SequenceMenuItem( sequence_menu = self._menu_container, sequence = self.exec_list[ item_info ], main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
+                menu_item: SequenceMenuItem = SequenceMenuItem( sequence_menu = self._menu_container, sequence = self.exec_list[ item_info ], main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
 
             menu_item.menu_button.bind( '<Enter>' , menu_item.on_enter, add = '+' )
             menu_item.menu_button.bind( '<Leave>' , menu_item.on_leave, add = '+' )
@@ -130,8 +132,8 @@ class CustomMenu:
 
         self._canvas.configure( scrollregion = self._canvas.bbox( self._window_id ) )
 
-        content_height = event.height
-        visible_height = min( content_height, self._max_height )
+        content_height: int = event.height
+        visible_height: int = min( content_height, self._max_height )
         self._canvas.configure( height = visible_height )
         self._canvas.configure( width = event.width )
 
@@ -164,14 +166,14 @@ class CustomMenu:
         self._visible = False
 
 
-    def rebuild_menu( self, exec_list: dict | list[ ScriptInfo ] ) -> None:
+    def rebuild_menu( self, exec_list: dict[ str, Sequence ] | list[ ScriptInfo ] ) -> None:
         """ Rebuild the popup menu when the script/sequence list changes
 
         Args:
-            exec_list (dict | list[ ScriptInfo ]): Content to display in menu
+            exec_list (dict[ str, Sequence ] | list[ ScriptInfo ]): Content to display in menu
         """
 
-        self.exec_list = exec_list
+        self.exec_list: dict[ str, Sequence] | list[ ScriptInfo ] = exec_list
 
         for c in self._menu_container.winfo_children():
             c.destroy()
@@ -180,10 +182,10 @@ class CustomMenu:
 
         self._menu_container.update_idletasks()
 
-        content_width  = self._menu_container.winfo_reqwidth()
-        content_height = self._menu_container.winfo_reqheight()
+        content_width: int = self._menu_container.winfo_reqwidth()
+        content_height: int = self._menu_container.winfo_reqheight()
 
-        visible_height = min( content_height, self._max_height )
+        visible_height: int = min( content_height, self._max_height )
 
         self._canvas.configure(
             width = content_width,
@@ -193,8 +195,8 @@ class CustomMenu:
 
         if self._visible:
             self.popup.update_idletasks()
-            x = self.menu_button.winfo_rootx()
-            y = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
+            x: int = self.menu_button.winfo_rootx()
+            y: int = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
             self.popup.geometry( f'+{ x }+{ y }' )
 
 
@@ -210,25 +212,25 @@ class CustomMenu:
         self._menu_container.update_idletasks()
         self.popup.update_idletasks()
 
-        content_width  = self._menu_container.winfo_reqwidth()
-        content_height = self._menu_container.winfo_reqheight()
+        content_width: int = self._menu_container.winfo_reqwidth()
+        content_height: int = self._menu_container.winfo_reqheight()
 
-        visible_height = min( content_height, self._max_height )
+        visible_height: int = min( content_height, self._max_height )
         self._canvas.configure( height = visible_height )
 
         if content_height > self._max_height:
-            scrollbar_width = self._scrollbar.winfo_reqwidth() + 10
+            scrollbar_width: int = self._scrollbar.winfo_reqwidth() + 10
 
         else:
-            scrollbar_width = 10
+            scrollbar_width: int = 10
 
-        total_width = content_width + scrollbar_width
+        total_width: int = content_width + scrollbar_width
 
         self._canvas.itemconfig( self._window_id, width = content_width )
         self._canvas.configure( width = content_width )
 
-        x = self.menu_button.winfo_rootx()
-        y = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
+        x: int = self.menu_button.winfo_rootx()
+        y: int = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
 
         self.popup.geometry( f'{ total_width }x{ visible_height + 10 }+{ x }+{ y }' )
         self.popup.deiconify()

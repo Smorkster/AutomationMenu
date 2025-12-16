@@ -14,7 +14,7 @@ from datetime import timedelta
 from logging import Logger
 from tkinter import END, N, S, W, E, Event, Text
 from tkinter.ttk import Frame, Label, Notebook, Treeview
-from typing import Callable
+from typing import Any, Callable
 
 from automation_menu.models import ExecHistory
 
@@ -69,23 +69,23 @@ class HistoryManager:
             event (Event): Event triggering handler
         """
 
-        selection = event.widget.selection()
+        selection: tuple[ str, str ] = event.widget.selection()
         if not selection:
 
             return
 
         from automation_menu.utils.localization import _
 
-        id = selection()[ 0 ]
+        id: str = selection[ 0 ]
 
-        list_item = [ a for a in self._historylist if a['id'] == id ]
+        list_item: list[ dict[ str, dict ] ] = [ a for a in self._historylist if a['id'] == id ]
 
         if not list_item:
             self._logger.warning( _( 'No history item for {i}' ).format( i = id ) )
 
             return
 
-        item = list_item[ 0 ][ 'item' ]
+        item: dict[ str, Any ] = list_item[ 0 ][ 'item' ]
 
         # Display start
         self.item_start.config( state = 'normal' )
@@ -129,7 +129,7 @@ class HistoryManager:
             item (ExecHistory): Execution history to add
         """
 
-        tree_id = self.history_tree.insert( parent = '',
+        tree_id: str = self.history_tree.insert( parent = '',
                                  index = 0,
                                  text = f'{ item.start.strftime( '%m / %d : %H:%M:%S' ) }',
                                  values = ( item.script_info.get_attr( 'filename' ) )

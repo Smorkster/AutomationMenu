@@ -262,7 +262,7 @@ class ScriptRunner:
         self.main_window = main_window
         self.api_callbacks = api_callbacks
         self.run_input = run_input
-        line = ''
+        line: str = ''
 
         try:
             self.current_process = self._create_process()
@@ -275,10 +275,10 @@ class ScriptRunner:
             self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
 
         except subprocess.SubprocessError as e:
-            line = _( 'Subprocess error {error}' ).format( error = str( e ) )
+            line: str = _( 'Subprocess error {error}' ).format( error = str( e ) )
 
         except Exception as e:
-            line = _( 'Unexpected error {error}' ).format( error = str( e ) )
+            line: str = _( 'Unexpected error {error}' ).format( error = str( e ) )
 
         finally:
             stop_pause_button_blinking_callback()

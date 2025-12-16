@@ -25,16 +25,16 @@ class Settings:
             save_callback (Callable): Callback function for saving to file
         """
 
-        self._save_callback = save_callback
-        self._on_top = settings_dict.get( 'on_top', False )
-        self._minimize_on_running = settings_dict.get( 'minimize_on_running', False )
-        self._send_mail_on_error = settings_dict.get( 'send_mail_on_error', False )
-        self._include_ss_in_error_mail = settings_dict.get( 'include_ss_in_error_mail', False )
-        self._current_language = settings_dict.get( 'current_language', 'sv_SE' )
-        self._force_focus_post_execution = settings_dict.get( 'force_focus_post_execution', False )
-        self._keepass_shortcut = settings_dict.get( 'keepass_shortcut', { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } )
+        self._save_callback: Callable = save_callback
+        self._current_language: str = settings_dict.get( 'current_language', 'sv_SE' )
+        self._force_focus_post_execution: bool = settings_dict.get( 'force_focus_post_execution', False )
+        self._include_ss_in_error_mail: bool = settings_dict.get( 'include_ss_in_error_mail', False )
+        self._keepass_shortcut: dict[ str, bool | str ] = settings_dict.get( 'keepass_shortcut', { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } )
+        self._minimize_on_running: bool = settings_dict.get( 'minimize_on_running', False )
+        self._on_top: bool = settings_dict.get( 'on_top', False )
+        self._send_mail_on_error: bool = settings_dict.get( 'send_mail_on_error', False )
 
-        self._saved_sequences = settings_dict.get( 'saved_sequences', [] )
+        self._saved_sequences: dict[ str, Sequence ] = settings_dict.get( 'saved_sequences', [] )
 
 
     @property
@@ -219,7 +219,7 @@ class Settings:
         return getattr( self, f'_{ key }' )
 
 
-    def set_keepass_shortcut( self, value_tup: tuple ) -> None:
+    def set_keepass_shortcut( self, value_tup: tuple[ bool, bool, bool, str ] ) -> None:
         """ Set value of 'keepass_shortcut'
 
         Args:
@@ -232,14 +232,14 @@ class Settings:
             self._save_callback( self )
 
 
-    def to_json( self ) -> dict:
+    def to_json( self ) -> dict[ str, bool | str ]:
         """ Convert settings to a JSON-serializable dictionary
 
         Returns:
             (dict): Json formated dict of setting object
         """
 
-        d = { k.lstrip( '_' ): v
+        d: dict[ str, bool | str ] = { k.lstrip( '_' ): v
              for k, v in self.__dict__.items()
              if not callable( self.__dict__[ k ] ) }
 

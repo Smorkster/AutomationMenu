@@ -12,12 +12,14 @@ import asyncio
 import json
 import logging
 import queue
+from re import Match
 import threading
 import tkinter as tk
 
 from datetime import datetime
 from logging import Logger
 from tkinter.ttk import Button
+from typing import Callable
 
 from automation_menu.models import SysInstructions
 from automation_menu.models.enums import OutputStyleTags
@@ -30,7 +32,7 @@ class AsyncOutputController:
                 text_widget: tk.Text,
                 breakpoint_button: Button,
                 history_manager: HistoryManager,
-                api_callbacks: dict,
+                api_callbacks: dict[ str, Callable ],
                 logger: Logger
                 ) -> None:
         """ Controller for output queue
@@ -40,21 +42,21 @@ class AsyncOutputController:
             text_widget (tk.Text): Tk Text widget to recieve output text
             breakpoint_button (Button): The button to return execution after breakpoint in script
             history_manager (HistoryManager): History manager to access history list
-            api_callbacks (dict): Dictionary with API callbacks
+            api_callbacks (dict[ str, Callable ]): Dictionary with API callbacks
             logger (Logger): General purpose logging object used through out application
        """
 
-        self.history_manager = history_manager
-        self.output_queue = output_queue
-        self.text_widget = text_widget
-        self.breakpoint_button = breakpoint_button
-        self.api_callbacks = api_callbacks
-        self._logger = logger
+        self.history_manager: HistoryManager = history_manager
+        self.output_queue: queue.Queue = output_queue
+        self.text_widget: tk.Text = text_widget
+        self.breakpoint_button: Button = breakpoint_button
+        self.api_callbacks: dict[ str, Callable ] = api_callbacks
+        self._logger: Logger = logger
 
         self.loop: asyncio.AbstractEventLoop | None = None
 
-        self._running = False
-        self._executor = None
+        self._running: bool = False
+        self._executor: bool = None
 
 
     def _api_handler( self, handler: str, data: dict ) -> None:
@@ -120,9 +122,11 @@ class AsyncOutputController:
         """
 
         try:
+
             return self.output_queue.get( timeout = 1.5 )
 
         except queue.Empty:
+
             return 'timeout'
 
 
@@ -143,8 +147,8 @@ class AsyncOutputController:
         elif isinstance( queue_item, dict ):
 
             if queue_item.get( 'type' ) == 'api':
-                handler = queue_item.get( 'handler' )
-                data = queue_item.get( 'data', {} )
+                handler: str = queue_item.get( 'handler' )
+                data: dict[ str, str ] = queue_item.get( 'data', {} )
 
                 if handler in self.api_callbacks:
                     self._api_handler( handler = queue_item[ 'handler' ] , data = queue_item[ 'data' ] )
@@ -182,7 +186,7 @@ class AsyncOutputController:
                         self.history_manager.add_history_item( queue_item[ 'exec_item' ] )
 
 
-    def _normalize_queue_item( self, queue_item: str | dict ) -> dict:
+    def _normalize_queue_item( self, queue_item: str | dict ) -> dict[ str, dict | OutputStyleTags | str ]:
         """ Normalize message to a dict
 
         Args:
@@ -212,7 +216,7 @@ class AsyncOutputController:
             return queue_item
 
 
-    def _parse_api_message( self, queue_item: dict ) -> dict:
+    def _parse_api_message( self, queue_item: dict ) -> dict[ str, dict | str ]:
         """ Parse API call from queue item
 
         Args:
@@ -224,7 +228,7 @@ class AsyncOutputController:
 
         import re
 
-        match = re.search( r'__API_START__(.+?)__API_END__', string = queue_item[ 'line' ] )
+        match: Match = re.search( r'__API_START__(.+?)__API_END__', string = queue_item[ 'line' ] )
 
         if match:
             try:
@@ -253,6 +257,10 @@ class AsyncOutputController:
 
 
             except json.JSONDecodeError as e:
+                from automation_menu.utils.localization import _
+
+                self._logger.error( _( 'Couldn\'t decode API JSON:\n{e}' ).format( e = e ) )
+ 
                 pass
 
 
@@ -288,7 +296,7 @@ class AsyncOutputController:
     async def _shutdown( self ) -> None:
         """ Gather and cancel all tasks and stop the async loop """
 
-        tasks = [ t for t in asyncio.all_tasks( self.loop ) if t is not asyncio.current_task() ]
+        tasks: list[ asyncio.Task ] = [ t for t in asyncio.all_tasks( self.loop ) if t is not asyncio.current_task() ]
 
         for task in tasks:
             task.cancel()

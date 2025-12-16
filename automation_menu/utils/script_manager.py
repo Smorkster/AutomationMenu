@@ -21,12 +21,17 @@ from automation_menu.models.scriptinfo import ScriptInfo
 
 class ScriptManager:
     def __init__( self, app_state: ApplicationState, app_context: ApplicationContext ) -> None:
-        """ Manage script discovery and listing """
+        """ Manage script discovery and listing
 
-        self._app_context = app_context
-        self._app_state = app_state
+        Args:
+            app_state (ApplicationState): Application state vault
+            app_context (ApplicationContext): Manager and state vault
+        """
 
-        self._script_list = None
+        self._app_context: ApplicationContext = app_context
+        self._app_state: ApplicationState = app_state
+
+        self._script_list: list[ ScriptInfo ] = None
 
         self.gather_scripts()
 
@@ -38,7 +43,14 @@ class ScriptManager:
 
 
     def get_script_info_by_filename( self, filename: str ) -> ScriptInfo:
-        """ Retrieve ScriptInfo for script at path """
+        """ Retrieve ScriptInfo for script at path
+
+        Args:
+            filename (str): Filename to match to
+
+        Returns:
+            (ScriptInfo): Found ScriptInfo, or None
+        """
 
         for si in self._script_list:
             if si.filename == filename:
@@ -49,7 +61,14 @@ class ScriptManager:
 
 
     def get_script_info_by_path( self, path: str ) -> ScriptInfo:
-        """ Retrieve ScriptInfo for script at path """
+        """ Retrieve ScriptInfo for script at path
+
+        Args:
+            path (str): Path to match to
+
+        Returns:
+            (ScriptInfo): Found ScriptInfo, or None
+        """
 
         for si in self._script_list:
             if si.fullpath == path:

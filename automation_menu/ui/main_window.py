@@ -9,18 +9,18 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
-import dynamicinputbox
-
-from automation_menu.utils.decorators import ui_guard_method
+from automation_menu.models.geometry import Geometry
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.models.application_state import ApplicationState
 
-from tkinter import E, N, S, W, Event, Tk, messagebox
-from tkinter.ttk import Combobox, Notebook, Style
+import dynamicinputbox
+
+from tkinter import E, N, S, W, Event, Tk, Widget, messagebox
+from tkinter.ttk import Button, Combobox, Frame, Notebook, Style
 from typing import Tuple
 
 from automation_menu.filehandling.settings_handler import write_settingsfile
@@ -32,6 +32,7 @@ from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
 from automation_menu.ui.settings_tab import get_settings_tab
 from automation_menu.ui.statusbar import get_statusbar
+from automation_menu.utils.decorators import ui_guard_method
 
 
 class AutomationMenuWindow:
@@ -45,19 +46,18 @@ class AutomationMenuWindow:
 
         from automation_menu.utils.localization import _
 
-        self.app_state = app_state
-        self.app_context = app_context
+        self.app_state: ApplicationState = app_state
+        self.app_context: ApplicationContext = app_context
         self.app_context.main_window = self
-        self.settings_file_path = self.app_state.secrets.get( 'settings_file_path' )
+        self.settings_file_path: str = self.app_state.secrets.get( 'settings_file_path' )
 
-        self.dev_controls = []
-        self.old_window_geometry = {}
+        self.old_window_geometry: Geometry = Geometry()
         self.widgets = {}
-        self._blink_active = False
-        self._blink_job = None
-        self._blink_state = False
-        self._close_confirmed = False
-        self._progressbar_visible = False
+        self._blink_active: bool = False
+        self._blink_job: str = None
+        self._blink_state: bool = False
+        self._close_confirmed: bool = False
+        self._progressbar_visible: bool = False
 
         self.api_callbacks = {
             'determinate_progress': self.set_progress_determined,
@@ -72,6 +72,7 @@ class AutomationMenuWindow:
 
             'setting': self.setting
         }
+
         self.sequence_callbacks = {
             'op_abort_add_sequence_step': self.op_abort_add_sequence_step,
             'op_add_sequence_step': self.op_add_sequence_step,
@@ -85,7 +86,7 @@ class AutomationMenuWindow:
         }
 
         # Create main GUI
-        self.root = Tk()
+        self.root: Tk = Tk()
         title_string: str = self.app_state.secrets.get( 'mainwindowtitle' )
 
         if self.app_context.startup_arguments[ 'app_run_state' ] == ApplicationRunState.DEV:
@@ -106,20 +107,20 @@ class AutomationMenuWindow:
                                                       )
 
         # Setup styles
-        self._style = Style()
+        self._style: Style = Style()
         set_ui_style( style = self._style )
 
-        self.button_margin = {
+        self.button_margin: dict[ str, int ] = {
             'x': 5,
             'y': 5
         }
 
         # Create buttons for script operations
-        self.op_buttons = get_op_buttons( self.root, self )
+        self.op_buttons: dict[ str, Widget ] = get_op_buttons( self.root, self )
 
         # Add tabs
 
-        self.tab_control = Notebook( master = self.root, style = self.tab_style )
+        self.tab_control: Notebook = Notebook( master = self.root, style = self.tab_style )
         self.tab_control.grid( column = 0, columnspan = 2, row = 2, sticky = ( N, S, E, W ) )
 
         # Create output
@@ -127,10 +128,10 @@ class AutomationMenuWindow:
 
         set_output_styles( widget = self.textbox_output )
 
-        self.sequence_tab = self.app_context.sequence_manager.create_sequence_tab( tabcontrol = self.tab_control, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.language_manager.add_translatable_widget )
+        self.sequence_tab: Frame = self.app_context.sequence_manager.create_sequence_tab( tabcontrol = self.tab_control, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
         # Manage output
-        self.output_controller = AsyncOutputController( output_queue = self.app_context.output_queue,
+        self.output_controller: AsyncOutputController = AsyncOutputController( output_queue = self.app_context.output_queue,
                                                        text_widget = self.textbox_output,
                                                        breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ],
                                                        history_manager = self.app_context.history_manager,
@@ -140,13 +141,13 @@ class AutomationMenuWindow:
         self.output_controller.start()
 
         # Create settings
-        self.tabSettings = get_settings_tab( tabcontrol = self.tab_control, settings = self.app_state.settings, main_self = self )
+        self.tabSettings: Frame = get_settings_tab( tabcontrol = self.tab_control, settings = self.app_state.settings, main_self = self )
 
         # Create history tab
-        self.tabHistory = self.app_context.history_manager.get_history_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.language_manager.add_translatable_widget )
+        self.tabHistory: Frame = self.app_context.history_manager.get_history_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
         # Create statusbar
-        self.status_widgets = get_statusbar( master_root = self.root )
+        self.status_widgets: dict[ str, Widget ] = get_statusbar( master_root = self.root )
 
         self.root.columnconfigure( index = 0, weight = 1 )
         self.root.columnconfigure( index = 1, weight = 0 )
@@ -169,14 +170,18 @@ class AutomationMenuWindow:
         """ Center main window on screen """
 
         self.root.update_idletasks()
-        width = self.root.winfo_width()
-        frm_width = self.root.winfo_rootx() - self.root.winfo_x()
-        win_width = width + 2 * frm_width
-        height = self.root.winfo_height()
-        titlebar_height = self.root.winfo_rooty() - self.root.winfo_y()
-        win_height = height + titlebar_height + frm_width
-        x = self.root.winfo_screenwidth() // 2 - win_width // 2
-        y = self.root.winfo_screenheight() // 2 - win_height // 2
+        width: int = self.root.winfo_width()
+        height: int = self.root.winfo_height()
+
+        frm_width: int = self.root.winfo_rootx() - self.root.winfo_x()
+        win_width: int = width + 2 * frm_width
+
+        titlebar_height: int = self.root.winfo_rooty() - self.root.winfo_y()
+        win_height: int = height + titlebar_height + frm_width
+
+        x: float = self.root.winfo_screenwidth() // 2 - win_width // 2
+        y: float = self.root.winfo_screenheight() // 2 - win_height // 2
+
         self.root.geometry( newGeometry = f'{ width }x{ height }+{ x }+{ y }' )
         self.root.update_idletasks()
 
@@ -186,8 +191,8 @@ class AutomationMenuWindow:
 
         from automation_menu.utils.localization import _
 
-        line = _( 'There is a script running. Do you want to terminate the script process before closing the application?' )
-        answ = messagebox.askyesno(
+        line: str = _( 'There is a script running. Do you want to terminate the script process before closing the application?' )
+        answ: str = messagebox.askyesno(
             title = _( 'Script still runnning' ),
             message = line,
             parent = self.root
@@ -302,7 +307,7 @@ class AutomationMenuWindow:
         if not self._blink_active:
             return
 
-        button = self.op_buttons[ 'btnPauseResumeScript' ]
+        button: Button = self.op_buttons[ 'btnPauseResumeScript' ]
         self._blink_state = not self._blink_state
 
         self.root.after( 100, lambda: button.config( style = 'BlinkBg.TButton' if self._blink_state else 'TButton' ) )
@@ -364,12 +369,11 @@ class AutomationMenuWindow:
 
             else:
                 self._minimize_hide_controls()
-                old_geometry = {
-                    'h': self.root.winfo_height(),
-                    'w': self.root.winfo_width(),
-                    'x': self.root.winfo_x(),
-                    'y': self.root.winfo_y()
-                }
+                old_geometry = Geometry( height = self.root.winfo_height(),
+                                        width = self.root.winfo_width(),
+                                        x = self.root.winfo_x(),
+                                        y = self.root.winfo_y()
+                                        )
                 self.min_max_on_running( old_geometry )
 
 
@@ -478,15 +482,15 @@ class AutomationMenuWindow:
 
 
     @ui_guard_method( when_message = 'Down-/resizing window before/after script execution' )
-    def min_max_on_running( self, old_geometry: dict = None ) -> None:
+    def min_max_on_running( self, old_geometry: Geometry = None ) -> None:
         """ Resize window during script execution
 
         Args:
-            old_geometry (dict): Size values of main window before script execution
+            old_geometry (Geometry): Size values of main window before script execution
         """
 
-        win_width = 400
-        win_height = 200
+        win_width: int = 400
+        win_height: int = 200
 
         if old_geometry:
             self.old_window_geometry = old_geometry
@@ -494,7 +498,7 @@ class AutomationMenuWindow:
             self.root.geometry( newGeometry = f'{ win_width }x{ win_height }+{ self.root.winfo_screenwidth() - win_width  }+{ self.root.winfo_screenheight() - win_height - 100 }' )
 
         else:
-            self.root.geometry( newGeometry = f'{ self.old_window_geometry['w'] }x{ self.old_window_geometry['h'] }+{ self.old_window_geometry['x'] }+{ self.old_window_geometry['y'] }' )
+            self.root.geometry( newGeometry = self.old_window_geometry.to_string() )
             self._minimize_show_controls()
 
         self.root.update_idletasks()

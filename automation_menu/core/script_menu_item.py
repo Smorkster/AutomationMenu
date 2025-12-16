@@ -12,6 +12,8 @@ Created: 2025-09-25
 from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
+from psutil import Process
+
 if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
 
@@ -33,22 +35,23 @@ class ScriptMenuItem:
             script_menu (Frame): Frame to attach menu item to
             script_info (ScriptInfo): Information about the script
             main_object (AutomationMenuWindow): The main window
+            menu_hide_callback (Callable): Function callback to hide menu view
         """
 
         from automation_menu.utils.localization import _
 
         logging.basicConfig( level = logging.DEBUG )
 
-        self.script_menu = script_menu
-        self.script_info = script_info
-        self.script_path = script_info.get_attr( 'fullpath' )
-        self.master_self = main_object
-        self._hide_menu = menu_hide_callback
+        self.script_menu: Frame = script_menu
+        self.script_info: ScriptInfo = script_info
+        self.script_path: str = script_info.get_attr( 'fullpath' )
+        self.master_self: AutomationMenuWindow = main_object
+        self._hide_menu: Callable = menu_hide_callback
 
         self.master_self.app_state.running_automation = self
-        self.process = None
-        self.label_text = ''
-        self._in_debug = False
+        self.process: Process = None
+        self.label_text: str = ''
+        self._in_debug: bool = False
 
         if self.script_info.get_attr( 'synopsis' ):
             self.label_text = self.script_info.get_attr( 'synopsis' )
@@ -56,8 +59,8 @@ class ScriptMenuItem:
         else:
             self.label_text = self.script_info.get_attr( 'filename' )
 
-        self._style_normal = 'ScriptNormal.TLabel'
-        self._style_hover = 'ScriptHover.TLabel'
+        self._style_normal: str = 'ScriptNormal.TLabel'
+        self._style_hover: str = 'ScriptHover.TLabel'
 
         if self.script_info.filename.startswith( 'AMTest_' ):
             self._style_normal = 'AppTestNormal.TLabel'
@@ -68,16 +71,16 @@ class ScriptMenuItem:
             self._style_normal = 'DevNormal.TLabel'
             self._style_hover = 'DevHover.TLabel'
 
-        self.menu_button = Label( self.script_menu, text = self.label_text, style = self._style_normal, borderwidth = 1 )
+        self.menu_button: Label = Label( self.script_menu, text = self.label_text, style = self._style_normal, borderwidth = 1 )
         self.menu_button.bind( '<Button-1>' , lambda e: self._check_input_params() )
 
         # Add tooltip to this button
         if self.script_info.get_attr( 'description' ):
             from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 
-            desc = self.script_info.get_attr( 'description' )
-            dev = False
-            app_test = False
+            desc: str = self.script_info.get_attr( 'description' )
+            dev: bool = False
+            app_test: bool = False
 
             if self.script_info.get_attr( 'state' ) == ScriptState.DEV:
                 desc += f'\n\n{ _( 'In development, and should only be run by its developer.' ) }'
@@ -87,7 +90,7 @@ class ScriptMenuItem:
                 desc += f'\n\n{ _( 'Application test script, only used to test application functionality' ) }'
                 app_test = True
 
-            tt = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc, delay = 0 )
+            tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc, delay = 0 )
             self.master_self.app_context.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev, app_test ) )
 
 

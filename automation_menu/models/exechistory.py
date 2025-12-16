@@ -39,14 +39,18 @@ class Output:
 
 class ExecHistory:
     def __init__( self, script_info: ScriptInfo = None ) -> None:
-        """ Class to hold script execution history """
+        """ Class to hold script execution history
 
-        self.script_info = script_info
-        self.output = []
-        self.start = datetime.now()
-        self.end = None
-        self.exit_code = None
-        self.was_terminated = False
+        Args:
+            script_info (ScriptInfo): Script info for associated execution
+        """
+
+        self.script_info: ScriptInfo = script_info
+        self.output: list[ Output ] = []
+        self.start: datetime = datetime.now()
+        self.end: datetime = None
+        self.exit_code: int = None
+        self.was_terminated: bool = False
 
 
     def __repr__( self ) -> str:
@@ -65,13 +69,15 @@ class ExecHistory:
             },
             'script_output': ';'.join( [ repr( o ) for o in self.output ] )
             }
+
         return json.dumps( repr_str )
 
 
     def add_end( self, time: datetime ) -> None:
         """ Set datetime when execution ended
+
         Args:
-            time (datetime.datetime): Execution finished
+            time (datetime): Execution finished
         """
 
         self.end = time
@@ -81,7 +87,7 @@ class ExecHistory:
         """ Add new item to output
 
         Args:
-            item (dict[ datetime.datetime, str ]): Dict item with datetime and string from output
+            item (dict[ datetime, str ]): Dict item with datetime and string from output
         """
 
         self.output.append( Output( **item ) )
@@ -91,7 +97,7 @@ class ExecHistory:
         """ Set return code from finished script execution
 
         Args:
-            return_code (int): Return code from script execution
+            exit_code (int): Return code from script execution
         """
 
         self.exit_code = exit_code

@@ -25,8 +25,8 @@ class JsonFileHandler( Handler ):
 
         super().__init__( level = ERROR )
 
-        now = datetime.now()
-        log_dir = (
+        now: datetime = datetime.now()
+        log_dir: Path = (
             project_root
             / 'Log'
             / str( now.year )
@@ -37,7 +37,7 @@ class JsonFileHandler( Handler ):
         self.log_file = log_dir / 'AppErrorLog.json'
 
 
-    def emit(self, record: LogRecord ) -> None:
+    def emit( self, record: LogRecord ) -> None:
         """ Do the logging to file documentation
 
         Args:

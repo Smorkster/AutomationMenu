@@ -110,22 +110,21 @@ def _check_breakpoints( script_info: ScriptInfo ) -> ScriptInfo:
     """ Check for uncommented breakpoints
 
     Args:
-        lines (list[ str ]): All lines of the scriptfile
-        si (ScriptInfo): Script info gathered from the scripts info block
+        script_info (ScriptInfo): Script info gathered from the scripts info block
 
     Returns:
-        si (ScriptInfo): ScriptInfo with possible 'UsingBreakpoint'
+        script_info (ScriptInfo): ScriptInfo with possible 'UsingBreakpoint'
     """
 
     with open( script_info.get_attr( 'fullpath' ), 'r', encoding = 'utf-8' ) as f:
         lines: list[ str ] = f.readlines()
 
     for line in lines:
-        stripped: str = line.lstrip()
+        stripped_line: str = line.lstrip()
 
-        if stripped.startswith( 'breakpoint()' ) or ' breakpoint()' in stripped:
+        if stripped_line.startswith( 'breakpoint()' ) or ' breakpoint()' in stripped_line:
 
-            if not stripped.startswith( '#' ):
+            if not stripped_line.startswith( '#' ):
                 script_info.add_attr( 'using_breakpoint', True )
                 break
 
@@ -272,5 +271,4 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
                            'tag': OutputStyleTags.SYSWARNING
                            } )
 
-    #return sorted( indexed_files, key = lambda s: s.scriptmeta.synopsis )
     return sorted( application_test_files, key = attrgetter( 'scriptmeta.synopsis' ) ) + sorted( indexed_files, key = attrgetter( 'scriptmeta.synopsis' ) )

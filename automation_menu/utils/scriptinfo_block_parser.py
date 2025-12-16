@@ -12,7 +12,8 @@ Created: 2025-10-31
 """
 
 import re
-from typing import Dict
+
+from re import Match
 
 from automation_menu.models.enums import ScriptState, ValidScriptInfoFields
 from automation_menu.models.scriptinfo import ScriptInfo
@@ -22,8 +23,7 @@ def scriptinfo_block_parser( script_info: ScriptInfo ) -> tuple[ dict, dict ]:
     """ Parse the file content and extract script information
 
     Args:
-        lines (list[ str ]): All lines of the scriptfile
-        si (ScriptInfo): Script info gathered from the scripts info block
+        script_info (ScriptInfo): Script info gathered from the scripts info block
 
     Returns:
         (tuple[ scriptinfo_meta, warnings ]): Script information from the script info block and list of invalid keys and values
@@ -33,13 +33,14 @@ def scriptinfo_block_parser( script_info: ScriptInfo ) -> tuple[ dict, dict ]:
     with open( script_info.get_attr( 'fullpath' ), 'r', encoding = 'utf-8' ) as f:
         full_text: str = f.read()
 
-    match = re.search( r'ScriptInfo\s*(.*?)\s*ScriptInfoEnd', full_text, re.DOTALL )
+    match: Match = re.search( r'ScriptInfo\s*(.*?)\s*ScriptInfoEnd', full_text, re.DOTALL )
 
     if not match:
+
         return None, []
 
     scriptinfo_meta: dict = {}
-    warnings: Dict[ list[ str ], list[ str ], list[ str ]] = {
+    warnings: dict[ list[ str ], list[ str ], list[ str ]] = {
         'keys': [],
         'values': [],
         'other': []
