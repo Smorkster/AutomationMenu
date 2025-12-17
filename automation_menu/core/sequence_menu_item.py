@@ -58,7 +58,7 @@ class SequenceMenuItem:
         """
 
         self._hide_menu()
-        self._main_object.app_context.sequence_manager.run_sequence( id = self._sequence.id )
+        self._main_object.app_context.sequence_manager.run_sequence( id = self._sequence.id, on_finished = self._main_object.execution_post_work )
 
 
     def on_enter( self, event: Event ) -> None:

@@ -21,6 +21,7 @@ import sys
 import threading
 
 from queue import Queue
+from threading import Event
 from tkinter import Tk
 
 from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
@@ -48,10 +49,11 @@ class ScriptRunner:
         self.main_window = None
 
         self.current_process: subprocess.Popen | None = None
-        self._tasks = []
-        self._script_info = None
-        self._in_breakpoint = False
-        self._terminated = False
+        self._tasks: list[ asyncio.Task ] = []
+        self._script_info: ScriptInfo = None
+        self._in_breakpoint: bool = False
+        self._terminated: bool = False
+        self._process_started: Event = threading.Event()
 
 
     def _collect_error_info( self, error: str ) -> None:
@@ -67,7 +69,7 @@ class ScriptRunner:
             'finished': True,
             'exec_item': self._exec_item
         } )
-        ss_path = ''
+        ss_path: str = ''
 
         if self.app_state.settings.send_mail_on_error:
             if self.app_state.settings.include_ss_in_error_mail:
@@ -97,15 +99,7 @@ class ScriptRunner:
 
         from automation_menu.utils.localization import _
 
-        self._exec_item = ExecHistory( script_info = self._script_info )
-        line = _( 'Starting \'{file}\'' ).format( file = self._script_info.get_attr( 'synopsis' ) )
-        self._output_queue.put( {
-            'line': line,
-            'tag': OutputStyleTags.SYSINFO,
-            'exec_item': self._exec_item
-        } )
-
-        exec_string = ''
+        exec_string: str = ''
 
         if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
             exec_string = sys.executable
@@ -144,7 +138,13 @@ class ScriptRunner:
 
         from automation_menu.utils.localization import _
 
-        return_code = self.current_process.wait()
+        self._process_started.wait()
+        p: subprocess.Popen = self.current_process
+
+        if not p:
+            return
+
+        return_code: int = p.wait()
         self._exec_item.set_exit_code( exit_code = return_code )
 
         if self._terminated:
@@ -183,9 +183,17 @@ class ScriptRunner:
 
         from automation_menu.utils.localization import _
 
+        self._process_started.wait()
+
+        p: subprocess.Popen = self.current_process
+
+        if not p or not p.stderr:
+
+            return
+
         while True:
             try:
-                line = self.current_process.stderr.readline()
+                line: str = self.current_process.stderr.readline()
 
             except:
                 break
@@ -193,7 +201,8 @@ class ScriptRunner:
             if not line:
                 break
 
-            line_str = line.decode() if isinstance( line, bytes ) else line
+            line_str: str = line.decode() if isinstance( line, bytes ) else line
+
             self._output_queue.put( {
                 'line': line_str.rstrip(),
                 'tag': OutputStyleTags.ERROR,
@@ -206,9 +215,16 @@ class ScriptRunner:
 
         from automation_menu.utils.localization import _
 
+        self._process_started.wait()
+        p: subprocess.Popen = self.current_process
+
+        if not p or not p.stdout:
+
+            return
+
         while True:
             try:
-                line = self.current_process.stdout.readline()
+                line: str = self.current_process.stdout.readline()
 
             except:
                 break
@@ -216,8 +232,8 @@ class ScriptRunner:
             if not line:
                 break
 
-            line_str = line.decode() if isinstance( line, bytes ) else line
-            line_nr = self._is_breakpoint_line( line_str )
+            line_str: str = line.decode() if isinstance( line, bytes ) else line
+            line_nr: int = self._is_breakpoint_line( line_str )
 
             if line_nr:
                 self._in_breakpoint = True
@@ -262,29 +278,41 @@ class ScriptRunner:
         self.main_window = main_window
         self.api_callbacks = api_callbacks
         self.run_input = run_input
-        line: str = ''
+
+        error_line: str = ''
 
         try:
-            self.current_process = self._create_process()
+            self._exec_item = ExecHistory( script_info = self._script_info )
+            line: str = _( 'Starting \'{file}\'' ).format( file = self._script_info.get_attr( 'synopsis' ) )
+            self._output_queue.put( {
+                'line': line,
+                'tag': OutputStyleTags.SYSINFO,
+                'exec_item': self._exec_item
+            } )
 
             enable_stop_button_callback()
             enable_pause_button_callback()
 
-            self.stdout = threading.Thread( target = self._read_stdout(), daemon = True, name = f'{ self._script_info.filename }_stdout' ).start()
-            self.stderr = threading.Thread( target = self._read_stderr(), daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()
-            self.monitor = threading.Thread( target = self._read_monitor_completion(), daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
+            threading.Thread( target = self._read_stdout, daemon = True, name = f'{ self._script_info.filename }_stdout' ).start()
+            threading.Thread( target = self._read_stderr, daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()
+            threading.Thread( target = self._read_monitor_completion, daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
+
+            self.current_process: subprocess.Popen = self._create_process()
+            self._process_started.set()
+
+            self.current_process.wait()
 
         except subprocess.SubprocessError as e:
-            line: str = _( 'Subprocess error {error}' ).format( error = str( e ) )
+            error_line = _( 'Subprocess error {error}' ).format( error = e )
 
         except Exception as e:
-            line: str = _( 'Unexpected error {error}' ).format( error = str( e ) )
+            error_line = _( 'Unexpected error {error}' ).format( error = e )
 
         finally:
             stop_pause_button_blinking_callback()
 
-        if len( line ) > 0:
-            self._collect_error_info( error = line )
+        if len( error_line ) > 0:
+            self._collect_error_info( error = error_line )
 
 
     def send_api_response( self, response: str ) -> None:
@@ -294,7 +322,7 @@ class ScriptRunner:
             response (str): String formated response to send
         """
 
-        msg = f'{ MESSAGE_START }{ response }{ MESSAGE_END }\n'
+        msg: str = f'{ MESSAGE_START }{ response }{ MESSAGE_END }\n'
 
         try:
             self.current_process.stdin.write( msg )
@@ -314,7 +342,7 @@ class ScriptRunner:
                 p (subprocess.Popen): Process referense to kill
             """
 
-            children = psutil.Process( p.pid ).children( recursive = True )
+            children: list[ psutil.Process ] = psutil.Process( p.pid ).children( recursive = True )
 
             for child in children:
                 child.kill()
@@ -324,7 +352,7 @@ class ScriptRunner:
 
         if self.current_process:
             from automation_menu.utils.localization import _
-            line = ''
+            line: str = ''
 
             try:
                 self._terminated = True

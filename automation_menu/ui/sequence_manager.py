@@ -900,6 +900,7 @@ class SequenceManager:
 
         self._app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
 
+        self._app_context.main_window.execution_pre_work( is_sequence = True )
         self._app_context.output_queue.put( {
             'line': _( 'Starting sequence ''{name}'', with {step_count} steps' ).format( name = seq.name, step_count = len( seq.steps ) ),
             'tag': OutputStyleTags.SYSINFO,
