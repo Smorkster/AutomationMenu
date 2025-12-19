@@ -12,6 +12,8 @@ from tkinter import E, N, S, W, Text
 from tkinter.ttk import Entry, Frame, Notebook, Scrollbar
 from typing import Callable
 
+from automation_menu.models.widget_for_translation import WidgetForTranslation
+
 
 def get_output_tab( tabcontrol: Notebook, translate_callback: Callable ) -> tuple[ Frame, Entry ]:
     """ Create a frame used as tab to display output data from script execution
@@ -29,7 +31,9 @@ def get_output_tab( tabcontrol: Notebook, translate_callback: Callable ) -> tupl
     tabOutput.grid( sticky = ( N, S, E, W ) )
 
     tabcontrol.add( child = tabOutput, text = _( 'Script output' ) )
-    translate_callback( ( tabOutput, 'Script output' ) )
+
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tabOutput, default_text = 'Script output' )
+    translate_callback( wft )
 
     output: Text = Text( master = tabOutput, wrap = 'word', font = ( 'Calibri', 12 ) )
     output.config( state = 'disabled' )

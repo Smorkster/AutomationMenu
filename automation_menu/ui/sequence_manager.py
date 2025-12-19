@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Dict
 import uuid
 
 from automation_menu.models.scriptinfo import ScriptInfo
+from automation_menu.models.widget_for_translation import WidgetForTranslation
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
@@ -102,7 +103,9 @@ class SequenceManager:
         create_new_sequence: Button = Button( master = sequence_op_frame, text = _( 'Create new sequence' ), command = self._sequence_callbacks[ 'op_create_new_sequence' ] )
         create_new_sequence.grid( column = col, row = 0, sticky = ( N, W ) )
         self._sequence_widgets[ 'new_sequence_btn' ] = create_new_sequence
-        self._app_context.language_manager.add_translatable_widget( ( create_new_sequence, 'Create new sequence' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = create_new_sequence, default_text = 'Create new sequence' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         col += 1
 
@@ -110,7 +113,9 @@ class SequenceManager:
         edit_sequence: Button = Button( master = sequence_op_frame, text = _( 'Edit' ), command = self._sequence_callbacks[ 'op_edit_sequence' ], state = 'disable' )
         edit_sequence.grid( column = col, row = 0, sticky = ( N, W ) )
         self._sequence_widgets[ 'edit_sequence_btn' ] = edit_sequence
-        self._app_context.language_manager.add_translatable_widget( ( edit_sequence, 'Edit' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = edit_sequence, default_text = 'Edit' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         col += 1
 
@@ -122,7 +127,9 @@ class SequenceManager:
         run_sequence: Button = Button( master = sequence_op_frame, text = _( 'Run selected' ), command = self._sequence_callbacks[ 'op_run_sequence' ], state = 'disable' )
         run_sequence.grid( column = col, row = 0, sticky = ( N, W ) )
         self._sequence_widgets[ 'run_sequence_btn' ] = run_sequence
-        self._app_context.language_manager.add_translatable_widget( ( run_sequence, 'Run selected' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = run_sequence, default_text = 'Run selected' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
 
     def _create_sequence_editing_op_buttons( self ) -> None:
@@ -140,7 +147,9 @@ class SequenceManager:
         add_step_button: Button = Button( master = sequence_ops, text = _( 'Add step' ) , command = self._sequence_callbacks[ 'op_add_sequence_step' ] )
         add_step_button.grid( column = col, row = 0 )
         self._sequence_widgets[ 'add_step_btn' ] = add_step_button
-        self._app_context.language_manager.add_translatable_widget( ( add_step_button, 'Add step' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = add_step_button, default_text = 'Add step' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         col += 1
 
@@ -148,7 +157,9 @@ class SequenceManager:
         save_sequence: Button = Button( master = sequence_ops, text = _( 'Save sequence' ), command = self._sequence_callbacks[ 'op_save_sequence' ] )
         save_sequence.grid( column = col, row = 0 )
         self._sequence_widgets[ 'save_sequence_btn' ] = save_sequence
-        self._app_context.language_manager.add_translatable_widget( ( save_sequence, 'Save sequence' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = save_sequence, default_text = 'Save sequence' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         col += 1
 
@@ -156,7 +167,9 @@ class SequenceManager:
         delete_sequence: Button = Button( master = sequence_ops, text = _( 'Delete sequence' ), command = self._sequence_callbacks[ 'op_delete_sequence' ] )
         delete_sequence.grid( column = col, row = 0, sticky = ( N, W ) )
         self._sequence_widgets[ 'delete_sequence_btn' ] = delete_sequence
-        self._app_context.language_manager.add_translatable_widget( ( delete_sequence, 'Delete' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = delete_sequence, default_text = 'Delete' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         col += 1
 
@@ -164,7 +177,9 @@ class SequenceManager:
         abort_sequence_edit: Button = Button( master = sequence_ops, text = _( 'Abort edit' ), command = self._sequence_callbacks[ 'op_abort_sequence_edit' ] )
         abort_sequence_edit.grid( column = col, row = 0, sticky = ( N, W ) )
         self._sequence_widgets[ 'abort_sequence_edit_btn' ] = abort_sequence_edit
-        self._app_context.language_manager.add_translatable_widget( ( abort_sequence_edit, 'Abort edit' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = abort_sequence_edit, default_text = 'Abort edit' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         sequence_ops.grid_remove()
 
@@ -789,7 +804,9 @@ class SequenceManager:
         main_frame.grid_rowconfigure( index = 3, weight = 0 ) # Sequence editing / Steps op buttons
 
         tabcontrol.add( child =  main_frame, text = _( 'Automation sequence' ) )
-        translate_callback( ( main_frame, 'Automation sequence' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = main_frame, default_text = 'Automation sequence' )
+        translate_callback( wft )
 
         self._sequence_widgets[ 'main_frame' ] = main_frame
 

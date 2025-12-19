@@ -16,6 +16,8 @@ from tkinter.ttk import Button, Checkbutton, Combobox, Frame, Label, Notebook
 
 from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 
+from automation_menu.models.enums import ScriptState
+from automation_menu.models.widget_for_translation import WidgetForTranslation
 from automation_menu.utils.localization import change_language
 
 class LanguageManager:
@@ -28,7 +30,7 @@ class LanguageManager:
 
         from automation_menu.utils.localization import _
 
-        self._widgets_to_update: list[ tuple[ str, Widget, bool, bool ] ] = []
+        self._widgets_to_update: list[ WidgetForTranslation ] = []
         self._current_language: str = current_language
         self._: GNUTranslations = _
         self._current_language: str = current_language
@@ -50,122 +52,96 @@ class LanguageManager:
         return tt
 
 
-    def _update_button( self, widget: tuple[ Button, str ] ) -> None:
+    def _update_button( self, widget: WidgetForTranslation ) -> None:
         """ Update text for ttk.Button
 
         Args:
-            widget (tuple[ Button, str ]): Tuple of button to update and string, as translation key
+            widget (WidgetForTranslation): Tuple of button to update and string, as translation key
         """
 
-        widget[ 0 ].config( text = self._translate( text = widget[ 1 ] ) )
+        widget.widget.config( text = self._translate( text = widget.default_text ) )
 
 
-    def _update_checkbutton( self, widget: tuple[ Checkbutton, str ] ) -> None:
+    def _update_checkbutton( self, widget: WidgetForTranslation ) -> None:
         """ Update text for ttk.Checkbutton
 
         Args:
-            widget (tuple[ Checkbutton, str ]): Tuple of checkbutton to update and string, as translation key
+            widget (WidgetForTranslation): Tuple of checkbutton to update and string, as translation key
         """
 
-        widget[ 0 ].config( text = self._translate( text = widget[ 1 ] ) )
+        widget.widget.config( text = self._translate( text = widget.default_text ) )
 
 
-    def _update_combobox( self, widget: tuple[ Combobox, str ] ) -> None:
+    def _update_combobox( self, widget: WidgetForTranslation ) -> None:
         """ Update combobox items
 
         Args:
-            widget (tuple[ Combobox, str ]): Tuple of combobox to update and tuple of strings corresponding to topmenus, as translation key
+            widget (WidgetForTranslation): Tuple of combobox to update and tuple of strings corresponding to items, as translation key
         """
 
         pass
 
 
-    def _update_frame( self, widget: tuple[ Frame, str ] ) -> None:
+    def _update_frame( self, widget: WidgetForTranslation ) -> None:
         """ Update text for Frame
 
         Args:
-            widget (tuple[ Frame, str ]): Tuple of frame to update and string, as translation key
+            widget (WidgetForTranslation): Tuple of frame to update and string, as translation key
         """
 
-        idx: int = widget[ 0 ].master.winfo_children().index( widget[ 0 ] )
-        widget[ 0 ].master.tab( idx, text = self._translate( text = widget[ 1 ] ) )
-        widget[ 0 ].update_idletasks()
+        idx: int = widget.widget.master.winfo_children().index( widget.default_text )
+        widget.widget.master.tab( idx, text = self._translate( text = widget.default_text ) )
+        widget.widget.update_idletasks()
 
 
-    def _update_label( self, widget: tuple[ Label, str ] ) -> None:
+    def _update_label( self, widget: WidgetForTranslation ) -> None:
         """ Update label text
 
         Args:
-            widget (tuple[ Label, str ]): Tuple of label to update and string, as translation key
+            widget (WidgetForTranslation): Tuple of label to update and string, as translation key
         """
 
-        widget[ 0 ].config( text = self._translate( widget[ 1 ] ) )
+        widget.widget.config( text = self._translate( widget.default_text ) )
 
 
-    def _update_menu( self, widget: tuple[ Menu, tuple[ str, ... ] ] ) -> None:
-        """ Update text for Menu
-        Enumerate the strings and translate each topmenu (cascade) with the corresponding enum index
-
-        Args:
-            widget (tuple[ Menu, tuple[ str, Ellipsis ] ]): Tuple of menu to update and tuple of strings corresponding to topmenus, as translation key
-        """
-
-        for i, translation_key in enumerate( widget[ 1 ] ):
-            t: str = self._translate( text = translation_key )
-            a: Menu = widget[ 0 ]
-            a.entryconfigure( i+1, label = t )
-            a.update_idletasks()
-
-
-    def _update_notebook( self, widget: tuple[ Notebook, tuple[ str, ... ] ] ) -> None:
-        """ Update text for ttk.Notebook
-
-        Args:
-            widget (tuple[ Notebook, tuple[ str, Ellipsis ] ]): Tuple of Notebook to update and a tuple of strings, as translation keys
-        """
-
-        for i, t in enumerate( widget[ 1 ] ):
-            widget[ 0 ].tab( i, text = self._translate( text = t ) )
-
-
-    def _update_toplevel( self, widget: tuple[ Toplevel, str ] ) -> None:
+    def _update_toplevel( self, widget: WidgetForTranslation ) -> None:
         """ Update text for Toplevel
 
         Args:
-            widget (tuple[ Toplevel, str ]): Tuple of Toplevel to update and string, as translation key
+            widget (WidgetForTranslation): Tuple of Toplevel to update and string, as translation key
         """
 
-        widget[ 0 ].title(self._translate( widget[ 1 ] ) )
-        widget[ 0 ].update_idletasks()
+        widget.widget.title( self._translate( widget.default_text ) )
+        widget.widget.update_idletasks()
         pass
 
 
-    def _update_tt( self, widget: tuple[ AlwaysOnTopToolTip, str, bool, bool ] ) -> None:
+    def _update_tt( self, widget: WidgetForTranslation ) -> None:
         """ Update text for AlwaysOnTopTooltip
 
         Args:
-            widget (tuple[ AlwaysOnTopToolTip, str, bool, bool ]): Tuple of tooltip to update, a string, as translation key and two booleans:
+            widget (WidgetForTranslation): Tuple of tooltip to update, a string, as translation key and two booleans:
                 if development information should be added
                 if application test information should be aded
         """
 
-        new_text: str = self._translate( widget[ 1 ] )
-        if widget[ 2 ]:
+        new_text: str = self._translate( widget.default_text )
+        if widget.script_state == ScriptState.DEV:
             dev_text: str = self._translate( 'In development, and should only be run by its developer.' )
             new_text += f'\n\n{ dev_text }'
 
-        elif widget[ 3 ]:
+        elif widget.include_application_test_info:
             test_text: str = self._translate( 'Application test script, only used to test application functionality' )
             new_text += f'\n\n{ test_text }'
 
-        widget[ 0 ].config( new_text = new_text )
+        widget.widget.config( new_text = new_text )
 
 
-    def add_translatable_widget( self, widget: any ) -> None:
+    def add_translatable_widget( self, widget: WidgetForTranslation ) -> None:
         """ Add a widget to list for later translation
 
         Args:
-            widget (any): Tuple of widget to translate and one or more strings, as translation keys, depending och widget type
+            widget (WidgetForTranslation): Widget holder to be translatable
         """
 
         self._widgets_to_update.append( widget )
@@ -186,34 +162,34 @@ class LanguageManager:
 
         self._ = _
 
-        for widget in self._widgets_to_update:
+        for widget_holder in self._widgets_to_update:
             try:
-                if isinstance( widget[ 0 ], AlwaysOnTopToolTip ):
-                    self._update_tt( widget )
+                if isinstance( widget_holder.widget, AlwaysOnTopToolTip ):
+                    self._update_tt( widget_holder )
 
-                elif isinstance( widget[ 0 ], Button ):
-                    self._update_button( widget )
+                elif isinstance( widget_holder.widget, Button ):
+                    self._update_button( widget_holder )
 
-                elif isinstance( widget[ 0 ], Checkbutton ):
-                    self._update_checkbutton( widget )
+                elif isinstance( widget_holder.widget, Checkbutton ):
+                    self._update_checkbutton( widget_holder )
 
-                elif isinstance( widget[ 0 ], Combobox ):
-                    self._update_combobox( widget )
+                elif isinstance( widget_holder.widget, Combobox ):
+                    self._update_combobox( widget_holder )
 
-                elif isinstance( widget[ 0 ], Frame ):
-                    self._update_frame( widget )
+                elif isinstance( widget_holder.widget, Frame ):
+                    self._update_frame( widget_holder )
 
-                elif isinstance( widget[ 0 ], Label ):
-                    self._update_label( widget )
+                elif isinstance( widget_holder.widget, Label ):
+                    self._update_label( widget_holder )
 
-                elif isinstance( widget[ 0 ], Menu ):
-                    self._update_menu( widget )
+                elif isinstance( widget_holder.widget, Menu ):
+                    self._update_menu( widget_holder )
 
-                elif isinstance( widget[ 0 ], Notebook ):
-                    self._update_notebook( widget )
+                elif isinstance( widget_holder.widget, Notebook ):
+                    self._update_notebook( widget_holder )
 
-                elif isinstance( widget[ 0 ], Toplevel ):
-                    self._update_toplevel( widget )
+                elif isinstance( widget_holder.widget, Toplevel ):
+                    self._update_toplevel( widget_holder )
 
             except Exception as e:
                 raise e

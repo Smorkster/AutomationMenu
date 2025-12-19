@@ -16,6 +16,7 @@ from typing import Callable
 
 from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
+from automation_menu.models.widget_for_translation import WidgetForTranslation
 from automation_menu.utils.language_manager import LanguageManager
 
 
@@ -67,7 +68,9 @@ class InputManager:
         frame_scriptname.grid( column = 1, row = 0, sticky = ( N, W ) )
         self._current_script_name: StringVar = StringVar( master = frame_scriptname )
         frame_scriptname.config( textvariable = self._current_script_name )
-        self._language_manager.add_translatable_widget( ( frame_title, 'Input parameters for ' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = frame_title, default_text = 'Input parameters for ' )
+        self._language_manager.add_translatable_widget( wft )
 
         root_input_frame: Labelframe = Labelframe( master = self._master_root, labelwidget = title_frame )
         root_input_frame.grid( column = 0, columnspan = 2, row = 1, sticky = ( N, S, W, E ) )

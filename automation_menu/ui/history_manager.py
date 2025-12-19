@@ -17,6 +17,7 @@ from tkinter.ttk import Frame, Label, Notebook, Treeview
 from typing import Any, Callable
 
 from automation_menu.models import ExecHistory
+from automation_menu.models.widget_for_translation import WidgetForTranslation
 
 
 class HistoryManager:
@@ -164,7 +165,9 @@ class HistoryManager:
         self.tabHistory.rowconfigure( index = 0, weight = 1 )
 
         tabcontrol.add( child = self.tabHistory, text = _( 'Execution history' ) )
-        translate_callback( ( self.tabHistory, 'Execution history' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = self.tabHistory, default_text = 'Execution history' )
+        translate_callback( wft )
 
         self.history_tree: Treeview = Treeview( self.tabHistory, columns = ( 'name' ) )
         self.history_tree.heading( '#0', text = _( 'Started' ) )
@@ -185,28 +188,36 @@ class HistoryManager:
 
         item_start_title: Label = Label( master = self.history_item_display, text = _( 'Started' ), style = 'History.TLabel' )
         item_start_title.grid( column = 0, row = 0, padx = 5, pady = 5, sticky = ( N, W ) )
-        translate_callback( ( item_start_title, 'Started' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = item_start_title, default_text = 'Started' )
+        translate_callback( wft )
 
         self.item_start: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_start.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = ( W, E ) )
 
         item_end_title: Label = Label( master = self.history_item_display, text = _( 'Ended' ), style = 'History.TLabel' )
         item_end_title.grid( column = 0, row = 1, padx = 5, pady = 5, sticky = ( N, W ) )
-        translate_callback( ( item_end_title, 'Ended' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = item_end_title, default_text = 'Ended' )
+        translate_callback( wft )
 
         self.item_end: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_end.grid( column = 1, row = 1, padx = 5, pady = 5, sticky = ( W, E ) )
 
         duration_title: Label = Label( master = self.history_item_display, text = _( 'Duration' ), style = 'History.TLabel' )
         duration_title.grid( column = 0, row = 2, padx = 5, pady = 5, sticky = ( N, W ) )
-        translate_callback( ( duration_title, 'Duration' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = duration_title, default_text = 'Duration' )
+        translate_callback( wft )
 
         self.duration: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.duration.grid( column = 1, row = 2, padx = 5, pady = 5, sticky = ( W, E ) )
 
         item_output_title: Label = Label( master = self.history_item_display, text = _( 'Generated output' ), style = 'History.TLabel' )
         item_output_title.grid( column = 0, columnspan = 2, row = 3, padx = 5, pady = 5, sticky = ( N, W ) )
-        translate_callback( ( item_output_title, 'Generated output' ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = item_output_title, default_text= 'Generated output' )
+        translate_callback( wft )
 
         self.item_output: Text = Text( master = self.history_item_display, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_output.grid( column = 0, columnspan = 2, row = 4, padx = 5, pady = 5, sticky = ( N, S, W, E ) )

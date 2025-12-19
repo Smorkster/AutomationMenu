@@ -14,6 +14,8 @@ from typing import TYPE_CHECKING, Callable
 
 from psutil import Process
 
+from automation_menu.models.widget_for_translation import WidgetForTranslation
+
 if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
 
@@ -91,7 +93,8 @@ class ScriptMenuItem:
                 app_test = True
 
             tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc, delay = 0 )
-            self.master_self.app_context.language_manager.add_translatable_widget( ( tt, self.script_info.get_attr( 'description' ), dev, app_test ) )
+            wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = self.script_info.get_attr( 'description' ), script_state = self.script_info.get_attr( 'state' ), include_application_test_info = app_test )
+            self.master_self.app_context.language_manager.add_translatable_widget( wft )
 
 
     def _check_input_params( self ) -> None:
