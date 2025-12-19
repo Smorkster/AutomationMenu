@@ -126,8 +126,8 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
 
     val_cmb_current_language: StringVar = StringVar( value = settings.get( 'current_language' ) )
     cmb_current_language: Combobox = Combobox( master = app_settings_group,
-                                       values = get_available_languages(),
-                                       textvariable = val_cmb_current_language.get )
+                                              values = get_available_languages(),
+                                              textvariable = val_cmb_current_language.get )
     cmb_current_language.bind( '<<ComboboxSelected>>', main_self.set_current_language )
     cmb_current_language.grid( column = 1, row = row, padx = 5, pady = 5, sticky = ( W, E ) )
 

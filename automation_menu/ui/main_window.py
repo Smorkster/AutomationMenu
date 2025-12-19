@@ -412,7 +412,7 @@ class AutomationMenuWindow:
             event (Event): Event actualizing the function
         """
 
-        if not event or not ( event.widget is Combobox):
+        if not event or not isinstance( event.widget, Combobox ):
 
             return
 

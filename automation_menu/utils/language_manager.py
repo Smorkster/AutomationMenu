@@ -89,7 +89,7 @@ class LanguageManager:
             widget (WidgetForTranslation): Tuple of frame to update and string, as translation key
         """
 
-        idx: int = widget.widget.master.winfo_children().index( widget.default_text )
+        idx: int = widget.widget.master.winfo_children().index( widget.widget )
         widget.widget.master.tab( idx, text = self._translate( text = widget.default_text ) )
         widget.widget.update_idletasks()
 
