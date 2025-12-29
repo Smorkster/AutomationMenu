@@ -145,12 +145,13 @@ class HistoryManager:
         return [ item[ 'item' ].to_dict() for item in self._historylist ]
 
 
-    def get_history_tab( self, tabcontrol: Notebook, translate_callback: Callable ) ->  Frame:
+    def get_history_tab( self, tabcontrol: Notebook, translate_store_callback: Callable, translate_callback: Callable ) ->  Frame:
         """ Creates the widgets to display execution history
 
         Args:
             tabcontrol (Notebook): A notebook widget to attach the widgets to
-            translate_callback (Callable): Function callback to add widget for translation
+            translate_store_callback (Callable): Function callback to add widget for translation
+            translate_callback (Callable): Function callback to translate string
 
         Returns:
             tabHistory (Frame): Frame containing history UI
@@ -167,14 +168,21 @@ class HistoryManager:
         tabcontrol.add( child = self.tabHistory, text = _( 'Execution history' ) )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = self.tabHistory, default_text = 'Execution history' )
-        translate_callback( wft )
+        translate_store_callback( wft )
 
-        self.history_tree: Treeview = Treeview( self.tabHistory, columns = ( 'name' ) )
-        self.history_tree.heading( '#0', text = _( 'Started' ) )
-        self.history_tree.column( '#0', minwidth = 130, width = 130 )
-        self.history_tree.heading( 'name', text = _( 'Name' ) )
+        columns = { '#0': [ 'Started', 105 ], 'name': [ 'Name', 160 ] }
+        self.history_tree: Treeview = Treeview( self.tabHistory, columns = [ *columns.keys() ][ 1: ] )
+
+        for i, s in columns.items():
+            self.history_tree.column( i, minwidth = s[ 1 ], width = s[ 1 ] )
+            self.history_tree.heading( i, text = translate_callback( text = s[ 0 ] ) )
+
+
         self.history_tree.grid( column = 0, rowspan = 3, sticky = ( N, S, W ) )
         self.history_tree.bind( '<<TreeviewSelect>>', self._history_item_selected )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = self.history_tree, default_text = columns )
+        translate_store_callback( wft )
 
         self.history_item_display: Frame = Frame( self.tabHistory )
         self.history_item_display.grid( column = 1, row = 0, sticky = ( N, S, W, E ) )
@@ -190,7 +198,7 @@ class HistoryManager:
         item_start_title.grid( column = 0, row = 0, padx = 5, pady = 5, sticky = ( N, W ) )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = item_start_title, default_text = 'Started' )
-        translate_callback( wft )
+        translate_store_callback( wft )
 
         self.item_start: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_start.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = ( W, E ) )
@@ -199,7 +207,7 @@ class HistoryManager:
         item_end_title.grid( column = 0, row = 1, padx = 5, pady = 5, sticky = ( N, W ) )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = item_end_title, default_text = 'Ended' )
-        translate_callback( wft )
+        translate_store_callback( wft )
 
         self.item_end: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_end.grid( column = 1, row = 1, padx = 5, pady = 5, sticky = ( W, E ) )
@@ -208,7 +216,7 @@ class HistoryManager:
         duration_title.grid( column = 0, row = 2, padx = 5, pady = 5, sticky = ( N, W ) )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = duration_title, default_text = 'Duration' )
-        translate_callback( wft )
+        translate_store_callback( wft )
 
         self.duration: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.duration.grid( column = 1, row = 2, padx = 5, pady = 5, sticky = ( W, E ) )
@@ -217,7 +225,7 @@ class HistoryManager:
         item_output_title.grid( column = 0, columnspan = 2, row = 3, padx = 5, pady = 5, sticky = ( N, W ) )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = item_output_title, default_text= 'Generated output' )
-        translate_callback( wft )
+        translate_store_callback( wft )
 
         self.item_output: Text = Text( master = self.history_item_display, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_output.grid( column = 0, columnspan = 2, row = 4, padx = 5, pady = 5, sticky = ( N, S, W, E ) )

@@ -11,8 +11,8 @@ Created: 2025-09-25
 from __future__ import annotations
 
 from gettext import GNUTranslations
-from tkinter import Menu, Toplevel, Widget
-from tkinter.ttk import Button, Checkbutton, Combobox, Frame, Label, Notebook
+from tkinter import Toplevel
+from tkinter.ttk import Button, Checkbutton, Combobox, Frame, Label, Treeview
 
 from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 
@@ -36,7 +36,7 @@ class LanguageManager:
         self._current_language: str = current_language
 
 
-    def _translate( self, text: str ) -> str:
+    def translate( self, text: str ) -> str:
         """ Translate string
 
         Args:
@@ -59,7 +59,7 @@ class LanguageManager:
             widget (WidgetForTranslation): Tuple of button to update and string, as translation key
         """
 
-        widget.widget.config( text = self._translate( text = widget.default_text ) )
+        widget.widget.config( text = self.translate( text = widget.default_text ) )
 
 
     def _update_checkbutton( self, widget: WidgetForTranslation ) -> None:
@@ -69,7 +69,7 @@ class LanguageManager:
             widget (WidgetForTranslation): Tuple of checkbutton to update and string, as translation key
         """
 
-        widget.widget.config( text = self._translate( text = widget.default_text ) )
+        widget.widget.config( text = self.translate( text = widget.default_text ) )
 
 
     def _update_combobox( self, widget: WidgetForTranslation ) -> None:
@@ -90,7 +90,7 @@ class LanguageManager:
         """
 
         idx: int = widget.widget.master.winfo_children().index( widget.widget )
-        widget.widget.master.tab( idx, text = self._translate( text = widget.default_text ) )
+        widget.widget.master.tab( idx, text = self.translate( text = widget.default_text ) )
         widget.widget.update_idletasks()
 
 
@@ -101,7 +101,18 @@ class LanguageManager:
             widget (WidgetForTranslation): Tuple of label to update and string, as translation key
         """
 
-        widget.widget.config( text = self._translate( widget.default_text ) )
+        widget.widget.config( text = self.translate( widget.default_text ) )
+
+
+    def _update_treeview( self, widget: WidgetForTranslation ) -> None:
+        """ Update column headers for Treeview
+
+        Args:
+            widget (WidgetForTranslation): Holder for translation
+        """
+
+        for i, s in widget.default_text.items():
+            widget.widget.heading( i, text = self.translate( text = s[ 0 ] ) )
 
 
     def _update_toplevel( self, widget: WidgetForTranslation ) -> None:
@@ -111,7 +122,7 @@ class LanguageManager:
             widget (WidgetForTranslation): Tuple of Toplevel to update and string, as translation key
         """
 
-        widget.widget.title( self._translate( widget.default_text ) )
+        widget.widget.title( self.translate( widget.default_text ) )
         widget.widget.update_idletasks()
         pass
 
@@ -125,13 +136,13 @@ class LanguageManager:
                 if application test information should be aded
         """
 
-        new_text: str = self._translate( widget.default_text )
+        new_text: str = self.translate( widget.default_text )
         if widget.script_state == ScriptState.DEV:
-            dev_text: str = self._translate( 'In development, and should only be run by its developer.' )
+            dev_text: str = self.translate( 'In development, and should only be run by its developer.' )
             new_text += f'\n\n{ dev_text }'
 
         elif widget.include_application_test_info:
-            test_text: str = self._translate( 'Application test script, only used to test application functionality' )
+            test_text: str = self.translate( 'Application test script, only used to test application functionality' )
             new_text += f'\n\n{ test_text }'
 
         widget.widget.config( new_text = new_text )
@@ -182,11 +193,8 @@ class LanguageManager:
                 elif isinstance( widget_holder.widget, Label ):
                     self._update_label( widget_holder )
 
-                elif isinstance( widget_holder.widget, Menu ):
-                    self._update_menu( widget_holder )
-
-                elif isinstance( widget_holder.widget, Notebook ):
-                    self._update_notebook( widget_holder )
+                elif isinstance( widget_holder.widget, Treeview ):
+                    self._update_treeview( widget_holder )
 
                 elif isinstance( widget_holder.widget, Toplevel ):
                     self._update_toplevel( widget_holder )

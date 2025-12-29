@@ -144,7 +144,7 @@ class AutomationMenuWindow:
         self.tabSettings: Frame = get_settings_tab( tabcontrol = self.tab_control, settings = self.app_state.settings, main_self = self )
 
         # Create history tab
-        self.tabHistory: Frame = self.app_context.history_manager.get_history_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.language_manager.add_translatable_widget )
+        self.tabHistory: Frame = self.app_context.history_manager.get_history_tab( tabcontrol = self.tab_control, translate_store_callback = self.app_context.language_manager.add_translatable_widget, translate_callback = self.app_context.language_manager.translate )
 
         # Create statusbar
         self.status_widgets: dict[ str, Widget ] = get_statusbar( master_root = self.root )

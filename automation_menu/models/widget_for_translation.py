@@ -19,6 +19,6 @@ class WidgetForTranslation:
     """ Holder for a widget that can have it text translated """
 
     widget: Widget | None = None
-    default_text: str | None = None
+    default_text: str | list[ str ] | None = None
     script_state: ScriptState = ScriptState.PROD
     include_application_test_info: bool = False

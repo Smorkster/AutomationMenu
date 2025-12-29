@@ -45,6 +45,9 @@ def setup_logger( level: str = 'DEBUG' ) -> Logger:
     """ Create a logger with set logging level
     Defaults to DEBUG
 
+    Args:
+        level (str): Logging level to use for the setup
+
     Returns:
         logger (logging.Logger): General purpose logging object
     """
@@ -77,7 +80,11 @@ def main() -> None:
     """ Main entry point """
 
     def save_settings( obj: Settings ) -> None:
-        """ Callback function to save settings to file """
+        """ Callback function to save settings to file
+
+        Args:
+            obj (Settings): Settings object to save
+        """
 
         write_settingsfile( settings = obj, settings_file_path = app_state.secrets.get( 'settings_file_path' ) )
 
@@ -120,7 +127,8 @@ def main() -> None:
 
         write_exec_history(
             exec_items = app_context.history_manager.get_history_list(),
-            root_dir = Path( __file__ ).resolve().parent
+            root_dir = Path( __file__ ).resolve().parent,
+            logger = app_context.debug_logger
         )
 
     except KeyboardInterrupt:
