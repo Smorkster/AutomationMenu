@@ -770,6 +770,17 @@ class SequenceManager:
         self._sequence_widgets[ 'stop_sequence_on_error_field' ].config( state = 'disable' )
 
 
+    def build_tab_content( self ) -> None:
+        """ Call for creation of widgets to display sequence data """
+
+        self._create_sequence_list()
+        self._create_sequence_list_op_buttons()
+        self._create_sequence_form()
+        self._create_steps_display()
+        self._create_sequence_editing_op_buttons()
+        self._create_step_form()
+
+
     def create_new_sequence( self ) -> None:
         """ Display empty sequence form """
 
@@ -794,7 +805,7 @@ class SequenceManager:
         self._sequence_callbacks = sequence_callbacks
         self._parent = tabcontrol
 
-        main_frame: Frame = Frame( master = self._parent )
+        main_frame: Frame = Frame( master = self._parent, name = 'sequence' )
         main_frame.grid( sticky = ( N, S, W, E ) )
         main_frame.grid_columnconfigure( index = 0, weight = 0 ) # Sequence list/op buttons/editing
         main_frame.grid_columnconfigure( index = 1, weight = 1 ) # Sequence steps
@@ -809,13 +820,6 @@ class SequenceManager:
         translate_callback( wft )
 
         self._sequence_widgets[ 'main_frame' ] = main_frame
-
-        self._create_sequence_list()
-        self._create_sequence_list_op_buttons()
-        self._create_sequence_form()
-        self._create_steps_display()
-        self._create_sequence_editing_op_buttons()
-        self._create_step_form()
 
         return main_frame
 
@@ -872,7 +876,7 @@ class SequenceManager:
         self._sequence_widgets[ 'step_script_field' ].set( '' )
         self._sequence_widgets[ 'stop_step_on_error_var' ].set( False )
 
-        step_form: Frame = self._sequence_widgets.get('step_form')
+        step_form: Frame = self._sequence_widgets.get( 'step_form' )
 
         if step_form is not None and step_form.winfo_exists():
             step_form.grid_remove()

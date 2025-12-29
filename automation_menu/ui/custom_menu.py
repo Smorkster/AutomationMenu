@@ -77,8 +77,6 @@ class CustomMenu:
         self._menu_container.bind( '<Configure>', self._on_container_config )
         self._canvas.bind( '<Configure>', self._on_canvas_config )
 
-        self._create_popup_content()
-
 
     def _check_click_outside( self, event: Event ) -> None:
         """ Check if click was outside popup bounds
@@ -108,8 +106,6 @@ class CustomMenu:
 
             menu_item.menu_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
 
-        self._menu_container.update_idletasks()
-        self._canvas.update_idletasks()
         self.popup.update_idletasks()
 
 
@@ -173,14 +169,12 @@ class CustomMenu:
             exec_list (dict[ str, Sequence ] | list[ ScriptInfo ]): Content to display in menu
         """
 
-        self.exec_list: dict[ str, Sequence] | list[ ScriptInfo ] = exec_list
+        self.exec_list: dict[ str, Sequence ] | list[ ScriptInfo ] = exec_list
 
         for c in self._menu_container.winfo_children():
             c.destroy()
 
         self._create_popup_content()
-
-        self._menu_container.update_idletasks()
 
         content_width: int = self._menu_container.winfo_reqwidth()
         content_height: int = self._menu_container.winfo_reqheight()
@@ -209,8 +203,8 @@ class CustomMenu:
 
             return
 
-        self._menu_container.update_idletasks()
-        self.popup.update_idletasks()
+        if len( self._menu_container.winfo_children() ) == 0:
+            self._create_popup_content()
 
         content_width: int = self._menu_container.winfo_reqwidth()
         content_height: int = self._menu_container.winfo_reqheight()

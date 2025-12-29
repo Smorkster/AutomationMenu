@@ -10,10 +10,8 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
-from ssl import AlertDescription
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
-from automation_menu.models.widget_for_translation import WidgetForTranslation
 
 if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
@@ -23,9 +21,10 @@ from tkinter import E, N, S, W, BooleanVar, StringVar
 from tkinter.ttk import Checkbutton, Combobox, Entry, Frame, Label, LabelFrame, Notebook
 
 from automation_menu.models import Settings
+from automation_menu.models.widget_for_translation import WidgetForTranslation
 
 
-def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWindow ) -> None:
+def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWindow ) -> None:
     """ Create widgets for application settings
 
     Args:
@@ -170,7 +169,6 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_ctrl, default_text = 'CTRL' )
     main_self.app_context.language_manager.add_translatable_widget( wft )
-    keepass_shortcut_ctrl.update_idletasks()
 
     val_keepass_shortcut_alt: BooleanVar = BooleanVar( value = main_self.app_state.settings.get( 'keepass_shortcut' ).get( 'alt' ) )
     keepass_shortcut_alt: Checkbutton = Checkbutton( master = keepass_shortcut_value_frame,
@@ -183,7 +181,6 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_alt, default_text = 'ALT' )
     main_self.app_context.language_manager.add_translatable_widget( wft )
-    keepass_shortcut_alt.update_idletasks()
 
     val_keepass_shortcut_shift: BooleanVar = BooleanVar( value = main_self.app_state.settings.get( 'keepass_shortcut' ).get( 'shift' ) )
     keepass_shortcut_shift: Checkbutton = Checkbutton( master = keepass_shortcut_value_frame,
@@ -196,7 +193,6 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_shift, default_text = 'Shift' )
     main_self.app_context.language_manager.add_translatable_widget( wft )
-    keepass_shortcut_shift.update_idletasks()
 
     val_keepass_shortcut_key: StringVar = StringVar( value = main_self.app_state.settings.get( 'keepass_shortcut' ).get( 'key' ) )
     keepass_shortcut_key: Entry = Entry( master = keepass_shortcut_value_frame,
@@ -205,14 +201,12 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     keepass_shortcut_key.grid( column = 3, row = 0, padx = 5, pady = 5, sticky = ( W ) )
     main_self.settings_ui[ 'keepass_shortcut_key' ] = keepass_shortcut_key
     main_self.settings_ui[ 'keepass_shortcut_key_val' ] = val_keepass_shortcut_key
-    keepass_shortcut_key.update_idletasks()
 
     tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = keepass_shortcut_key, msg = _( 'Shortcut used to activate KeePass for auto typing' ) )
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Shortcut used to activate KeePass for auto typing' )
     main_self.app_context.language_manager.add_translatable_widget( wft )
 
-    keepass_shortcut_value_frame.update_idletasks()
 
     ###############
     # Errorhandling
@@ -273,25 +267,22 @@ def _list_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
         chb_include_screenshot_in_errormail.config( state = 'disabled' )
 
 
-def get_settings_tab( tabcontrol: Notebook, settings: Settings, main_self: AutomationMenuWindow ) -> Frame:
+def get_settings_tab( tabcontrol: Notebook, translate_store_callback: Callable ) -> Frame:
     """ Create a frame used as a tab to collect settings
 
     Args:
         tabcontrol (Notebook): Tabcontrol (Notebook) to place the frame in
-        settings (Settings): Collection of settings data
-        main_self (AutomationMenuWindow): Main object
+        translate_store_callback (Callable): Function callback to store widget for translation
     """
 
     from automation_menu.utils.localization import _
 
-    tabSettings: Frame = Frame( tabcontrol , padding = ( 5, 5, 5, 5 ) )
+    tabSettings: Frame = Frame( tabcontrol , padding = ( 5, 5, 5, 5 ), name = 'settings' )
     tabSettings.grid( sticky = ( N, S, E, W ) )
 
     tabcontrol.add( child = tabSettings, text = _( 'Settings' ) )
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = tabSettings, default_text = 'Settings' )
-    main_self.app_context.language_manager.add_translatable_widget( wft )
-
-    _list_settings( tab = tabSettings, settings = settings, main_self = main_self )
+    translate_store_callback( wft )
 
     return tabSettings

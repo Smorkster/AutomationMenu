@@ -92,7 +92,7 @@ class ScriptMenuItem:
                 desc += f'\n\n{ _( 'Application test script, only used to test application functionality' ) }'
                 app_test = True
 
-            tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc, delay = 0 )
+            tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc, delay = 200 )
             wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = self.script_info.get_attr( 'description' ), script_state = self.script_info.get_attr( 'state' ), include_application_test_info = app_test )
             self.master_self.app_context.language_manager.add_translatable_widget( wft )
 

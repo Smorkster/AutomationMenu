@@ -9,6 +9,10 @@ Created: 2025-10-31
 """
 
 from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.core.app_context import ApplicationContext
 
 from tkinter import E, N, S, W, Canvas, Event, StringVar, Tk
 from tkinter.ttk import Button, Combobox, Entry, Frame, Label, Labelframe, Scrollbar, Widget
@@ -276,7 +280,7 @@ class InputManager:
 
     def create_input_widgets( self, parameters: list[ ScriptInputParameter ], parent: Widget = None, pre_set_parameters: list[ dict ] = None ) -> Frame:
         """ Create input widgets for each parameter
-        
+
         Args:
             parameters (list[ ScriptInputParameter ]): Input parameters asked for by script
             parent (Widget): Widget to attach input frame to

@@ -89,7 +89,7 @@ def main() -> None:
         write_settingsfile( settings = obj, settings_file_path = app_state.secrets.get( 'settings_file_path' ) )
 
     input_parser = argparse.ArgumentParser()
-    input_parser.add_argument( '--application_state', action = 'store', choices = [ 'dev', 'test', 'prod' ] )
+    input_parser.add_argument( '--application_state', action = 'store', choices = [ 'dev', 'test', 'prod' ], default = 'prod' )
     input_parser.add_argument( '--loglevel', action = 'store' )
 
     input_args = input_parser.parse_args()

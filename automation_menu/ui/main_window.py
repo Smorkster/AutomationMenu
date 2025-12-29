@@ -9,6 +9,7 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
+import time
 from typing import TYPE_CHECKING, Dict
 
 from automation_menu.models.geometry import Geometry
@@ -30,7 +31,7 @@ from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
 from automation_menu.ui.input_manager import InputManager
 from automation_menu.ui.op_buttons import get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
-from automation_menu.ui.settings_tab import get_settings_tab
+from automation_menu.ui.settings_tab import build_settings, get_settings_tab
 from automation_menu.ui.statusbar import get_statusbar
 from automation_menu.utils.decorators import ui_guard_method
 
@@ -58,6 +59,7 @@ class AutomationMenuWindow:
         self._blink_state: bool = False
         self._close_confirmed: bool = False
         self._progressbar_visible: bool = False
+        self._tabs_build = {}
 
         self.api_callbacks = {
             'determinate_progress': self.set_progress_determined,
@@ -87,6 +89,7 @@ class AutomationMenuWindow:
 
         # Create main GUI
         self.root: Tk = Tk()
+        self.root.geometry( '1100x600' )
         title_string: str = self.app_state.secrets.get( 'mainwindowtitle' )
 
         if self.app_context.startup_arguments[ 'app_run_state' ] == ApplicationRunState.DEV:
@@ -119,16 +122,15 @@ class AutomationMenuWindow:
         self.op_buttons: dict[ str, Widget ] = get_op_buttons( self.root, self )
 
         # Add tabs
-
         self.tab_control: Notebook = Notebook( master = self.root, style = self.tab_style )
+        self.tab_control.bind( '<<NotebookTabChanged>>', self._on_tab_change )
         self.tab_control.grid( column = 0, columnspan = 2, row = 2, sticky = ( N, S, E, W ) )
+        tab_index = 0
 
         # Create output
         self.tab_output, self.textbox_output = get_output_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
         set_output_styles( widget = self.textbox_output )
-
-        self.sequence_tab: Frame = self.app_context.sequence_manager.create_sequence_tab( tabcontrol = self.tab_control, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.language_manager.add_translatable_widget )
 
         # Manage output
         self.output_controller: AsyncOutputController = AsyncOutputController( output_queue = self.app_context.output_queue,
@@ -140,11 +142,20 @@ class AutomationMenuWindow:
                                                        )
         self.output_controller.start()
 
-        # Create settings
-        self.tabSettings: Frame = get_settings_tab( tabcontrol = self.tab_control, settings = self.app_state.settings, main_self = self )
+        # Create sequence tab
+        tab_index += 1
+        self.sequence_tab: Frame = self.app_context.sequence_manager.create_sequence_tab( tabcontrol = self.tab_control, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.language_manager.add_translatable_widget )
+        self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
+
+        # Create settings tab
+        tab_index += 1
+        self.tabSettings: Frame = get_settings_tab( tabcontrol = self.tab_control, translate_store_callback = self.app_context.language_manager.add_translatable_widget )
+        self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
 
         # Create history tab
-        self.tabHistory: Frame = self.app_context.history_manager.get_history_tab( tabcontrol = self.tab_control, translate_store_callback = self.app_context.language_manager.add_translatable_widget, translate_callback = self.app_context.language_manager.translate )
+        tab_index += 1
+        self.tabHistory: Frame = self.app_context.history_manager.get_history_tab( tabcontrol = self.tab_control, translate_store_callback = self.app_context.language_manager.add_translatable_widget )
+        self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
 
         # Create statusbar
         self.status_widgets: dict[ str, Widget ] = get_statusbar( master_root = self.root )
@@ -162,6 +173,8 @@ class AutomationMenuWindow:
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
         self._center_screen()
         self.root.focus_force()
+        self.root.update_idletasks()
+        self.app_context.debug_logger.debug( time.time() )
         self.root.mainloop()
 
 
@@ -183,7 +196,6 @@ class AutomationMenuWindow:
         y: float = self.root.winfo_screenheight() // 2 - win_height // 2
 
         self.root.geometry( newGeometry = f'{ width }x{ height }+{ x }+{ y }' )
-        self.root.update_idletasks()
 
 
     def _confirm_close_process( self ) -> bool:
@@ -260,6 +272,28 @@ class AutomationMenuWindow:
         """
 
         self.op_buttons[ 'script_menu' ].show_popup_menu()
+
+
+    @ui_guard_method( when_message = 'Tab change' )
+    def _on_tab_change( self, event: Event = None ) -> None:
+        """ Notebook tab changes focus, check if tab have been loaded yet
+
+        Args:
+            event (Event): Event triggering the handler
+        """
+
+        idx = event.widget.index( 'current' )
+        if not self._tabs_build.get( idx, {} ).get( 'built', True ):
+            if idx == 1:
+                self.app_context.sequence_manager.build_tab_content()
+
+            elif idx == 2:
+                build_settings( tab = self.tabSettings, settings = self.app_state.settings, main_self = self )
+
+            elif idx == 3:
+                self.app_context.history_manager.build_tab_content( translate_store_callback = self.app_context.language_manager.add_translatable_widget, translate_callback = self.app_context.language_manager.translate )
+
+            self._tabs_build[ idx ][ 'built' ] = True
 
 
     @ui_guard_method( when_message = 'Changing language' )

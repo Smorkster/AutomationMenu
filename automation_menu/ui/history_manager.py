@@ -145,7 +145,7 @@ class HistoryManager:
         return [ item[ 'item' ].to_dict() for item in self._historylist ]
 
 
-    def get_history_tab( self, tabcontrol: Notebook, translate_store_callback: Callable, translate_callback: Callable ) ->  Frame:
+    def get_history_tab( self, tabcontrol: Notebook, translate_store_callback: Callable ) ->  Frame:
         """ Creates the widgets to display execution history
 
         Args:
@@ -159,7 +159,7 @@ class HistoryManager:
 
         from automation_menu.utils.localization import _
 
-        self.tabHistory: Frame = Frame( tabcontrol )
+        self.tabHistory: Frame = Frame( master = tabcontrol, name = 'history' )
         self.tabHistory.grid( column = 0, row = 0, sticky = ( N, S, W, E ) )
         self.tabHistory.columnconfigure( index = 0, weight = 0 )
         self.tabHistory.columnconfigure( index = 1, weight = 1 )
@@ -169,6 +169,19 @@ class HistoryManager:
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = self.tabHistory, default_text = 'Execution history' )
         translate_store_callback( wft )
+
+        return self.tabHistory
+
+
+    def build_tab_content( self, translate_store_callback: Callable, translate_callback: Callable ) -> None:
+        """ Create widgets for displaying execution history content
+
+        Args:
+            translate_store_callback (Callable): Function callback to store widgets for later translation
+            translate_callback (Callable): Function callback to translate text
+        """
+
+        from automation_menu.utils.localization import _
 
         columns = { '#0': [ 'Started', 105 ], 'name': [ 'Name', 160 ] }
         self.history_tree: Treeview = Treeview( self.tabHistory, columns = [ *columns.keys() ][ 1: ] )
@@ -229,5 +242,3 @@ class HistoryManager:
 
         self.item_output: Text = Text( master = self.history_item_display, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
         self.item_output.grid( column = 0, columnspan = 2, row = 4, padx = 5, pady = 5, sticky = ( N, S, W, E ) )
-
-        return self.tabHistory
