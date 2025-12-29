@@ -189,7 +189,7 @@ class SequenceManager:
 
         from automation_menu.utils.localization import _
 
-        sequence_form: Button = Frame( master = self._sequence_widgets[ 'main_frame' ] )
+        sequence_form: Frame = Frame( master = self._sequence_widgets[ 'main_frame' ] )
         sequence_form.grid( column = 0, row = 2, rowspan = 2, sticky = ( N, S, W, E ) )
         sequence_form.grid_columnconfigure( index = 0, weight = 0 )
         sequence_form.grid_columnconfigure( index = 1, weight = 1 )
@@ -201,10 +201,13 @@ class SequenceManager:
         sequence_form.grid_rowconfigure( index = 4, weight = 1 ) # Sequence op buttons
         self._sequence_widgets[ 'sequence_form' ] = sequence_form
 
-        row: Button = 0
+        row: int = 0
 
         name_title: Label = Label( master = sequence_form, text = _( 'Name' ), style = 'History.TLabel' )
         name_title.grid( column = 0, row = row, sticky = ( W ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = name_title, default_text = 'Name' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         name_field: Entry = Entry( master = sequence_form )
         name_field.grid( column = 1, columnspan = 2, row = row, sticky = ( W, E ) )
@@ -215,6 +218,9 @@ class SequenceManager:
         description_title: Label = Label( master = sequence_form, text = _( 'Description' ), style = 'History.TLabel' )
         description_title.grid( column = 0, row = row, sticky = ( W ) )
 
+        wft: WidgetForTranslation = WidgetForTranslation( widget = description_title, default_text = 'Description' )
+        self._app_context.language_manager.add_translatable_widget( wft )
+
         description_field: Entry = Entry( master = sequence_form )
         description_field.grid( column = 1, columnspan = 2, row = row, sticky = ( W, E ) )
         self._sequence_widgets[ 'description_field' ] = description_field
@@ -223,6 +229,9 @@ class SequenceManager:
 
         stop_on_error_title: Label = Label( master = sequence_form, text = _( 'Stop on error' ), style = 'History.TLabel' )
         stop_on_error_title.grid( column = 0, row = row, sticky = ( W ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = stop_on_error_title, default_text = 'Stop on error' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         self._sequence_widgets[ 'stop_sequence_on_error_var' ] = BooleanVar( master = sequence_form, value = False )
         stop_on_error_field: Checkbutton = Checkbutton( master = sequence_form, variable = self._sequence_widgets[ 'stop_sequence_on_error_var' ] )
@@ -266,6 +275,9 @@ class SequenceManager:
 
         steps_title: Label = Label( master = steps_display_frame, text = _( 'Steps in sequence' ), style = 'BiggerTitle.TLabel' )
         steps_title.grid( column = 0, row = 0, sticky = ( W ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = steps_title, default_text = 'Steps in sequence' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         display_container: Frame = Frame( master = steps_display_frame )
         display_container.grid( column = 0, columnspan = 2, row = 1, sticky = ( N, S, W, E ) )
@@ -313,6 +325,9 @@ class SequenceManager:
         script_title: Label = Label( master = step_form, text = _( 'Script for this step' ), style = 'History.TLabel' )
         script_title.grid( column = 0, row = row, sticky = ( N, W ) )
 
+        wft: WidgetForTranslation = WidgetForTranslation( widget = script_title, default_text = 'Script for this step' )
+        self._app_context.language_manager.add_translatable_widget( wft )
+
         script_names: list[ str ] = sorted( [ s.filename for s in self._app_context.script_manager.get_script_list() ] )
         script_field: Combobox = Combobox( master = step_form, values = script_names )
         script_field.bind( '<<ComboboxSelected>>', self._on_step_script_selected )
@@ -325,6 +340,9 @@ class SequenceManager:
         stop_on_error_title: Label = Label( master = step_form, text = _( 'Stop on error' ), style = 'History.TLabel' )
         stop_on_error_title.grid( column = 0, row = row, sticky = ( W ) )
 
+        wft: WidgetForTranslation = WidgetForTranslation( widget = stop_on_error_title, default_text = 'Stop on error' )
+        self._app_context.language_manager.add_translatable_widget( wft )
+
         self._sequence_widgets[ 'stop_step_on_error_var' ] = BooleanVar( master = step_form, value = False )
         stop_on_error_field: Checkbutton = Checkbutton( master = step_form, variable = self._sequence_widgets[ 'stop_step_on_error_var' ] )
         stop_on_error_field.grid( column = 1, row = row, sticky = ( W ) )
@@ -335,6 +353,9 @@ class SequenceManager:
         input_title: Label = Label( master = step_form, text = _( 'Script input parameters' ), style = 'History.TLabel' )
         input_title.grid( column = 0, row = row, sticky = ( N, W ) )
         self._sequence_widgets[ 'step_input_title' ] = input_title
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = input_title, default_text = 'Script input parameters' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         row += 1
 
@@ -356,17 +377,26 @@ class SequenceManager:
         step_add: Button = Button( master = step_op_buttons_frame, text = _( 'Save step' ), command = self._save_edited_step )
         step_add.grid( column = col, row = 0, sticky = ( E ) )
 
+        wft: WidgetForTranslation = WidgetForTranslation( widget = step_add, default_text = 'Save step' )
+        self._app_context.language_manager.add_translatable_widget( wft )
+
         col += 1
 
         step_op_buttons_frame.grid_columnconfigure( index = col, weight = 0 )
         step_remove: Button = Button( master = step_op_buttons_frame, text = _( 'Remove step' ), command = self._sequence_callbacks[ 'op_remove_sequence_step' ] )
         step_remove.grid( column = col, row = 0, sticky = ( E ) )
 
+        wft: WidgetForTranslation = WidgetForTranslation( widget = step_remove, default_text = 'Remove step' )
+        self._app_context.language_manager.add_translatable_widget( wft )
+
         col += 1
 
         step_op_buttons_frame.grid_columnconfigure( index = col, weight = 0 )
         step_abort: Button = Button( master = step_op_buttons_frame, text = _( 'Abort' ), command = self._sequence_callbacks[ 'op_abort_add_sequence_step' ] )
         step_abort.grid( column = col, row = 0, sticky = ( E ) )
+
+        wft: WidgetForTranslation = WidgetForTranslation( widget = step_abort, default_text = 'Abort' )
+        self._app_context.language_manager.add_translatable_widget( wft )
 
         step_form.grid_remove()
 
