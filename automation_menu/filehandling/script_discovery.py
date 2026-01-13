@@ -30,13 +30,14 @@ from automation_menu.utils.docstring_parser import extract_script_metadata
 from automation_menu.utils.scriptinfo_block_parser import scriptinfo_block_parser
 
 
-def _approve_listing( script_info: ScriptInfo, app_run_state: ApplicationRunState, current_user: User ) -> int:
+def _approve_listing( script_info: ScriptInfo, app_run_state: ApplicationRunState, current_user: User, content: str ) -> int:
     """ Verify that the script is valid to be listed in the menu
 
     Args:
         script_info (ScriptInfo): Info about the script
         app_run_state (ApplicationRunState): In what state is the application run
         current_user (User): User currently running the application
+        content (str): Content of scriptfile
 
     Returns:
         (int): 0 = valid, 1 = valid, but has active breakpoints (author only), 2 = not valid
@@ -91,13 +92,13 @@ def _approve_listing( script_info: ScriptInfo, app_run_state: ApplicationRunStat
 
         return 2
 
-    script_info: ScriptInfo = _check_breakpoints( script_info )
+    script_info.using_breakpoint = _check_for_breakpoints( content = content )
 
-    if script_info.get_attr( 'using_breakpoint' ):
+    if script_info.using_breakpoint:
         # If script has active breakpoints, only the author may see it
         if is_author:
 
-            return 1  # author sees it, but we can show a warning
+            return 1  # author sees it, but a warning is shown
 
         else:
 
@@ -106,48 +107,45 @@ def _approve_listing( script_info: ScriptInfo, app_run_state: ApplicationRunStat
     return 0
 
 
-def _check_breakpoints( script_info: ScriptInfo ) -> ScriptInfo:
+def _check_for_breakpoints( content: str ) -> bool:
     """ Check for uncommented breakpoints
 
     Args:
-        script_info (ScriptInfo): Script info gathered from the scripts info block
+        content (str): Content of script file
 
     Returns:
-        script_info (ScriptInfo): ScriptInfo with possible 'UsingBreakpoint'
+        (bool): True if script has any active breakpoints
     """
 
-    with open( script_info.get_attr( 'fullpath' ), 'r', encoding = 'utf-8' ) as f:
-        lines: list[ str ] = f.readlines()
-
-    for line in lines:
+    for line in content.split( '\n' ):
         stripped_line: str = line.lstrip()
 
         if stripped_line.startswith( 'breakpoint()' ) or ' breakpoint()' in stripped_line:
 
             if not stripped_line.startswith( '#' ):
-                script_info.add_attr( 'using_breakpoint', True )
-                break
 
-    return script_info
+                return True
+
+    return False
 
 
-def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptInfo:
+def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: ApplicationRunState ) -> ScriptInfo:
     """ Call for script information gathering of specified script file
 
     Args:
-        file (str): File name of the script
-        directory (str): Directory path containing the script
+        file (os.DirEntry): File name of the script
         current_user (User): AD object for current user
+        app_run_state (ApplicationRunState): State the application is running in
+
+    Returns:
+        (ScriptInfo, dict, int):
     """
 
     from automation_menu.utils.localization import _
 
-    path: str = os.path.join( directory, file )
-    script_info: ScriptInfo = ScriptInfo( filename = file, fullpath = path )
-
     try:
-        with open( path, 'r', encoding = 'utf-8' ) as f:
-            f.read( 1 )
+        with open( file.path, 'r', encoding = 'utf-8' ) as f:
+            content = f.read()
 
     except FileNotFoundError as e:
         raise FileNotFoundError( _( 'File not found' ) )
@@ -155,11 +153,14 @@ def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptI
     except Exception as e:
         raise Exception( _( 'Could not read file: {error}' ).format( error = str( e ) ) )
 
-    metadata, warnings = scriptinfo_block_parser( script_info )
+    script_info: ScriptInfo = ScriptInfo( filename = file.name, fullpath = file.path )
 
-    if not metadata:
+    if re.search( r'ScriptInfoEnd *((\"\"\")|(#>))', content ):
+        metadata, warnings = scriptinfo_block_parser( script_info = script_info, full_text = content )
+
+    else:
         try:
-            metadata, warnings = extract_script_metadata( script_info )
+            metadata, warnings = extract_script_metadata( script_info, full_text = content )
 
         except:
             raise ScriptInfoError( _( 'No valid ScriptInfo was found in the script' ) )
@@ -171,7 +172,9 @@ def _read_scriptfile( file: str, directory: str, current_user: User ) -> ScriptI
     except Exception as e:
         raise
 
-    return script_info, warnings
+    approved: int = _approve_listing( script_info = script_info, app_run_state = app_run_state, current_user = current_user, content = content )
+
+    return script_info, warnings, approved
 
 
 def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state: ApplicationRunState ) -> list[ ScriptInfo ]:
@@ -189,31 +192,31 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
     from automation_menu.utils.localization import _
 
     # Setup file pattern
-    pattern: str = r'^(?!(__init__)|(GeneralTestFile)).*\.p((y)|(s1))$'
+    pattern: re.Pattern = re.compile( r'^(?!(__init__)|(GeneralTestFile)).*\.p((y)|(s1))$' )
     application_test_files: list[ ScriptInfo ] = []
     indexed_files: list[ ScriptInfo ] = []
     scriptswithbreakpoint: list[ ScriptInfo] = []
     script_dir: WindowsPath = app_state.secrets.get( 'script_dir_path' )
 
-    for i, filename in enumerate(
+    for i, file in enumerate(
         sorted(
             [
-                f for f in os.listdir( script_dir )
-                if os.path.isfile( os.path.join( script_dir, f ) ) and re.match( pattern = pattern , string = f )
+                f for f in os.scandir( script_dir )
+                if f.is_file() and pattern.match( string = f.name )
             ],
-            key = lambda x: x.lower()
+            key = lambda x: x.name.lower()
         )
     ):
-        if filename.startswith( 'AMTest_' ) and app_run_state == ApplicationRunState.PROD:
+        if file.name.startswith( 'AMTest_' ) and app_run_state == ApplicationRunState.PROD:
             continue
 
         try:
-            script_info, parse_warnings = _read_scriptfile( file = filename, directory = script_dir, current_user = app_state.current_user )
+            script_info, parse_warnings, approved = _read_scriptfile( file = file, directory = script_dir, current_user = app_state.current_user, app_run_state = app_run_state )
 
             # Guard against format changes that has not been implemented
             for key in ( 'keys', 'values', 'other' ):
                 if key not in parse_warnings:
-                    raise ValueError( _( 'parse_warnings missing key {key}' ).format( key = key ) )
+                    raise ValueError( _( '\'parse_warnings\' missing key {key}' ).format( key = key ) )
 
             if len( parse_warnings[ 'keys' ] ) > 0:
                 raise ValueError( _( 'ScriptInfo contained fields that are not valid, or are misspelled: {names}' ).format( names = ', '.join( parse_warnings[ 'keys' ] ) ) )
@@ -224,8 +227,6 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
             if len( parse_warnings[ 'other' ] ) > 0:
                 raise ValueError( _( 'Parsing ScriptInfo generated error for these fields: {names}' ).format( names = ', '.join( parse_warnings[ 'other' ] ) ) )
 
-            approved: int = _approve_listing( script_info = script_info, app_run_state = app_run_state, current_user = app_state.current_user )
-
             if approved == 2:
                 continue
 
@@ -233,26 +234,26 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
                 if approved == 1:
                     scriptswithbreakpoint.append( script_info )
 
-                if filename.startswith( 'AMTest_' ):
+                if file.name.startswith( 'AMTest_' ):
                     application_test_files.append( script_info )
 
                 else:
                     indexed_files.append( script_info )
 
         except ScriptInfoError as e:
-            output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ),
+            output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
                                'tag': OutputStyleTags.SYSERROR
                                }
                             )
 
         except ValueError as e:
-            output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ),
+            output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
                                'tag': OutputStyleTags.SYSWARNING
                                }
                             )
 
         except Exception as e:
-            output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = filename, e = repr( e ) ),
+            output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
                                'tag': OutputStyleTags.SYSERROR
                                }
                             )

@@ -16,22 +16,17 @@ import re
 from re import Match
 
 from automation_menu.models.enums import ScriptState, ValidScriptInfoFields
-from automation_menu.models.scriptinfo import ScriptInfo
 
 
-def scriptinfo_block_parser( script_info: ScriptInfo ) -> tuple[ dict, dict ]:
+def scriptinfo_block_parser( full_text: str ) -> tuple[ dict, dict ]:
     """ Parse the file content and extract script information
 
     Args:
-        script_info (ScriptInfo): Script info gathered from the scripts info block
+        full_text (str): Scriptfile content to parse
 
     Returns:
         (tuple[ scriptinfo_meta, warnings ]): Script information from the script info block and list of invalid keys and values
     """
-
-
-    with open( script_info.get_attr( 'fullpath' ), 'r', encoding = 'utf-8' ) as f:
-        full_text: str = f.read()
 
     match: Match = re.search( r'ScriptInfo\s*(.*?)\s*ScriptInfoEnd', full_text, re.DOTALL )
 

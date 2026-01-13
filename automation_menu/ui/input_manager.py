@@ -365,10 +365,7 @@ class InputManager:
         input_container.update_idletasks()
 
         canvas: Canvas = self._input_widgets[ 'container_canvas' ]
-        max_height: int = int( canvas.cget( 'height' ) )
-
         required_height: int = input_container.winfo_reqheight()
-
         canvas.configure( height = min( required_height, 150 ) )
 
         return input_container

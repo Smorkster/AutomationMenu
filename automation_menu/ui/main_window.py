@@ -89,7 +89,9 @@ class AutomationMenuWindow:
 
         # Create main GUI
         self.root: Tk = Tk()
+        self.root.withdraw()
         self.root.geometry( '1100x600' )
+
         title_string: str = self.app_state.secrets.get( 'mainwindowtitle' )
 
         if self.app_context.startup_arguments[ 'app_run_state' ] == ApplicationRunState.DEV:
@@ -171,10 +173,10 @@ class AutomationMenuWindow:
         self.root.bind( '<Control-m>', self._on_script_menu_shortcut )
 
         self.root.protocol( 'WM_DELETE_WINDOW', self.on_closing )
-        self._center_screen()
+
+        self.root.deiconify()
         self.root.focus_force()
-        self.root.update_idletasks()
-        self.app_context.debug_logger.debug( time.time() )
+        self.root.after_idle( self._center_screen )
         self.root.mainloop()
 
 
@@ -185,6 +187,11 @@ class AutomationMenuWindow:
         self.root.update_idletasks()
         width: int = self.root.winfo_width()
         height: int = self.root.winfo_height()
+
+        if width <= 1 or height <= 1:
+            self.root.after( 10, self._center_screen )
+
+            return
 
         frm_width: int = self.root.winfo_rootx() - self.root.winfo_x()
         win_width: int = width + 2 * frm_width

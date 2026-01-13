@@ -18,9 +18,16 @@ from automation_menu.models.user import User
 @dataclass
 class ScriptInfo:
     """ Class to hold information about a script """
+
+    # File info
     filename: str
     fullpath: Path
+
+    # Parsed info
     scriptmeta: ScriptMetadata = None
+
+    # Operational settings
+    using_breakpoint: bool = False
 
 
     def add_attr( self, attr_name: str, attr_val: any ) -> None:
@@ -42,18 +49,28 @@ class ScriptInfo:
         """
 
         if hasattr( self, attr_name ):
+
             return getattr( self, attr_name )
 
         else:
             if hasattr( self.scriptmeta, attr_name ):
+
                 return getattr( self.scriptmeta, attr_name )
 
             else:
+
                 return None
 
 
     def is_author( self, user: User ) -> bool:
-        """ Verify if the user is author of this script """
+        """ Verify if the user is author of this script
+
+        Args:
+            user (User): Current user running the application
+
+        Returns:
+            (bool): True if the current user is assigned as author
+        """
 
         author_name: str = self.get_attr( 'author' )
 
