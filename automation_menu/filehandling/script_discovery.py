@@ -156,11 +156,11 @@ def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: Appl
     script_info: ScriptInfo = ScriptInfo( filename = file.name, fullpath = file.path )
 
     if re.search( r'ScriptInfoEnd *((\"\"\")|(#>))', content ):
-        metadata, warnings = scriptinfo_block_parser( script_info = script_info, full_text = content )
+        metadata, warnings = scriptinfo_block_parser( full_text = content )
 
     else:
         try:
-            metadata, warnings = extract_script_metadata( script_info, full_text = content )
+            metadata, warnings = extract_script_metadata( script_info = script_info )
 
         except:
             raise ScriptInfoError( _( 'No valid ScriptInfo was found in the script' ) )
@@ -211,7 +211,7 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
             continue
 
         try:
-            script_info, parse_warnings, approved = _read_scriptfile( file = file, directory = script_dir, current_user = app_state.current_user, app_run_state = app_run_state )
+            script_info, parse_warnings, approved = _read_scriptfile( file = file, current_user = app_state.current_user, app_run_state = app_run_state )
 
             # Guard against format changes that has not been implemented
             for key in ( 'keys', 'values', 'other' ):

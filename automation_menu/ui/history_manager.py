@@ -130,11 +130,15 @@ class HistoryManager:
             item (ExecHistory): Execution history to add
         """
 
-        tree_id: str = self.history_tree.insert( parent = '',
-                                 index = 0,
-                                 text = f'{ item.start.strftime( '%m / %d : %H:%M:%S' ) }',
-                                 values = ( item.script_info.get_attr( 'filename' ) )
-                                )
+        if hasattr( self, 'history_tree' ):
+            tree_id: str = self.history_tree.insert( parent = '',
+                                    index = 0,
+                                    text = f'{ item.start.strftime( '%m / %d : %H:%M:%S' ) }',
+                                    values = ( item.script_info.get_attr( 'filename' ) )
+                                    )
+
+        else:
+            tree_id = 0
 
         self._historylist.append( { 'id': tree_id, 'item': item } )
 
@@ -196,6 +200,15 @@ class HistoryManager:
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = self.history_tree, default_text = columns )
         translate_store_callback( wft )
+
+        for item in self._historylist:
+            tree_id: str = self.history_tree.insert( parent = '',
+                        index = 0,
+                        text = f'{ item[ 'item' ].start.strftime( '%m / %d : %H:%M:%S' ) }',
+                        values = ( item[ 'item' ].script_info.get_attr( 'filename' ) )
+                        )
+
+            item[ 'id' ] = tree_id
 
         self.history_item_display: Frame = Frame( self.tabHistory )
         self.history_item_display.grid( column = 1, row = 0, sticky = ( N, S, W, E ) )
