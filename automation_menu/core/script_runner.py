@@ -9,6 +9,8 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
+import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
@@ -29,31 +31,34 @@ from automation_menu.models.application_state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags, SysInstructions
 from automation_menu.models.exechistory import ExecHistory
 from automation_menu.models.scriptinfo import ScriptInfo
-from automation_menu.utils.email_handler import report_script_error
 from automation_menu.utils.screenshot import take_screenshot
 
 
 class ScriptRunner:
-    def __init__( self, output_queue: Queue, app_state: ApplicationState, exec_manager: ScriptExecutionManager ) -> None:
+    def __init__( self, output_queue: Queue, app_state: ApplicationState, exec_manager: ScriptExecutionManager, error_reporter: Callable ) -> None:
         """" A script runner, managing bootup, process output and termination
 
         Args:
             output_queue (Queue): Queue for gathering output data
             app_state (ApplicationState): General state of application
             exec_manager (ScriptExecutionManager): Running manager to handle context for script process
+            error_reporter (Callable): Function to report if a script fails
         """
 
         self._output_queue: Queue = output_queue
         self.app_state: ApplicationState = app_state
         self.script_execution_manager: ScriptExecutionManager = exec_manager
-        self.main_window = None
+        self._error_reporter: Callable = error_reporter
 
-        self.current_process: subprocess.Popen | None = None
+        self.main_window = None
+        self.current_process: subprocess.Popen
+        self._exec_item: ExecHistory
+        self._script_info: ScriptInfo
         self._tasks: list[ asyncio.Task ] = []
-        self._script_info: ScriptInfo = None
         self._in_breakpoint: bool = False
         self._terminated: bool = False
         self._process_started: Event = threading.Event()
+        self._run_state: str = ''
 
 
     def _collect_error_info( self, error: str ) -> None:
@@ -69,16 +74,20 @@ class ScriptRunner:
             'finished': True,
             'exec_item': self._exec_item
         } )
-        ss_path: str = ''
+        ss_path: Path = Path()
 
         if self.app_state.settings.send_mail_on_error:
             if self.app_state.settings.include_ss_in_error_mail:
-                ss_path = take_screenshot( root_window = self.main_window, script_info = self._script_info, file_name_prefix = self.app_state.secrets.get( 'error_ss_prefix' ) )
+                if self.main_window is None:
+                    pass
+
+                else:
+                    ss_path = take_screenshot( root_window = self.main_window, script_info = self._script_info, file_name_prefix = str( self.app_state.secrets.get( 'error_ss_prefix' ) ) )
 
             from automation_menu.utils.localization import _
 
             try:
-                report_script_error( app_state = self.app_state, error_msg = error, script_info = self._script_info, screenshot = ss_path )
+                self._error_reporter( app_state = self.app_state, error_msg = error, script_info = self._script_info, screenshot = ss_path )
 
                 self._output_queue.put( {
                     'line': _( 'Mail sent' ),
@@ -94,31 +103,49 @@ class ScriptRunner:
                 } )
 
 
-    def _create_process( self ) -> None:
+    def _create_process( self ) -> subprocess.Popen:
         """ Create and start a process to execute script """
 
         from automation_menu.utils.localization import _
 
         exec_string: str = ''
+        current_env: dict[ str, str ] = os.environ.copy()
+
+        self._set_run_state()
+
+        if self._run_state == 'free':
+            pass
+        elif self._run_state == 'vscode':
+            self._output_queue.put( {
+                    'line': _( 'Running in: \'{a}\', application can not handle debugging.' ).format( a = self._run_state ),
+                    'tag': OutputStyleTags.SYSINFO,
+                    'exec_item': self._exec_item
+                } )
 
         if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
             exec_string = sys.executable
+            current_env[ 'PYTHONBREAKPOINT' ] = 'pdb.set_trace'
+            current_env[ 'PYTHONUNBUFFERED' ] = '1'
 
         elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
             exec_string = 'powershell.exe'
 
+        args = [ exec_string, str( self._script_info.get_attr( 'fullpath' ) ) ]
+        args.extend( self.run_input )
+
         return subprocess.Popen(
-            args = [ exec_string, str( self._script_info.get_attr( 'fullpath' ) ) ] + self.run_input,
+            args = args,
             stdout = asyncio.subprocess.PIPE,
             stderr = asyncio.subprocess.PIPE,
             stdin = asyncio.subprocess.PIPE,
             text = True,
             encoding = 'utf-8',
-            errors = 'replace'
+            errors = 'replace',
+            env = current_env
         )
 
 
-    def _is_breakpoint_line( self, line: str ) -> bool:
+    def _is_breakpoint_line( self, line: str ) -> int:
         """ Verify if a line from the output, corresponds with a breakpoint has occured in the running script
 
         Args:
@@ -130,7 +157,12 @@ class ScriptRunner:
 
         import re
 
-        return re.search( r'^.*\((.*)\)<module>\(\)', line.lower() ) or re.search( 'At .*:{l}', line )
+        if self._script_info.filename.endswith( '.py' ):
+            res = re.search( r'^.*\((?P<l>.*?)\)<module>\(\)', line.lower() )
+
+            return int( res.group('l') ) if res else -1
+
+        return re.search( 'At .*:{l}', line ) is not None
 
 
     def _read_monitor_completion( self ) -> None:
@@ -185,9 +217,7 @@ class ScriptRunner:
 
         self._process_started.wait()
 
-        p: subprocess.Popen = self.current_process
-
-        if not p or not p.stderr:
+        if self.current_process is None or not self.current_process.stderr:
 
             return
 
@@ -202,12 +232,22 @@ class ScriptRunner:
                 break
 
             line_str: str = line.decode() if isinstance( line, bytes ) else line
+            line_nr: int = self._is_breakpoint_line( line_str )
 
-            self._output_queue.put( {
-                'line': line_str.rstrip(),
-                'tag': OutputStyleTags.ERROR,
-                'exec_item': self._exec_item
-            } )
+            if line_nr > 0:
+                _in_breakpoint = self._run_state != 'vscode' or True
+                self._output_queue.put( {
+                    'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr - 1 ),
+                    'tag': OutputStyleTags.SYSINFO,
+                    'breakpoint': _in_breakpoint,
+                    'exec_item': self._exec_item
+                } )
+            else:
+                self._output_queue.put( {
+                    'line': line_str.rstrip(),
+                    'tag': OutputStyleTags.ERROR,
+                    'exec_item': self._exec_item
+                } )
 
 
     def _read_stdout( self ) -> None:
@@ -216,9 +256,8 @@ class ScriptRunner:
         from automation_menu.utils.localization import _
 
         self._process_started.wait()
-        p: subprocess.Popen = self.current_process
 
-        if not p or not p.stdout:
+        if self.current_process is None or not self.current_process.stdout:
 
             return
 
@@ -235,12 +274,12 @@ class ScriptRunner:
             line_str: str = line.decode() if isinstance( line, bytes ) else line
             line_nr: int = self._is_breakpoint_line( line_str )
 
-            if line_nr:
-                self._in_breakpoint = True
+            if line_nr > 0:
+                _in_breakpoint = self._run_state != 'vscode' or True
                 self._output_queue.put( {
-                    'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr ),
+                    'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr =  line_nr - 1 ),
                     'tag': OutputStyleTags.SYSINFO,
-                    'breakpoint': True,
+                    'breakpoint': _in_breakpoint,
                     'exec_item': self._exec_item
                 } )
             else:
@@ -249,6 +288,46 @@ class ScriptRunner:
                     'tag': OutputStyleTags.INFO,
                     'exec_item': self._exec_item
                 } )
+
+
+    def _set_run_state( self ) -> None:
+        """ Verify if application runs in VSCode debugger or not
+        
+        This is needed for handling breakpoints in the scripts
+        """
+
+        import sys
+
+        # Generic Python debugger detection
+        if sys.gettrace() is not None:
+
+            self._run_state = 'Free'
+
+        elif os.environ.get( 'DEBUGPY_RUNNING' ):
+
+            self._run_state = 'vscode'
+
+
+    def get_exec_item( self ) -> ExecHistory:
+        """ Return the execution history """
+
+        return self._exec_item
+
+
+    def get_exit_code( self ) -> int:
+        """ Return exit code of process for this runner
+
+        Returns:
+            (int): Exit code from process execution
+        """
+
+        return self._exec_item.exit_code
+
+
+    def get_run_state( self ) -> str:
+        """ Get the current runstate of application """
+
+        return self._run_state
 
 
     def run_script( self,
@@ -297,7 +376,7 @@ class ScriptRunner:
             threading.Thread( target = self._read_stderr, daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()
             threading.Thread( target = self._read_monitor_completion, daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
 
-            self.current_process: subprocess.Popen = self._create_process()
+            self.current_process = self._create_process()
             self._process_started.set()
 
             self.current_process.wait()
@@ -315,12 +394,16 @@ class ScriptRunner:
             self._collect_error_info( error = error_line )
 
 
-    def send_api_response( self, response: str ) -> None:
+    def send_api_response( self, response: str ) -> bool:
         """ Send the API response the script stdin
 
         Args:
             response (str): String formated response to send
         """
+
+        if self.current_process is None or self.current_process.stdin is None:
+
+            return False
 
         msg: str = f'{ MESSAGE_START }{ response }{ MESSAGE_END }\n'
 
@@ -328,8 +411,10 @@ class ScriptRunner:
             self.current_process.stdin.write( msg )
             self.current_process.stdin.flush()
 
+            return True
+
         except:
-            pass
+            return False
 
 
     def terminate( self ) -> None:
@@ -359,12 +444,12 @@ class ScriptRunner:
                 self._output_queue.put( SysInstructions.PROCESSTERMINATED )
                 _process_reaper( self.current_process )
 
-            except subprocess.SubprocessError as e:
-                line = _( 'Termination - SubprocessError: {e}' ).format( e = str( e ) )
+            except subprocess.CalledProcessError as e:
+                line = _( 'Termination - CalledProcessError: {e}' ).format( e = str( e ) )
                 _process_reaper( self.current_process )
 
-            except subprocess.CalledProcessError:
-                line = _( 'Termination - CalledProcessError: {e}' ).format( e = str( e ) )
+            except subprocess.SubprocessError as e:
+                line = _( 'Termination - SubprocessError: {e}' ).format( e = str( e ) )
                 _process_reaper( self.current_process )
 
             except Exception as e:
@@ -377,3 +462,9 @@ class ScriptRunner:
                     'tag': OutputStyleTags.SYSERROR,
                     'exec_item': self._exec_item
                 } )
+
+
+    def was_terminated( self ) -> bool:
+        """ Was the process manually terminated """
+
+        return self._terminated

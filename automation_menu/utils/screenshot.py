@@ -22,7 +22,7 @@ from tkinter import Tk
 
 from automation_menu.models import ScriptInfo
 
-def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> str:
+def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> Path:
     """ Convert a BMP file to PNG format
 
     Args:
@@ -33,8 +33,8 @@ def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> str:
         str: Path to the new PNG-file
     """
 
-    png_path: Path = os.path.join( tempfile.gettempdir() , f'{ os.path.basename( bmp_path ).split( '.' )[0] }.png' )
-    img: ImageFile = Image.open( fp = bmp_path )
+    png_path: Path = Path( os.path.join( tempfile.gettempdir() , f'{ os.path.basename( bmp_path ).split( '.' )[0] }.png' ) )
+    img: ImageFile.ImageFile = Image.open( fp = bmp_path )
     img.save( fp = png_path, format = 'PNG' )
 
     if delete_bmp:
@@ -43,7 +43,7 @@ def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> str:
     return png_path
 
 
-def take_screenshot( root_window: Tk, script_info: ScriptInfo, file_name_prefix: str ) -> str:
+def take_screenshot( root_window: Tk, script_info: ScriptInfo, file_name_prefix: str ) -> Path:
     """ Take a screenshot of the main window and save it as a PNG file
 
     Args:
@@ -63,10 +63,10 @@ def take_screenshot( root_window: Tk, script_info: ScriptInfo, file_name_prefix:
     dataBitMap.CreateCompatibleBitmap( dcObj, root_window.winfo_width(), root_window.winfo_height() )
     cDC.SelectObject( dataBitMap )
     cDC.BitBlt( ( 0 , 0 ) , ( root_window.winfo_width() , root_window.winfo_height() ) , dcObj , ( 0 , 0 ), win32con.SRCCOPY )
-    bmp_tempfile: Path = os.path.join( tempfile.gettempdir(), f'{ file_name_prefix }_{ script_info.get_attr( 'filename' ) }_{ datetime.now().strftime( '%Y-%m-%d_%H.%M.%S' ) }.bmp' )
+    bmp_tempfile: str = os.path.join( tempfile.gettempdir(), f'{ file_name_prefix }_{ script_info.get_attr( 'filename' ) }_{ datetime.now().strftime( '%Y-%m-%d_%H.%M.%S' ) }.bmp' )
     dataBitMap.SaveBitmapFile( cDC , bmp_tempfile )
 
-    png_path: str = _convert_bmp_to_png( bmp_path = bmp_tempfile, delete_bmp = True )
+    png_path: Path = _convert_bmp_to_png( bmp_path = bmp_tempfile, delete_bmp = True )
 
     # Free resources
     dcObj.DeleteDC()

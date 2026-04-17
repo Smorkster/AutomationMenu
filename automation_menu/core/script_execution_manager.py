@@ -12,10 +12,11 @@ Created: 2025-09-25
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Generator
 
+from automation_menu.services.error_manager import ErrorManager
+
 if TYPE_CHECKING:
     from automation_menu.models.application_state import ApplicationState
 
-import queue
 import threading
 
 from contextlib import contextmanager
@@ -31,20 +32,22 @@ from automation_menu.ui.main_window import AutomationMenuWindow
 
 
 class ScriptExecutionManager:
-    def __init__( self, output_queue: Queue, app_state: ApplicationState ) -> None:
+    def __init__( self, output_queue: Queue, app_state: ApplicationState, error_manager: ErrorManager ) -> None:
         """ Provides a contextmanager for running a script
 
         Args:
             output_queue (Queue): The queue gathering script output
             app_state (ApplicationState): General state of application
+            error_manager (ErrorManager): Manager for handling errors
         """
 
+        #self._current_runner: ScriptRunner
+        self.current_runner: ScriptRunner | None = None
         self._output_queue: Queue = output_queue
         self.app_state: ApplicationState = app_state
-        self.current_runner: ScriptRunner | None = None
+        self._error_manager: ErrorManager = error_manager
         self._lock: Lock = threading.Lock()
         self._paused: bool = False
-
 
     @contextmanager
     def create_runner( self ) -> Generator[ Any, Any, Any ]:
@@ -54,7 +57,7 @@ class ScriptExecutionManager:
             if self.current_runner is not None:
                 raise RuntimeError( 'Another script is running, only one allowed at a time.' )
 
-            runner: ScriptRunner = ScriptRunner( output_queue = self._output_queue, app_state = self.app_state, exec_manager = self )
+            runner: ScriptRunner = ScriptRunner( output_queue = self._output_queue, app_state = self.app_state, exec_manager = self, error_reporter = self._error_manager.report_script_error )
             self.current_runner = runner
 
         try:
@@ -92,10 +95,13 @@ class ScriptExecutionManager:
             return self.current_runner is not None and not self._paused
 
 
-    def pause_current_script( self ) -> None:
+    def pause_current_script( self ) -> bool:
         """ Pause the currently running script """
 
         import psutil
+
+        if self.current_runner is None:
+            return False
 
         try:
             pid: int = self.current_runner.current_process.pid
@@ -111,9 +117,10 @@ class ScriptExecutionManager:
             children: list[ Process ] = process.children( recursive = True )
             print( f'DEBUG: Child processes: { len( children ) }')
 
+            # Suspend children too
             for child in children:
                 print( f'  - Child PID { child.pid }: { child.name() } - { child.status() }' )
-                child.suspend()  # Suspend children too!
+                child.suspend()
                 print( f'  - { child.status() }' )
 
             self._paused = True
@@ -125,10 +132,14 @@ class ScriptExecutionManager:
             return False
 
 
-    def resume_current_script( self ) -> None:
+    def resume_current_script( self ) -> bool:
         """ Resume execution of current script """
 
         import psutil
+
+        if self.current_runner is None:
+
+            return False
 
         try:
             pid: int = self.current_runner.current_process.pid
@@ -158,7 +169,7 @@ class ScriptExecutionManager:
             return False
 
 
-    def run_script_async( self, *, script_info: ScriptInfo, main_window: AutomationMenuWindow, api_callbacks: dict, enable_stop_button_callback: Callable, enable_pause_button_callback: Callable, stop_pause_button_blinking_callback: Callable, run_input: list[ str ], on_finished: Callable = None, ) -> None:
+    def run_script_async( self, *, script_info: ScriptInfo, main_window: AutomationMenuWindow, api_callbacks: dict, enable_stop_button_callback: Callable, enable_pause_button_callback: Callable, stop_pause_button_blinking_callback: Callable, run_input: list[ str ], on_finished: Callable, ) -> None:
         """ Launch a script for execution in a background thread.
 
         This method prepares UI state, spawns a worker thread, and starts the
@@ -215,10 +226,10 @@ class ScriptExecutionManager:
             if on_finished:
                 on_finished( exec_item, exit_code, terminated )
 
-        threading.Thread( sync_caller, daemon = True ).start()
+        threading.Thread( target = sync_caller, daemon = True ).start()
 
 
-    def run_script_sync( self, script_info: ScriptInfo, main_window: AutomationMenuWindow, api_callbacks: dict, enable_stop_button_callback: Callable, enable_pause_button_callback: Callable, stop_pause_button_blinking_callback: Callable, run_input: list[ str ] ) -> None:
+    def run_script_sync( self, script_info: ScriptInfo, main_window: AutomationMenuWindow, api_callbacks: dict, enable_stop_button_callback: Callable, enable_pause_button_callback: Callable, stop_pause_button_blinking_callback: Callable, run_input: list[ str ] ) -> tuple[ Any, int, bool ]:
         """ Launch a script and wait until execution completes.
 
         This method executes a script synchronously in the current thread.
@@ -279,10 +290,10 @@ class ScriptExecutionManager:
 
             runner.current_runner.wait()
 
-            exit_code: int = runner._exec_item.exit_code
-            terminated: bool = runner._terminated
+            exit_code: int = runner.get_exit_code()
+            terminated: bool = runner.was_terminated()
 
-        return runner._exec_item, exit_code, terminated
+        return runner.get_exec_item(), exit_code, terminated
 
 
     def stop_current_script( self ) -> None:

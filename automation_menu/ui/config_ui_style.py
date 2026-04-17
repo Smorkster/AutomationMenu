@@ -11,7 +11,7 @@ Created: 2025-10-08
 from __future__ import annotations
 
 from tkinter import Text
-from tkinter.ttk import Style
+from tkinter.ttk import Entry, Style
 from typing import Literal
 
 

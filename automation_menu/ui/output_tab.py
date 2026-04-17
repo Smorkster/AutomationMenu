@@ -15,7 +15,7 @@ from typing import Callable
 from automation_menu.models.widget_for_translation import WidgetForTranslation
 
 
-def get_output_tab( tabcontrol: Notebook, translate_callback: Callable ) -> tuple[ Frame, Entry ]:
+def get_output_tab( tabcontrol: Notebook, translate_callback: Callable ) -> tuple[ Frame, Text ]:
     """ Create a frame used as tab to display output data from script execution
 
     Args:
@@ -28,7 +28,7 @@ def get_output_tab( tabcontrol: Notebook, translate_callback: Callable ) -> tupl
     tabOutput: Frame = Frame( master = tabcontrol , padding = ( 5, 5, 5, 5 ) )
     tabOutput.columnconfigure( index = 0, weight = 1 )
     tabOutput.rowconfigure( index = 0, weight = 1 )
-    tabOutput.grid( sticky = ( N, S, E, W ) )
+    tabOutput.grid( sticky = 'nswe' )
 
     tabcontrol.add( child = tabOutput, text = _( 'Script output' ) )
 
@@ -37,10 +37,10 @@ def get_output_tab( tabcontrol: Notebook, translate_callback: Callable ) -> tupl
 
     output: Text = Text( master = tabOutput, wrap = 'word', font = ( 'Calibri', 12 ) )
     output.config( state = 'disabled' )
-    output.grid( column = 0, row = 0, sticky = ( N, S, E, W ) )
+    output.grid( column = 0, row = 0, sticky = 'nswe' )
 
     scrollbar: Scrollbar = Scrollbar( master = tabOutput, orient='vertical', command = output.yview )
-    scrollbar.grid( column = 1, row = 0, sticky = ( N , S , E ) )
+    scrollbar.grid( column = 1, row = 0, sticky = 'nse' )
     output.config( yscrollcommand = scrollbar.set )
 
     return tabOutput, output

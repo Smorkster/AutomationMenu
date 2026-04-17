@@ -16,6 +16,6 @@ A Python-based GUI application for managing and executing automation scripts.
 5. Run: `python main.py`
 
 ## Requirements
-- Python 3.8+
+- Python 3.10+
 - Windows (for Win32 GUI features)
 - Active Directory access

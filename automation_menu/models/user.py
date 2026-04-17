@@ -16,18 +16,33 @@ from ldap3.abstract.entry import Entry
 
 class User:
     """ Class to hold user information from Active Directory """
-    def __init__( self, ad_object: Entry = None ) -> None:
-        """ Initialize User with an Active Directory object """
 
-        self.UserId: str = os.getenv( key = 'USERNAME' ,default = 'DefaultUser' )
-        self.AdObject: Entry = ad_object
+    def __init__( self, ad_object: Entry ) -> None:
+        """ Initialize User with an Active Directory object
+
+        Args:
+            ad_object (Entry): AD entry of the user
+        """
+
+        self.UserId: str = os.getenv( key = 'USERNAME', default = 'DefaultUser' )
+
+        if ad_object:
+            self.AdObject: Entry = ad_object
 
 
     def is_member_of( self, group_to_check: str ) -> bool:
-        """ Check if the user is a member of a specific group """
+        """ Check if the user is a member of a specific group
+
+        Args:
+            group_to_check (str): Name of group to check membership for
+
+        Returns:
+            (bool): True if memberhip is listed
+        """
 
         for g in self.AdObject.memberof:
             if re.search( group_to_check , g ):
+
                 return True
 
         return False

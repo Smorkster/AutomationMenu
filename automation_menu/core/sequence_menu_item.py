@@ -9,7 +9,7 @@ Created: 2025-12-01
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, cast
 
 from automation_menu.models.sequence import Sequence
 
@@ -58,7 +58,7 @@ class SequenceMenuItem:
         """
 
         self._hide_menu()
-        self._main_object.app_context.sequence_manager.run_sequence( id = self._sequence.id, on_finished = self._main_object.execution_post_work )
+        self._main_object.app_context.SequenceManager.run_sequence( sequence_id = self._sequence.id, on_finished = self._main_object.execution_post_work )
 
 
     def on_enter( self, event: Event ) -> None:
@@ -68,7 +68,7 @@ class SequenceMenuItem:
             event (Event): Event triggering the function
         """
 
-        event.widget.configure( style = 'ScriptHover.TLabel' )
+        cast( Label, event.widget ).configure( style = 'ScriptHover.TLabel' )
 
 
     def on_leave( self, event: Event ) -> None:
@@ -78,4 +78,4 @@ class SequenceMenuItem:
             event (Event): Event triggering the function
         """
 
-        event.widget.configure( style = 'ScriptNormal.TLabel' )
+        cast( Label, event.widget ).configure( style = 'ScriptNormal.TLabel' )

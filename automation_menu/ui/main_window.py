@@ -9,10 +9,13 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
+import json
+from pathlib import Path
 import time
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Any, Callable, Dict, cast
 
 from automation_menu.models.geometry import Geometry
+from automation_menu.ui.custom_menu import CustomMenu
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
@@ -29,10 +32,10 @@ from automation_menu.models.enums import ApplicationRunState, OutputStyleTags, S
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
 from automation_menu.ui.input_manager import InputManager
-from automation_menu.ui.op_buttons import get_op_buttons
+from automation_menu.ui.op_buttons import ButtonDict, get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
-from automation_menu.ui.settings_tab import build_settings, get_settings_tab
-from automation_menu.ui.statusbar import get_statusbar
+from automation_menu.ui.settings_tab import SettingsUiDict, build_settings, get_settings_tab
+from automation_menu.ui.statusbar import StatusDict, get_statusbar
 from automation_menu.utils.decorators import ui_guard_method
 
 
@@ -50,12 +53,12 @@ class AutomationMenuWindow:
         self.app_state: ApplicationState = app_state
         self.app_context: ApplicationContext = app_context
         self.app_context.main_window = self
-        self.settings_file_path: str = self.app_state.secrets.get( 'settings_file_path' )
+        self.settings_file_path: Path = self.app_state.secrets[ 'settings_file_path' ]
 
         self.old_window_geometry: Geometry = Geometry()
         self.widgets = {}
         self._blink_active: bool = False
-        self._blink_job: str = None
+        self._blink_job: str = ''
         self._blink_state: bool = False
         self._close_confirmed: bool = False
         self._progressbar_visible: bool = False
@@ -75,7 +78,7 @@ class AutomationMenuWindow:
             'setting': self.setting
         }
 
-        self.sequence_callbacks = {
+        self.sequence_callbacks: dict[ str, Callable ] = {
             'op_abort_add_sequence_step': self.op_abort_add_sequence_step,
             'op_add_sequence_step': self.op_add_sequence_step,
             'op_create_new_sequence': self.op_create_new_sequence,
@@ -92,7 +95,7 @@ class AutomationMenuWindow:
         self.root.withdraw()
         self.root.geometry( '1100x600' )
 
-        title_string: str = self.app_state.secrets.get( 'mainwindowtitle' )
+        title_string: str = self.app_state.secrets[ 'mainwindowtitle' ]
 
         if self.app_context.startup_arguments[ 'app_run_state' ] == ApplicationRunState.DEV:
             title_string += " <DEV>"
@@ -107,8 +110,8 @@ class AutomationMenuWindow:
 
         self.root.title( string = title_string )
 
-        self.app_context.input_manager = InputManager( root = self.root,
-                                                      language_manager = self.app_context.language_manager
+        self.app_context._input_manager = InputManager( root = self.root,
+                                                       language_manager = self.app_context.LanguageManager
                                                       )
 
         # Setup styles
@@ -121,24 +124,24 @@ class AutomationMenuWindow:
         }
 
         # Create buttons for script operations
-        self.op_buttons: dict[ str, Widget ] = get_op_buttons( self.root, self )
+        self.op_buttons: ButtonDict = get_op_buttons( main_root = self.root, main_self = self )
 
         # Add tabs
         self.tab_control: Notebook = Notebook( master = self.root, style = self.tab_style )
         self.tab_control.bind( '<<NotebookTabChanged>>', self._on_tab_change )
-        self.tab_control.grid( column = 0, columnspan = 2, row = 2, sticky = ( N, S, E, W ) )
+        self.tab_control.grid( column = 0, columnspan = 2, row = 2, sticky = 'nswe' )
         tab_index = 0
 
         # Create output
-        self.tab_output, self.textbox_output = get_output_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.language_manager.add_translatable_widget )
+        self.tab_output, self.textbox_output = get_output_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.LanguageManager.add_translatable_widget )
 
         set_output_styles( widget = self.textbox_output )
 
         # Manage output
-        self.output_controller: AsyncOutputController = AsyncOutputController( output_queue = self.app_context.output_queue,
+        self.output_controller: AsyncOutputController = AsyncOutputController( output_queue = self.app_context.OutputQueue,
                                                        text_widget = self.textbox_output,
                                                        breakpoint_button = self.op_buttons[ 'btnContinueBreakpoint' ],
-                                                       history_manager = self.app_context.history_manager,
+                                                       history_manager = self.app_context.HistoryManager,
                                                        api_callbacks = self.api_callbacks,
                                                        logger = self.app_context.debug_logger
                                                        )
@@ -146,21 +149,21 @@ class AutomationMenuWindow:
 
         # Create sequence tab
         tab_index += 1
-        self.sequence_tab: Frame = self.app_context.sequence_manager.create_sequence_tab( tabcontrol = self.tab_control, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.language_manager.add_translatable_widget )
+        self.sequence_tab: Frame = self.app_context.SequenceManager.create_sequence_tab( tabcontrol = self.tab_control, sequence_callbacks = self.sequence_callbacks, translate_callback = self.app_context.LanguageManager.add_translatable_widget )
         self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
 
         # Create settings tab
         tab_index += 1
-        self.tabSettings: Frame = get_settings_tab( tabcontrol = self.tab_control, translate_store_callback = self.app_context.language_manager.add_translatable_widget )
+        self.tabSettings: Frame = get_settings_tab( tabcontrol = self.tab_control, translate_store_callback = self.app_context.LanguageManager.add_translatable_widget )
         self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
 
         # Create history tab
         tab_index += 1
-        self.tabHistory: Frame = self.app_context.history_manager.get_history_tab( tabcontrol = self.tab_control, translate_store_callback = self.app_context.language_manager.add_translatable_widget )
+        self.tabHistory: Frame = self.app_context.HistoryManager.get_history_tab( tabcontrol = self.tab_control, translate_store_callback = self.app_context.LanguageManager.add_translatable_widget )
         self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
 
         # Create statusbar
-        self.status_widgets: dict[ str, Widget ] = get_statusbar( master_root = self.root )
+        self.status_widgets: StatusDict = get_statusbar( master_root = self.root )
 
         self.root.columnconfigure( index = 0, weight = 1 )
         self.root.columnconfigure( index = 1, weight = 0 )
@@ -211,11 +214,7 @@ class AutomationMenuWindow:
         from automation_menu.utils.localization import _
 
         line: str = _( 'There is a script running. Do you want to terminate the script process before closing the application?' )
-        answ: str = messagebox.askyesno(
-            title = _( 'Script still runnning' ),
-            message = line,
-            parent = self.root
-        )
+        answ: bool = messagebox.askyesno( title = _( 'Script still runnning' ), message = line, parent = self.root )
 
         if answ:
             self._stop_script()
@@ -226,8 +225,12 @@ class AutomationMenuWindow:
     def _continue_breakpoint( self ) -> None:
         """ Reset application debug mode """
 
-        self.app_state.running_automation.continue_breakpoint()
+        if self.app_state.running_automation is None:
+
+            return
+
         self.op_buttons[ 'btnContinueBreakpoint' ].state( [ "disabled" ] )
+        self.app_state.running_automation.continue_breakpoint()
 
 
     def _minimize_hide_controls( self ) -> None:
@@ -271,34 +274,39 @@ class AutomationMenuWindow:
 
 
     @ui_guard_method( when_message = 'Opening script menu with shortcut' )
-    def _on_script_menu_shortcut( self, event: Event = None ) -> None:
+    def _on_script_menu_shortcut( self, event: Event | None = None ) -> None:
         """ Open script menu with shortcut
 
         Args:
-            event (Event): Event triggering the handler
+            event (Event | None): Event triggering the handler
         """
 
         self.op_buttons[ 'script_menu' ].show_popup_menu()
 
 
     @ui_guard_method( when_message = 'Tab change' )
-    def _on_tab_change( self, event: Event = None ) -> None:
+    def _on_tab_change( self, event: Event | None = None ) -> None:
         """ Notebook tab changes focus, check if tab have been loaded yet
 
         Args:
-            event (Event): Event triggering the handler
+            event (Event | None): Event triggering the handler
         """
 
+        if event is None or not isinstance( event.widget, Notebook ):
+
+            return
+
         idx = event.widget.index( 'current' )
+
         if not self._tabs_build.get( idx, {} ).get( 'built', True ):
             if idx == 1:
-                self.app_context.sequence_manager.build_tab_content()
+                self.app_context.SequenceManager.build_tab_content()
 
             elif idx == 2:
-                build_settings( tab = self.tabSettings, settings = self.app_state.settings, main_self = self )
+                self.settings_ui: SettingsUiDict = build_settings( tab = self.tabSettings, settings = self.app_state.settings, main_self = self )
 
             elif idx == 3:
-                self.app_context.history_manager.build_tab_content( translate_store_callback = self.app_context.language_manager.add_translatable_widget, translate_callback = self.app_context.language_manager.translate )
+                self.app_context.HistoryManager.build_tab_content( translate_store_callback = self.app_context.LanguageManager.add_translatable_widget, translate_callback = self.app_context.LanguageManager.translate )
 
             self._tabs_build[ idx ][ 'built' ] = True
 
@@ -312,7 +320,7 @@ class AutomationMenuWindow:
         """
 
         self.app_state.settings.current_language = new_lang
-        write_settingsfile( settings = self.app_state.settings, settings_file_path = self.settings_file_path )
+        write_settingsfile( settings = self.app_state.settings, settings_file_path = str( self.settings_file_path ) )
 
 
     @ui_guard_method( when_message = 'Pausing/resuming execution' )
@@ -321,9 +329,9 @@ class AutomationMenuWindow:
 
         from automation_menu.utils.localization import _
 
-        if self.app_context.execution_manager.is_paused():
-            if self.app_context.execution_manager.resume_current_script():
-                self.app_context.output_queue.put( { 'line': _( 'Process was resumed' ),
+        if self.app_context.ExecutionManager.is_paused():
+            if self.app_context.ExecutionManager.resume_current_script():
+                self.app_context.OutputQueue.put( { 'line': _( 'Process was resumed' ),
                                                     'tag': OutputStyleTags.SYSINFO
                                                     } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Pause' ) )
@@ -332,8 +340,8 @@ class AutomationMenuWindow:
                 self.stop_pause_button_blinking()
 
         else:
-            if self.app_context.execution_manager.pause_current_script():
-                self.app_context.output_queue.put( { 'line': _( 'Process was paused' ),
+            if self.app_context.ExecutionManager.pause_current_script():
+                self.app_context.OutputQueue.put( { 'line': _( 'Process was paused' ),
                                                     'tag': OutputStyleTags.SYSINFO
                                                     } )
                 self.op_buttons[ 'btnPauseResumeScript' ].config( text = _( 'Resume' ) )
@@ -357,11 +365,38 @@ class AutomationMenuWindow:
         self._blink_job = self.root.after( 600, self._pause_button_blinking )
 
 
+    def _serialize_setting( self, key: Any ) -> str:
+        """ Normalize setting value to a string
+
+        Args:
+            key (Any): Key name of setting to normalize
+
+        Returns:
+            (str): String normalization of setting value
+        """
+
+        value = self.app_state.settings.get( key )
+        if value is None:
+
+            return ""
+
+        if isinstance( value, ( str, int, float, bool ) ):
+
+            return str( value )
+
+        # dict / list / TypedDict / dataclasses / etc.
+        try:
+            return json.dumps( value, ensure_ascii = False, default = str )
+
+        except TypeError:
+            return str( value )
+
+
     @ui_guard_method( when_message = 'Stopping script' )
     def _stop_script( self ) -> None:
         """ Eventhandler for when user clicks button stop script """
 
-        self.app_context.execution_manager.stop_current_script()
+        self.app_context.ExecutionManager.stop_current_script()
         self.stop_pause_button_blinking()
 
 
@@ -398,12 +433,12 @@ class AutomationMenuWindow:
         from automation_menu.utils.localization import _
 
         self.tab_control.select( 0 )
-        self.app_context.output_queue.put( SysInstructions.CLEAROUTPUT )
-        self.app_context.input_manager.hide_input_frame()
+        self.app_context.OutputQueue.put( SysInstructions.CLEAROUTPUT )
+        self.app_context.InputManager.hide_input_frame()
 
         if self.app_state.settings.get( 'minimize_on_running' ):
             if disable_minimize:
-                self.app_context.output_queue.put( {
+                self.app_context.OutputQueue.put( {
                     'line': _( 'The script has \'DisableMinimizeOnRunning\', meaning the window will not be minimized.' ),
                     'tag': OutputStyleTags.SYSINFO
                 } )
@@ -424,17 +459,17 @@ class AutomationMenuWindow:
 
         from automation_menu.utils.localization import _
 
-        if not self._close_confirmed and self.app_context.execution_manager.is_running():
+        if not self._close_confirmed and self.app_context.ExecutionManager.is_running():
             if not self._confirm_close_process():
 
                 return
 
         try:
-            write_settingsfile( settings = self.app_state.settings, settings_file_path = self.app_state.secrets.get( 'settings_file_path' ) )
+            write_settingsfile( settings = self.app_state.settings, settings_file_path = self.app_state.secrets[ 'settings_file_path' ] )
 
         except Exception as e:
 
-            dynamicinputbox.dynamic_inputbox( title = _( 'Write settings error' ), message = _( 'Could not save settings to file: {e}' ).format( e = e ) )
+            dynamicinputbox.dynamic_inputbox( title = _( 'Write settings error' ), message = _( 'Could not save settings to file: {e}' ).format( e = e ) ).show()
 
         if hasattr( self, 'output_controller' ):
             try:
@@ -458,7 +493,7 @@ class AutomationMenuWindow:
             return
 
         self.app_state.settings.current_language = event.widget.get()
-        self.app_context.language_manager.change_app_language( new_language = event.widget.get() )
+        self.app_context.LanguageManager.change_app_language( new_language = event.widget.get() )
 
 
     def set_force_focus_post_execution( self, new_value: bool ) -> None:
@@ -523,11 +558,11 @@ class AutomationMenuWindow:
 
 
     @ui_guard_method( when_message = 'Down-/resizing window before/after script execution' )
-    def min_max_on_running( self, old_geometry: Geometry = None ) -> None:
+    def min_max_on_running( self, old_geometry: Geometry | None = None ) -> None:
         """ Resize window during script execution
 
         Args:
-            old_geometry (Geometry): Size values of main window before script execution
+            old_geometry (Geometry | None): Size values of main window before script execution
         """
 
         win_width: int = 400
@@ -564,6 +599,13 @@ class AutomationMenuWindow:
         """ Enable the breakpoint button """
 
         self.op_buttons[ 'btnContinueBreakpoint' ].state( [ '!disabled' ] )
+
+
+    @ui_guard_method( when_message = 'Disabling breakpoint continue button' )
+    def disable_breakpoint_button( self ) -> None:
+        """ Disable the breakpoint button """
+
+        self.op_buttons[ 'btnContinueBreakpoint' ].state( [ 'disabled' ] )
 
 
     @ui_guard_method( when_message = 'Enabling pause/resume button' )
@@ -606,7 +648,7 @@ class AutomationMenuWindow:
 
         if self._blink_job:
             self.root.after_cancel( self._blink_job )
-            self._blink_job = None
+            self._blink_job = ''
     # endregion
 
 
@@ -615,49 +657,49 @@ class AutomationMenuWindow:
     def op_add_sequence_step( self, *args: Tuple ) -> None:
         """ Call for view toggle of sequence step form """
 
-        self.app_context.sequence_manager.toggle_step_form()
+        self.app_context.SequenceManager.toggle_step_form()
 
 
     @ui_guard_method( when_message = 'Call for creating new sequence' )
     def op_create_new_sequence( self, *args: Tuple ) -> None:
         """ Call for creation of new sequence """
 
-        self.app_context.sequence_manager.create_new_sequence()
+        self.app_context.SequenceManager.create_new_sequence()
 
 
     @ui_guard_method( when_message = 'Call for aborting step editing' )
     def op_abort_add_sequence_step( self, *args: Tuple ) -> None:
         """ Call to hide step form, i.e. ending editing of step """
 
-        self.app_context.sequence_manager.hide_step_form()
+        self.app_context.SequenceManager.hide_step_form()
 
 
     @ui_guard_method( when_message = 'Call for aborting sequence editing' )
     def op_abort_sequence_edit( self, *args: Tuple ) -> None:
         """ Call to stop editing sequence """
 
-        self.app_context.sequence_manager.abort_sequence_edit()
+        self.app_context.SequenceManager.abort_sequence_edit()
 
 
     @ui_guard_method( when_message = 'Call for deleting sequence' )
     def op_delete_sequence( self, *args: Tuple ) -> None:
         """ Call to delete sequence """
 
-        self.app_context.sequence_manager.delete_sequence()
+        self.app_context.SequenceManager.delete_sequence()
 
 
     @ui_guard_method( when_message = 'Call for start editing sequence' )
     def op_edit_sequence( self, *args: Tuple ) -> None:
         """ Call to edit selected sequence """
 
-        self.app_context.sequence_manager.edit_sequence()
+        self.app_context.SequenceManager.edit_sequence()
 
 
     @ui_guard_method( when_message = 'Call for deleting sequence step' )
     def op_remove_sequence_step( self, *args: Tuple ) -> None:
         """ Call to remove step from sequence """
 
-        self.app_context.sequence_manager.remove_sequence_step()
+        self.app_context.SequenceManager.remove_sequence_step()
 
 
     @ui_guard_method( when_message = 'Call for running sequence' )
@@ -671,14 +713,14 @@ class AutomationMenuWindow:
 
         self.execution_pre_work( disable_minimize = False, is_sequence = True )
 
-        self.app_context.sequence_manager.run_sequence( on_finished = on_finished )
+        self.app_context.SequenceManager.run_sequence( on_finished = on_finished )
 
 
     @ui_guard_method( when_message = 'Call for saving sequence' )
     def op_save_sequence( self, *args: Tuple ) -> None:
         """ Call to save sequence """
 
-        self.app_context.sequence_manager.save_sequence()
+        self.app_context.SequenceManager.save_sequence()
     # endregion
 
 
@@ -735,7 +777,7 @@ class AutomationMenuWindow:
         new_percentage = 0
 
         if not self.status_widgets[ 'progressbar' ].master.winfo_ismapped():
-            self.status_widgets[ 'progressbar' ].master.grid()
+            cast( Frame, self.status_widgets[ 'progressbar' ].master ).grid()
 
         if not self.status_widgets[ 'progressbar' ].winfo_ismapped():
             self.status_widgets[ 'progressbar' ].grid()
@@ -771,9 +813,13 @@ class AutomationMenuWindow:
             key_dict (dict): Dict for specifying setting to retrieve
         """
 
-        if self.app_context.execution_manager.current_runner:
-            setting = self.app_state.settings.get( key_dict[ 'key' ] )
-            self.root.after( 10, lambda: self.app_context.execution_manager.current_runner.send_api_response( response = setting ) )
+        runner = self.app_context.ExecutionManager.current_runner
+
+        if runner is None:
+            return
+
+        setting = self._serialize_setting( key = key_dict[ 'key' ] )
+        self.root.after( 10, lambda: runner.send_api_response( response = setting ) )
 
     # endregion Settings API callbacks
 
@@ -790,9 +836,13 @@ class AutomationMenuWindow:
     def get_status( self, *args: Tuple ) -> None:
         """ Return current statustext """
 
-        if self.app_context.execution_manager.current_runner:
-            status = self.status_widgets[ 'text_status' ].cget( 'text' )
-            self.root.after( 10, lambda: self.app_context.execution_manager.current_runner.send_api_response( response = status ) )
+        runner = self.app_context.ExecutionManager.current_runner
+
+        if runner is None:
+            return
+
+        status = self.status_widgets[ 'text_status' ].cget( 'text' )
+        self.root.after( 10, lambda: runner.send_api_response( response = status ) )
 
 
     @ui_guard_method( when_message = 'API get status' )

@@ -129,7 +129,7 @@ def _check_for_breakpoints( content: str ) -> bool:
     return False
 
 
-def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: ApplicationRunState ) -> ScriptInfo:
+def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: ApplicationRunState ) -> tuple[ ScriptInfo, dict, int ]:
     """ Call for script information gathering of specified script file
 
     Args:
@@ -153,21 +153,21 @@ def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: Appl
     except Exception as e:
         raise Exception( _( 'Could not read file: {error}' ).format( error = str( e ) ) )
 
-    script_info: ScriptInfo = ScriptInfo( filename = file.name, fullpath = file.path )
+    metadata: dict
 
     if re.search( r'ScriptInfoEnd *((\"\"\")|(#>))', content ):
         metadata, warnings = scriptinfo_block_parser( full_text = content )
 
     else:
         try:
-            metadata, warnings = extract_script_metadata( script_info = script_info )
+            metadata, warnings = extract_script_metadata( script_fullpath = file.path )
 
-        except:
-            raise ScriptInfoError( _( 'No valid ScriptInfo was found in the script' ) )
+        except Exception as e:
+            raise ScriptInfoError( _( f'No valid ScriptInfo was found in the script: { e }' ) ) from e
 
     try:
         smd: ScriptMetadata = ScriptMetadata( **metadata )
-        script_info.scriptmeta = smd
+        script_info: ScriptInfo = ScriptInfo( filename = file.name, fullpath = file.path, scriptmeta = smd )
 
     except Exception as e:
         raise
@@ -196,7 +196,7 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
     application_test_files: list[ ScriptInfo ] = []
     indexed_files: list[ ScriptInfo ] = []
     scriptswithbreakpoint: list[ ScriptInfo] = []
-    script_dir: WindowsPath = app_state.secrets.get( 'script_dir_path' )
+    script_dir: WindowsPath = app_state.secrets[ 'script_dir_path' ]
 
     for i, file in enumerate(
         sorted(
@@ -261,7 +261,7 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
             continue
 
     if len( scriptswithbreakpoint ) > 0:
-        line: str = _( 'Some script have an active breakpoint in the code, handling this has not been implemented, so these will not be available:' )
+        line: str = _( 'Some scripts have at least one active breakpoint in the code. Handling this has not been fully tested yet:' )
         output_queue.put( { 'line': '' ,
                            'tag': OutputStyleTags.SYSINFO
                            } )

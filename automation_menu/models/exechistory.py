@@ -11,34 +11,18 @@ Created: 2025-10-17
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from automation_menu.models.output import Output
+
 if TYPE_CHECKING:
     from automation_menu.models import ScriptInfo
 
 import json
 
-from dataclasses import dataclass
 from datetime import datetime
 
 
-@dataclass
-class Output:
-    out_time: datetime
-    output: str
-
-    def __repr__( self ) -> str:
-        """ Custom representation """
-
-        return str( { 'time': str( self.out_time ), 'output': self.output } )
-
-
-    def __str__( self ) -> str:
-        """ Custom string conversion """
-
-        return f'{ self.out_time.strftime( '%H:%M:%S' ) }: { self.output }'
-
-
 class ExecHistory:
-    def __init__( self, script_info: ScriptInfo = None ) -> None:
+    def __init__( self, script_info: ScriptInfo ) -> None:
         """ Class to hold script execution history
 
         Args:
@@ -48,9 +32,16 @@ class ExecHistory:
         self.script_info: ScriptInfo = script_info
         self.output: list[ Output ] = []
         self.start: datetime = datetime.now()
-        self.end: datetime = None
-        self.exit_code: int = None
+        self.end: datetime
+        self.exit_code: int
         self.was_terminated: bool = False
+        self.list_id: str = ''
+
+
+    def __getitem__( self ) -> ExecHistory:
+        """ Return this object """
+
+        return self
 
 
     def __repr__( self ) -> str:
@@ -83,14 +74,14 @@ class ExecHistory:
         self.end = time
 
 
-    def append_output( self, item: dict[ datetime, str ] ) -> None:
+    def append_output( self, item: Output ) -> None:
         """ Add new item to output
 
         Args:
-            item (dict[ datetime, str ]): Dict item with datetime and string from output
+            item (Output): Output item from script output
         """
 
-        self.output.append( Output( **item ) )
+        self.output.append( item )
 
 
     def set_exit_code( self, exit_code: int ) -> None:

@@ -23,6 +23,7 @@ from typing import Callable
 
 from automation_menu.models import SysInstructions
 from automation_menu.models.enums import OutputStyleTags
+from automation_menu.models.exechistory import ExecHistory, Output
 from automation_menu.ui.history_manager import HistoryManager
 
 
@@ -53,10 +54,9 @@ class AsyncOutputController:
         self.api_callbacks: dict[ str, Callable ] = api_callbacks
         self._logger: Logger = logger
 
-        self.loop: asyncio.AbstractEventLoop | None = None
+        self.loop: asyncio.AbstractEventLoop
 
         self._running: bool = False
-        self._executor: bool = None
 
 
     def _api_handler( self, handler: str, data: dict ) -> None:
@@ -86,20 +86,21 @@ class AsyncOutputController:
                 if queue_item != SysInstructions.PROCESSTERMINATED:
                     processed = await self._async_process_queue_item( queue_item )
 
-                    self._schedule_ui_update( processed )
+                    if processed is not None:
+                        self._schedule_ui_update( processed_queue_item = processed )
 
             except Exception as e:
                 logging.error( f'Error in async processor: { e }' )
 
 
-    async def _async_process_queue_item( self, queue_item: str | SysInstructions | dict ) -> None | dict:
+    async def _async_process_queue_item( self, queue_item: str | SysInstructions | dict[ str, object ] ) -> dict[ str, object ] | SysInstructions | None:
         """ Process gathered queue item
 
         Args:
-            queue_item (str | SysInstructions | dict): Queue item to process
+            queue_item (str | SysInstructions | dict[ str, object ]): Queue item to process
 
         Returns:
-            (dict): Message normalized to a dict
+            (dict[ str, object ] | SysInstructions | None): Message normalized to a dict
         """
 
         if queue_item == 'timeout':
@@ -114,7 +115,7 @@ class AsyncOutputController:
         return self._normalize_queue_item( queue_item )
 
 
-    def _get_queue_item( self ) -> dict | str:
+    def _get_queue_item(self) -> str | dict[ str, object ] | SysInstructions:
         """ Get the last queue item inserted
 
         Returns:
@@ -130,11 +131,11 @@ class AsyncOutputController:
             return 'timeout'
 
 
-    def _handle_ui_update( self, queue_item: dict | str ) -> None:
+    def _handle_ui_update( self, queue_item: dict[ str, object ] | str | SysInstructions ) -> None:
         """ Do the actual UI update
 
         Args:
-            queue_item (dict | str): Queued item to update UI from
+            queue_item (dict[ str, object ] | str | SysInstructions): Queued item to update UI from
         """
 
         from automation_menu.utils.localization import _
@@ -144,83 +145,106 @@ class AsyncOutputController:
             self.text_widget.delete( '1.0', tk.END )
             self.text_widget.config( state = 'disabled' )
 
-        elif isinstance( queue_item, dict ):
+            return
 
-            if queue_item.get( 'type' ) == 'api':
-                handler: str = queue_item.get( 'handler' )
-                data: dict[ str, str ] = queue_item.get( 'data', {} )
+        if not isinstance( queue_item, dict ):
 
-                if handler in self.api_callbacks:
-                    self._api_handler( handler = queue_item[ 'handler' ] , data = queue_item[ 'data' ] )
+            return
+
+        if queue_item.get('type') == 'api':
+            handler_obj = queue_item.get( 'handler', '' )
+            data_obj = queue_item.get( 'data', {} )
+
+            if isinstance( handler_obj, str ) and isinstance( data_obj, dict ):
+                if handler_obj in self.api_callbacks:
+                    self._api_handler( handler = handler_obj, data = data_obj )
 
                 else:
-                    self._logger.warning( _( 'Unknown API handler {h}' ).format( h = handler ) )
+                    self._logger.warning( _( 'Unknown API handler {h}' ).format( h = handler_obj ) )
 
             else:
-                line: str = queue_item.get( 'line' )
-                tag: OutputStyleTags = queue_item.get( 'tag', OutputStyleTags.SYSINFO )
+                self._logger.warning( _( 'Unknown API handler {h}' ).format( h = handler_obj ) )
 
-                if line is None:
-                    self._logger.warning( _( 'Queue item missing \'line\': {q}' ).format( q = queue_item ) )
+            return
 
-                    return
+        line_obj = queue_item.get( 'line', '' )
+        tag_obj = queue_item.get( 'tag', OutputStyleTags.SYSINFO )
+        exec_item_obj = queue_item.get( 'exec_item' )
 
-                else:
-                    self.text_widget.config( state = 'normal' )
-                    self.text_widget.insert( 'end', queue_item[ 'line' ] + '\n', tag.value )
-                    self.text_widget.config( state = 'disabled' )
-                    self.text_widget.see( 'end' )
+        if not isinstance( line_obj, str ):
+            self._logger.warning( _( 'Queue item missing \'line\': {q}' ).format( q = queue_item ) )
 
-                    # Log queue output in exec history
-                    if not queue_item[ 'tag' ].name.startswith( 'SYS' ):
-                        queue_item[ 'exec_item' ].append_output( {
-                            'out_time': datetime.now(),
-                            'output': queue_item[ 'line' ]
-                        } )
+            return
 
-                    if queue_item.get( 'breakpoint' ):
-                        self.breakpoint_button.config( state = 'normal' )
+        if not isinstance( tag_obj, OutputStyleTags ):
+            tag_obj = OutputStyleTags.SYSINFO
 
-                    elif queue_item.get( 'finished' ):
-                        queue_item[ 'exec_item' ].end = datetime.now()
-                        self.history_manager.add_history_item( queue_item[ 'exec_item' ] )
+        self.text_widget.config( state = 'normal' )
+        self.text_widget.insert( 'end', line_obj + '\n', tag_obj.value )
+        self.text_widget.config( state = 'disabled' )
+        self.text_widget.see( 'end' )
+
+        if not tag_obj.name.startswith( 'SYS' ):
+            if isinstance( exec_item_obj, ExecHistory ):
+                o = Output( out_time = datetime.now(), output = line_obj )
+                exec_item_obj.append_output( o )
+
+        if queue_item.get( 'breakpoint'):
+            self.breakpoint_button.config( state = 'normal' )
+
+        elif queue_item.get( 'finished' ):
+            if isinstance( exec_item_obj, ExecHistory ):
+                exec_item_obj.end = datetime.now()
+                self.history_manager.add_history_item( exec_item_obj )
 
 
-    def _normalize_queue_item( self, queue_item: str | dict ) -> dict[ str, dict | OutputStyleTags | str ]:
+    def _normalize_queue_item( self, queue_item: dict[ str, object ] | str | SysInstructions ) -> dict[ str, object ] | SysInstructions:
         """ Normalize message to a dict
 
         Args:
-            queue_item (dict | str): Queued item to normalize
+            queue_item (dict[ str, object ] | str | SysInstructions): Item from output queue
 
         Returns:
-            (dict): A normalized message dict
+            (dict[ str, object ] | SysInstructions): Object formed for UI handling
         """
 
         if isinstance( queue_item, str ):
-
             return {
                 'line': queue_item.rstrip(),
-                'tag': OutputStyleTags.INFO
+                'tag': OutputStyleTags.INFO,
             }
 
-        elif isinstance( queue_item, dict ):
-            if '__API_START__' in queue_item[ 'line' ]:
-                return self._parse_api_message( queue_item )
-
-            else:
-
-                return queue_item
-
-        else:
+        if isinstance( queue_item, SysInstructions ):
 
             return queue_item
 
+        if isinstance( queue_item, dict ):
+            line_obj = queue_item.get( 'line' )
 
-    def _parse_api_message( self, queue_item: dict ) -> dict[ str, dict | str ]:
+            if isinstance( line_obj, str ) and '__API_START__' in line_obj:
+                parsed = self._parse_api_message( api_message = line_obj )
+
+                if isinstance( parsed, str ):
+                    return {
+                        'line': parsed.rstrip(),
+                        'tag': OutputStyleTags.INFO,
+                    }
+
+                return parsed
+
+            return queue_item
+
+        return {
+            'line': str( queue_item ),
+            'tag': OutputStyleTags.INFO,
+        }
+
+
+    def _parse_api_message( self, api_message: str ) -> dict[ str, object ] | str:
         """ Parse API call from queue item
 
         Args:
-            queue_item (dict): Queue item to parse
+            api_message (str): Queue item to parse
 
         Returns:
             (dict): Dictionary with name of API handler and recieved data
@@ -228,40 +252,46 @@ class AsyncOutputController:
 
         import re
 
-        match: Match = re.search( r'__API_START__(.+?)__API_END__', string = queue_item[ 'line' ] )
+        api_msg_dict: dict[ str, object ] = { 'type': '', 'handler': '', 'data': {} }
+        match: Match[ str ] | None = re.search( r'__API_START__(.+?)__API_END__', string = api_message )
 
-        if match:
-            try:
-                api_msg = json.loads( match.group( 1 ) )
+        if match is None:
 
-                if api_msg[ 'type' ] == 'progress':
-                    data = api_msg.get( 'data' ).get( 'set', api_msg.get( 'data' ).get( 'percent' ) )
-                    handler = 'update'
+            return api_message
 
-                    if isinstance( data, str ):
-                        handler = data
+        try:
+            api_msg = json.loads( match.group( 1 ) )
+            api_msg_dict[ 'type' ] = 'api'
+            api_msg_dict[ 'data' ] = api_msg[ 'data' ]
 
-                    return { 'type': 'api', 'handler': f'{ handler }_progress', 'data': api_msg[ 'data' ] }
+            if api_msg[ 'type' ] == 'progress':
+                data = api_msg.get( 'data' ).get( 'set', api_msg.get( 'data' ).get( 'percent' ) )
+                handler = 'update'
 
-                elif api_msg[ 'type' ] == 'status':
-                    call_type = api_msg.get( 'data' ).get( 'set' )
+                if isinstance( data, str ):
+                    handler = data
 
-                    if call_type not in ( 'clear', 'get' ):
-                        call_type = 'set'
+                api_msg_dict[ 'handler' ] = f'{ handler }_progress'
 
-                    return { 'type': 'api', 'handler': f'{ call_type }_status', 'data': api_msg[ 'data' ] }
+            elif api_msg[ 'type' ] == 'status':
+                call_type = api_msg.get( 'data' ).get( 'set' )
 
-                elif api_msg[ 'type' ] == 'setting':
+                if call_type not in ( 'clear', 'get' ):
+                    call_type = 'set'
 
-                    return { 'type': 'api', 'handler': 'setting', 'data': api_msg.get( 'data' ) }
+                api_msg_dict[ 'handler' ] = f'{ call_type }_status'
+
+            elif api_msg[ 'type' ] == 'setting':
+
+                api_msg_dict[ 'handler' ] = 'setting'
 
 
-            except json.JSONDecodeError as e:
-                from automation_menu.utils.localization import _
+        except json.JSONDecodeError as e:
+            from automation_menu.utils.localization import _
 
-                self._logger.error( _( 'Couldn\'t decode API JSON:\n{e}' ).format( e = e ) )
- 
-                pass
+            self._logger.error( _( 'Couldn\'t decode API JSON:\n{e}' ).format( e = e ) )
+
+        return api_msg_dict
 
 
     def _run_async_loop( self ) -> None:
@@ -282,11 +312,11 @@ class AsyncOutputController:
             self.loop.close()
 
 
-    def _schedule_ui_update( self, processed_queue_item: dict ) -> None:
+    def _schedule_ui_update( self, processed_queue_item: dict | SysInstructions ) -> None:
         """ Schedule UI update with the processed message
 
         Args:
-            processed_queue_item (dict): Queued item to schedule update for
+            processed_queue_item (dict | SysInstructions): Queued item to schedule update for
         """
 
         if processed_queue_item:

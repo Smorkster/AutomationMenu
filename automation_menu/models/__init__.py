@@ -3,7 +3,7 @@ Data models for the automation menu application.
 """
 
 from .exechistory import ExecHistory
-from .scriptmetadata import ScriptMetadata, ScriptInputParameter
+from .scriptmetadata import ScriptMetadata, ScriptInputParameter, ScriptState
 from .scriptinfo import ScriptInfo
 from .secrets import Secrets
 from .settings import Settings

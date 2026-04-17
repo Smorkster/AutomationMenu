@@ -16,10 +16,9 @@ from automation_menu.models.sequence import Sequence
 if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
 
-import tkinter as tk
 
-from tkinter import E, N, S, W, Canvas, Event, Scrollbar, Tk, Toplevel
-from tkinter.ttk import Button, Frame, Widget
+from tkinter import Canvas, Event, Misc, Scrollbar, Toplevel
+from tkinter.ttk import Button, Frame
 
 from automation_menu.core.sequence_menu_item import SequenceMenuItem
 from automation_menu.core.script_menu_item import ScriptMenuItem
@@ -27,22 +26,22 @@ from automation_menu.models import ScriptInfo
 
 
 class CustomMenu:
-    def __init__( self, parent: Tk, text: str, exec_list: list[ ScriptInfo ], main_object: AutomationMenuWindow ) -> None:
+    def __init__( self, parent: Frame, text: str, exec_list: dict[ str, Sequence ] | list[ ScriptInfo ], main_object: AutomationMenuWindow ) -> None:
         """ Create a custom meny as a button. This launches a separatewindow
         containing clickable labels for each menuitem
 
         Args:
-            parent (Tk): The parent window/widget to attach the button to
+            parent (Frame): The parent window/widget to attach the button to
             text (str): String to display in the button
-            exec_list (list[ ScriptInfo ]): A list of items to be displayed in the menu
+            exec_list (dict[ str, Sequence ] | list[ ScriptInfo ]): A list of items to be displayed in the menu
             main_object (AutomationMenuWindow): The main object, is used in each menuitem
         """
 
-        self.parent: Tk = parent
+        self.parent: Frame = parent
         self.exec_list: dict[ str, Sequence ] | list[ ScriptInfo ] = exec_list
         self.main_object: AutomationMenuWindow = main_object
         self._visible: bool = False
-        self._max_height: bool = 500
+        self._max_height: int = 500
 
         # Button that acts as menu base
         self.menu_button: Button = Button( master = parent, text = text, command = self.show_popup_menu )
@@ -50,16 +49,16 @@ class CustomMenu:
         self.popup: Toplevel = Toplevel( parent )
 
         self._frame: Frame = Frame( master = self.popup )
-        self._frame.grid( sticky = ( N, S, W, E ) )
+        self._frame.grid( sticky = 'nswe' )
         self._frame.grid_columnconfigure( 0, weight = 1 )
         self._frame.grid_columnconfigure( 1, weight = 0 )
         self._frame.grid_rowconfigure( 0, weight = 1 )
 
         self._canvas: Canvas = Canvas( master = self._frame, height = self._max_height, highlightthickness = 0 )
-        self._canvas.grid( row = 0, column = 0, sticky = ( N, S, W, E ) )
+        self._canvas.grid( row = 0, column = 0, sticky = 'nswe' )
 
         self._scrollbar: Scrollbar = Scrollbar( master = self._frame, orient = 'vertical', command = self._canvas.yview )
-        self._scrollbar.grid( row = 0, column = 1, sticky = ( N, S ) )
+        self._scrollbar.grid( row = 0, column = 1, sticky = 'ns' )
 
         self._canvas.configure( yscrollcommand = self._scrollbar.set )
 
@@ -85,7 +84,7 @@ class CustomMenu:
             event (Event): Event that triggered handler
         """
 
-        widget: Widget = event.widget.winfo_containing( event.x_root, event.y_root )
+        widget: Misc | None = event.widget.winfo_containing( event.x_root, event.y_root )
 
         if widget not in [ self.popup ] + list( self.popup.winfo_children() ):
             self.hide_popup_menu()
@@ -94,17 +93,27 @@ class CustomMenu:
     def _create_popup_content( self ) -> None:
         """ Create the popup menu content, with tooltips """
 
-        for i, item_info in enumerate( self.exec_list ):
+        items: list[ ScriptInfo ] | list[ Sequence ]
+
+        if isinstance( self.exec_list, dict ):
+            items = list( self.exec_list.values() )
+
+        else:
+            items = self.exec_list
+
+        for i, item_info in enumerate( items ):
+            menu_item: SequenceMenuItem | ScriptMenuItem | None = None
+
             if isinstance( item_info, ScriptInfo ):
-                menu_item: ScriptMenuItem = ScriptMenuItem( script_menu = self._menu_container, script_info = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
+                menu_item = ScriptMenuItem( script_menu = self._menu_container, script_info = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
 
             else:
-                menu_item: SequenceMenuItem = SequenceMenuItem( sequence_menu = self._menu_container, sequence = self.exec_list[ item_info ], main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
+                menu_item = SequenceMenuItem( sequence_menu = self._menu_container, sequence = item_info, main_object = self.main_object, menu_hide_callback = self.hide_popup_menu )
 
             menu_item.menu_button.bind( '<Enter>' , menu_item.on_enter, add = '+' )
             menu_item.menu_button.bind( '<Leave>' , menu_item.on_leave, add = '+' )
 
-            menu_item.menu_button.grid( row = i, column = 0, sticky = ( W, E ), padx = 2, pady = 1 )
+            menu_item.menu_button.grid( row = i, column = 0, sticky = 'we', padx = 2, pady = 1 )
 
         self.popup.update_idletasks()
 
@@ -135,7 +144,7 @@ class CustomMenu:
 
         # Toggle scrollbar visibility
         if content_height > self._max_height:
-            self._scrollbar.grid( row = 0, column = 1, sticky = ( N, S ) )
+            self._scrollbar.grid( row = 0, column = 1, sticky = 'ns' )
 
         else:
             self._scrollbar.grid_remove()

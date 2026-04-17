@@ -9,7 +9,12 @@ Created: 2025-11-26
 """
 
 from __future__ import annotations
+from pathlib import Path
+from queue import Queue
 from typing import TYPE_CHECKING
+
+from automation_menu.models.enums import ApplicationRunState
+from automation_menu.models.user import User
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
@@ -20,26 +25,30 @@ from automation_menu.models.scriptinfo import ScriptInfo
 
 
 class ScriptManager:
-    def __init__( self, app_state: ApplicationState, app_context: ApplicationContext ) -> None:
+    def __init__( self, script_dir_path: Path, current_user: User ) -> None:
         """ Manage script discovery and listing
 
         Args:
-            app_state (ApplicationState): Application state vault
-            app_context (ApplicationContext): Manager and state vault
+            script_dir_path (Path): Path to script directory
+            current_user (User): Current user of application
         """
 
-        self._app_context: ApplicationContext = app_context
-        self._app_state: ApplicationState = app_state
+        self.script_dir_path: Path = script_dir_path
+        self._current_user: User = current_user
 
-        self._script_list: list[ ScriptInfo ] = None
-
-        self.gather_scripts()
+        self._script_list: list[ ScriptInfo ]
 
 
-    def gather_scripts( self ) -> None:
-        """ Call to collect available script files """
+    def gather_scripts( self, output_queue: Queue, app_state: ApplicationState, app_run_state: ApplicationRunState ) -> None:
+        """ Call to collect available script files
 
-        self._script_list = get_scripts( output_queue = self._app_context.output_queue, app_state = self._app_state, app_run_state = self._app_context.startup_arguments[ 'app_run_state' ] )
+        Args:
+            output_queue (Queue): Queue to post info to
+            app_state (ApplicationState): Application state container
+            app_run_state (ApplicationRunState): In what state is application running
+        """
+
+        self._script_list = get_scripts( output_queue = output_queue, app_state = app_state, app_run_state = app_run_state )
 
 
     def get_script_info_by_filename( self, filename: str ) -> ScriptInfo:
@@ -49,7 +58,10 @@ class ScriptManager:
             filename (str): Filename to match to
 
         Returns:
-            (ScriptInfo): Found ScriptInfo, or None
+            (ScriptInfo): Found ScriptInfo
+
+        Raises:
+            (ValueError): If no ScriptInfo was found with provided filename
         """
 
         for si in self._script_list:
@@ -57,17 +69,22 @@ class ScriptManager:
 
                 return si
 
-        return None
+        from localization import _
+
+        raise ValueError( _( 'No ScriptInfo was found' ) )
 
 
-    def get_script_info_by_path( self, path: str ) -> ScriptInfo:
+    def get_script_info_by_path( self, path: Path | str | None ) -> ScriptInfo:
         """ Retrieve ScriptInfo for script at path
 
         Args:
-            path (str): Path to match to
+            path (Path | str | None): Path to match to
 
         Returns:
             (ScriptInfo): Found ScriptInfo, or None
+
+        Raises:
+            (ValueError): If no ScriptInfo was found with provided name
         """
 
         for si in self._script_list:
@@ -75,7 +92,9 @@ class ScriptManager:
 
                 return si
 
-        return None
+        from localization import _
+
+        raise ValueError( _( 'No ScriptInfo was found' ) )
 
 
     def get_script_list( self ) -> list[ ScriptInfo ]:

@@ -10,7 +10,7 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Optional
 
 from psutil import Process
 
@@ -51,7 +51,7 @@ class ScriptMenuItem:
         self._hide_menu: Callable = menu_hide_callback
 
         self.master_self.app_state.running_automation = self
-        self.process: Process = None
+        self.process: Process
         self.label_text: str = ''
         self._in_debug: bool = False
 
@@ -94,7 +94,7 @@ class ScriptMenuItem:
 
             tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc, delay = 200 )
             wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = self.script_info.get_attr( 'description' ), script_state = self.script_info.get_attr( 'state' ), include_application_test_info = app_test )
-            self.master_self.app_context.language_manager.add_translatable_widget( wft )
+            self.master_self.app_context.LanguageManager.add_translatable_widget( wft )
 
 
     def _check_input_params( self ) -> None:
@@ -103,7 +103,7 @@ class ScriptMenuItem:
         self._hide_menu()
 
         if len( self.script_info.scriptmeta.script_input_parameters ) > 0:
-            self.master_self.app_context.input_manager.show_for_script( script_info = self.script_info, submit_input_callback = self.run_script )
+            self.master_self.app_context.InputManager.show_for_script( script_info = self.script_info, submit_input_callback = self.run_script )
 
         else:
             self.run_script()
@@ -112,10 +112,20 @@ class ScriptMenuItem:
     def continue_breakpoint( self ) -> None:
         """ Continue execution of the script after hitting a breakpoint """
 
-        self.process.stdin.write( 'c\n' )
-        self.process.stdin.flush()
-        self.master_self.btnContinueBreakpoint.after( 0, self.master_self.enable_breakpoint_button() )
-        self._in_debug = False
+        runner = self.master_self.app_context.ExecutionManager.current_runner
+
+        if runner is None:
+
+            return
+
+        process = runner.current_process
+
+        if process is None or process.stdin is None:
+
+            return
+
+        process.stdin.write( 'c\n' )
+        process.stdin.flush()
 
 
     def on_enter( self, event: Event ) -> None:
@@ -124,6 +134,9 @@ class ScriptMenuItem:
         Args:
             event (Event): Event that triggered handler
         """
+
+        if not isinstance( event.widget, Label ):
+            return
 
         event.widget.configure( style = self._style_hover )
 
@@ -134,6 +147,9 @@ class ScriptMenuItem:
         Args:
             event (Event): Event that triggered handler
         """
+
+        if not isinstance( event.widget, Label ):
+            return
 
         event.widget.configure( style = self._style_normal )
 
@@ -146,19 +162,23 @@ class ScriptMenuItem:
         def script_process_wrapper() -> None:
             """ Wrapper to execute script from separate thread """
 
-            with self.master_self.app_context.execution_manager.create_runner() as runner:
+            with self.master_self.app_context.ExecutionManager.create_runner() as runner:
                 runner.run_script( script_info = self.script_info,
                                    main_window = self.master_self.root,
                                    api_callbacks = self.master_self.api_callbacks,
                                    enable_stop_button_callback = self.master_self.enable_stop_script_button,
                                    enable_pause_button_callback = self.master_self.enable_pause_script_button,
                                    stop_pause_button_blinking_callback = self.master_self.stop_pause_button_blinking,
-                                   run_input = self.entered_input
+                                   run_input = entered_input
                                  )
 
             self.master_self.execution_post_work( disable_minimize = disable_minimize )
 
-        self.entered_input = self.master_self.app_context.input_manager.collect_entered_input()
+        entered_input: list[ str ] = []
+
+        for ei in self.master_self.app_context.InputManager.collect_entered_input():
+            entered_input.extend( [ f'--{ ei[ 'name' ] }', f'{ ei[ 'set' ] }' ] )
+
         disable_minimize = self.script_info.scriptmeta.disable_minimize_on_running
 
         self.master_self.execution_pre_work( disable_minimize = disable_minimize )

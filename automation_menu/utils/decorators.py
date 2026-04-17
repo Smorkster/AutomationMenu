@@ -9,10 +9,7 @@ Created: 2025-12-11
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Callable, Concatenate, ParamSpec, TypeVar
-
-if TYPE_CHECKING:
-    from automation_menu.ui.main_window import AutomationMenuWindow
+from typing import Any, Callable, Concatenate, ParamSpec, TypeVar
 
 from functools import wraps
 from logging import Logger
@@ -22,7 +19,6 @@ R = TypeVar( 'R' )
 
 def ui_guard_method( when_message: str | None = None ) -> Callable[ [ Callable[ Concatenate[ Any, P ], R ] ], Callable[ Concatenate[ Any, P ], R | None ],
 ]:
-
     """ Decorator for guarding UI callback instance methods
 
     Intended for methods on AutomationMenuWindow that are invoked
@@ -32,11 +28,14 @@ def ui_guard_method( when_message: str | None = None ) -> Callable[ [ Callable[ 
         when_message (str | None): Contextual description of operation being performed
     """
 
-    def deco( fn: Callable[ Concatenate[ Any, P ], R ] ) -> Callable[ Concatenate[ Any, P ], R ] | None:
+    def deco( fn: Callable[ Concatenate[ Any, P ], R ] ) -> Callable[ Concatenate[ Any, P ], R | None ]:
         """ Decorator applied to a UI instance method
 
         Args:
-            fn: A bound instance method acting as a UI event handler
+            fn (Callable[ Concatenate[ Any, P ], R ]): A bound instance method acting as a UI event handler
+
+        Returns:
+            Callable[ Concatenate[ Any, P ], R | None ]: A wrapped UI callback that returns the original method result, or None if an exception is caught and logged.
         """
 
         @wraps( fn )
@@ -46,6 +45,14 @@ def ui_guard_method( when_message: str | None = None ) -> Callable[ [ Callable[ 
             Executes the original method and intercepts any raised exception,
             logging a structured error message instead of letting the exception
             propagate into the Tkinter mainloop
+
+            Args:
+                self (Any): Instance owning the decorated UI callback, expected to expose app_context.debug_logger.
+                *args (P.args): Positional arguments passed through to the wrapped method.
+                **kwargs (P.kwargs): Keyword arguments passed through to the wrapped method.
+
+            Returns:
+                R | None: The wrapped method's return value, or None if an exception is caught and logged.
             """
 
             log: Logger = self.app_context.debug_logger

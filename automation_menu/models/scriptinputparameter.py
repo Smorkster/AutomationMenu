@@ -20,4 +20,4 @@ class ScriptInputParameter:
     description: str = ''
     name: str = ''
     required: bool = True
-    type: str | int | bool = str
+    type: str | int | bool = ''

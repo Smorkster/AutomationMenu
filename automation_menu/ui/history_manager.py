@@ -14,7 +14,7 @@ from datetime import timedelta
 from logging import Logger
 from tkinter import END, N, S, W, E, Event, Text
 from tkinter.ttk import Frame, Label, Notebook, Treeview
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from automation_menu.models import ExecHistory
 from automation_menu.models.widget_for_translation import WidgetForTranslation
@@ -32,7 +32,7 @@ class HistoryManager:
         self._logger: Logger = logger
 
 
-    def _format_duration( self, duration: timedelta ) -> None:
+    def _format_duration( self, duration: timedelta ) -> str:
         """ Format duration of script execution
         Current format is: x d x h x m x s
         Meanin days, hours, minutes, seconds
@@ -70,7 +70,7 @@ class HistoryManager:
             event (Event): Event triggering handler
         """
 
-        selection: tuple[ str, str ] = event.widget.selection()
+        selection: tuple[ str, ... ] = cast( Treeview, event.widget ).selection()
         if not selection:
 
             return
@@ -79,14 +79,14 @@ class HistoryManager:
 
         id: str = selection[ 0 ]
 
-        list_item: list[ dict[ str, dict ] ] = [ a for a in self._historylist if a['id'] == id ]
+        list_item: list[ ExecHistory ] = [ a for a in self._historylist if a.list_id == id ]
 
         if not list_item:
             self._logger.warning( _( 'No history item for {i}' ).format( i = id ) )
 
             return
 
-        item: dict[ str, Any ] = list_item[ 0 ][ 'item' ]
+        item: ExecHistory = list_item[ 0 ]
 
         # Display start
         self.item_start.config( state = 'normal' )
@@ -136,17 +136,18 @@ class HistoryManager:
                                     text = f'{ item.start.strftime( '%m / %d : %H:%M:%S' ) }',
                                     values = ( item.script_info.get_attr( 'filename' ) )
                                     )
+            item.list_id = tree_id
 
         else:
-            tree_id = 0
+            tree_id = '0'
 
-        self._historylist.append( { 'id': tree_id, 'item': item } )
+        self._historylist.append( item )
 
 
-    def get_history_list( self ) -> str:
+    def get_history_list( self ) -> list[ dict ]:
         """ Summarize execution history list to a string"""
 
-        return [ item[ 'item' ].to_dict() for item in self._historylist ]
+        return [ item.to_dict() for item in self._historylist ]
 
 
     def get_history_tab( self, tabcontrol: Notebook, translate_store_callback: Callable ) ->  Frame:
@@ -164,7 +165,7 @@ class HistoryManager:
         from automation_menu.utils.localization import _
 
         self.tabHistory: Frame = Frame( master = tabcontrol, name = 'history' )
-        self.tabHistory.grid( column = 0, row = 0, sticky = ( N, S, W, E ) )
+        self.tabHistory.grid( column = 0, row = 0, sticky = 'nswe' )
         self.tabHistory.columnconfigure( index = 0, weight = 0 )
         self.tabHistory.columnconfigure( index = 1, weight = 1 )
         self.tabHistory.rowconfigure( index = 0, weight = 1 )
@@ -187,15 +188,15 @@ class HistoryManager:
 
         from automation_menu.utils.localization import _
 
-        columns = { '#0': [ 'Started', 105 ], 'name': [ 'Name', 160 ] }
+        columns: dict[ str, list[ str | int ] ] = { '#0': [ 'Started', 105 ], 'name': [ 'Name', 160 ] }
         self.history_tree: Treeview = Treeview( self.tabHistory, columns = [ *columns.keys() ][ 1: ] )
 
         for i, s in columns.items():
-            self.history_tree.column( i, minwidth = s[ 1 ], width = s[ 1 ] )
+            self.history_tree.column( i, minwidth = cast( int, s[ 1 ] ), width = cast( int, s[ 1 ] ) )
             self.history_tree.heading( i, text = translate_callback( text = s[ 0 ] ) )
 
 
-        self.history_tree.grid( column = 0, rowspan = 3, sticky = ( N, S, W ) )
+        self.history_tree.grid( column = 0, rowspan = 3, sticky = 'nsw' )
         self.history_tree.bind( '<<TreeviewSelect>>', self._history_item_selected )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = self.history_tree, default_text = columns )
@@ -204,14 +205,14 @@ class HistoryManager:
         for item in self._historylist:
             tree_id: str = self.history_tree.insert( parent = '',
                         index = 0,
-                        text = f'{ item[ 'item' ].start.strftime( '%m / %d : %H:%M:%S' ) }',
-                        values = ( item[ 'item' ].script_info.get_attr( 'filename' ) )
+                        text = f'{ item.start.strftime( '%m / %d : %H:%M:%S' ) }',
+                        values = ( item.script_info.get_attr( 'filename' ) )
                         )
 
-            item[ 'id' ] = tree_id
+            item.list_id = tree_id
 
         self.history_item_display: Frame = Frame( self.tabHistory )
-        self.history_item_display.grid( column = 1, row = 0, sticky = ( N, S, W, E ) )
+        self.history_item_display.grid( column = 1, row = 0, sticky = 'nswe' )
         self.history_item_display.columnconfigure( index = 0, weight = 0 )
         self.history_item_display.columnconfigure( index = 1, weight = 1 )
         self.history_item_display.rowconfigure( index = 0, weight = 0 )
@@ -221,37 +222,37 @@ class HistoryManager:
         self.history_item_display.rowconfigure( index = 4, weight = 1 )
 
         item_start_title: Label = Label( master = self.history_item_display, text = _( 'Started' ), style = 'History.TLabel' )
-        item_start_title.grid( column = 0, row = 0, padx = 5, pady = 5, sticky = ( N, W ) )
+        item_start_title.grid( column = 0, row = 0, padx = 5, pady = 5, sticky = 'nw' )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = item_start_title, default_text = 'Started' )
         translate_store_callback( wft )
 
         self.item_start: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
-        self.item_start.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = ( W, E ) )
+        self.item_start.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = 'we' )
 
         item_end_title: Label = Label( master = self.history_item_display, text = _( 'Ended' ), style = 'History.TLabel' )
-        item_end_title.grid( column = 0, row = 1, padx = 5, pady = 5, sticky = ( N, W ) )
+        item_end_title.grid( column = 0, row = 1, padx = 5, pady = 5, sticky = 'nw' )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = item_end_title, default_text = 'Ended' )
         translate_store_callback( wft )
 
         self.item_end: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
-        self.item_end.grid( column = 1, row = 1, padx = 5, pady = 5, sticky = ( W, E ) )
+        self.item_end.grid( column = 1, row = 1, padx = 5, pady = 5, sticky = 'we' )
 
         duration_title: Label = Label( master = self.history_item_display, text = _( 'Duration' ), style = 'History.TLabel' )
-        duration_title.grid( column = 0, row = 2, padx = 5, pady = 5, sticky = ( N, W ) )
+        duration_title.grid( column = 0, row = 2, padx = 5, pady = 5, sticky = 'nw' )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = duration_title, default_text = 'Duration' )
         translate_store_callback( wft )
 
         self.duration: Text = Text( master = self.history_item_display, height = 1, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
-        self.duration.grid( column = 1, row = 2, padx = 5, pady = 5, sticky = ( W, E ) )
+        self.duration.grid( column = 1, row = 2, padx = 5, pady = 5, sticky = 'we' )
 
         item_output_title: Label = Label( master = self.history_item_display, text = _( 'Generated output' ), style = 'History.TLabel' )
-        item_output_title.grid( column = 0, columnspan = 2, row = 3, padx = 5, pady = 5, sticky = ( N, W ) )
+        item_output_title.grid( column = 0, columnspan = 2, row = 3, padx = 5, pady = 5, sticky = 'nw' )
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = item_output_title, default_text= 'Generated output' )
         translate_store_callback( wft )
 
         self.item_output: Text = Text( master = self.history_item_display, state = 'disabled', font = ( 'Calibri', 12, 'normal' ) )
-        self.item_output.grid( column = 0, columnspan = 2, row = 4, padx = 5, pady = 5, sticky = ( N, S, W, E ) )
+        self.item_output.grid( column = 0, columnspan = 2, row = 4, padx = 5, pady = 5, sticky = 'nswe' )

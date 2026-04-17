@@ -11,8 +11,19 @@ Created: 2025-09-25
 
 from tkinter import E, N, S, W, Tk
 from tkinter.ttk import Frame, Label, Progressbar, Separator
+from typing import TypedDict
 
 from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
+
+
+class StatusDict( TypedDict ):
+    """ Defined dict for status widgets """
+
+    status_bar: Frame
+    text_status: Label
+    text_status_tt: AlwaysOnTopToolTip
+    progressbar: Progressbar
+    separator: Separator
 
 
 def _create_progressbar( status_frame: Frame ) -> Progressbar:
@@ -26,13 +37,13 @@ def _create_progressbar( status_frame: Frame ) -> Progressbar:
     """
 
     execution_progress: Progressbar = Progressbar( master = status_frame )
-    execution_progress.grid( column = 2, row = 0, padx = 5, pady = 5, sticky = ( W, E ) )
+    execution_progress.grid( column = 2, row = 0, padx = 5, pady = 5, sticky = 'we' )
     execution_progress.grid_remove()
 
     return execution_progress
 
 
-def _create_status_textfield( status_frame: Frame ) -> Label:
+def _create_status_textfield( status_frame: Frame ) -> tuple[ Label, AlwaysOnTopToolTip ]:
     """ Create a Label widget to display execution status
     
     Args:
@@ -46,14 +57,14 @@ def _create_status_textfield( status_frame: Frame ) -> Label:
     from automation_menu.utils.localization import _
 
     execution_status: Label = Label( master = status_frame, padding = ( 5, 5 ) )
-    execution_status.grid( column = 0, row = 0, sticky = ( W, E ) )
+    execution_status.grid( column = 0, row = 0, sticky = 'we' )
 
     status_tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = execution_status, msg = _( 'Execution status can be updated from running script' ) )
 
     return execution_status, status_tt
 
 
-def get_statusbar( master_root: Tk ) -> dict:
+def get_statusbar( master_root: Tk ) -> StatusDict:
     """ Create a statusbar frame
 
     Args:
@@ -64,14 +75,14 @@ def get_statusbar( master_root: Tk ) -> dict:
     """
 
     status_frame: Frame = Frame( master = master_root )
-    status_frame.grid( columnspan = 2, row = 3, sticky = ( W, E, S ) )
+    status_frame.grid( columnspan = 2, row = 3, sticky = 'wes' )
 
     status_frame.columnconfigure( index = 0, weight = 1 )
     status_frame.columnconfigure( index = 1, weight = 0 )
     status_frame.columnconfigure( index = 2, weight = 1 )
 
     column_separator: Separator = Separator( master = status_frame, orient = 'vertical' )
-    column_separator.grid( column = 1, sticky = ( N, S ) )
+    column_separator.grid( column = 1, sticky = 'ns' )
 
     text_status, status_tt = _create_status_textfield( status_frame = status_frame )
 

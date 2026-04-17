@@ -1,12 +1,11 @@
 """
-API definition for script to AutomationMenu communication
+API definitions for communication between scripts and AutomationMenu.
 
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-10-31
 """
+
 
 import json
 import sys
@@ -15,8 +14,12 @@ MESSAGE_START = '__API_START__'
 MESSAGE_END = '__API_END__'
 
 
-def _get_api_response() -> None:
-    """ Send API call and wait for response """
+def _get_api_response() -> str:
+    """ Read a framed API response from standard input.
+
+    Returns:
+        str: The response payload between the API message markers.
+    """
 
     response: list[ str ] = []
     in_message: bool = False
@@ -50,14 +53,14 @@ def _get_api_response() -> None:
 
 
 def _send( msg_type: str, data: dict ) -> None:
-    """ Send API call for json parsing
+    """ Serialize and send a framed API message.
 
     Args:
         msg_type (str): API message type
         data (dict): API data
     """
 
-    msg: dict[ str, dict ] = {
+    msg: dict[ str, dict | str ] = {
         'type': msg_type,
         'data': data
     }
@@ -67,9 +70,9 @@ def _send( msg_type: str, data: dict ) -> None:
 
 # region Progressbar
 def determinate_progress() -> None:
-    """ API entry to set progressbar as determinate """
+    """ API entry to set progressbar to determinate mode """
 
-    data: dict[ str ] = {
+    data: dict[ str, str ] = {
         'set': 'determinate'
     }
 
@@ -79,7 +82,7 @@ def determinate_progress() -> None:
 def hide_progress() -> None:
     """ API entry to hide progressbar """
 
-    data: dict[ str ] = {
+    data: dict[ str, str ] = {
         'set': 'hide'
     }
 
@@ -87,9 +90,9 @@ def hide_progress() -> None:
 
 
 def indeterminate_progress() -> None:
-    """ API entry to set progressbar as indeterminate """
+    """ API entry to set progressbar to indeterminate mode """
 
-    data: dict[ str ] = {
+    data: dict[ str, str ] = {
         'set': 'indeterminate'
     }
 
@@ -97,13 +100,13 @@ def indeterminate_progress() -> None:
 
 
 def set_progress( percent: float ) -> None:
-    """ API entry to update progressbar in main window
+    """ API entry to update progressbar value
 
     Args:
         percent (float): Precalculated value to set in the progressbar
     """
 
-    data: dict[ int ] = {
+    data: dict[ str, float ] = {
         'percent': percent
     }
 
@@ -113,7 +116,7 @@ def set_progress( percent: float ) -> None:
 def show_progress() -> None:
     """ API entry to show progressbar """
 
-    data: dict[ str ] = {
+    data: dict[ str, str ] = {
         'set': 'show'
     }
 
@@ -122,14 +125,16 @@ def show_progress() -> None:
 
 
 # region Settings
-def get_keepass_shortcut() -> dict:
-    """ Get KeePass global auto-type shortcut
-    This setting should be set by AutomationMenu user and should match
-    setting set in KeePass application
+def get_keepass_shortcut() -> str:
+    """ Get the configured KeePass global auto-type shortcut.
+
+    This setting should be configured by the AutomationMenu user and match
+    the shortcut configured in the KeePass application.
 
     Returns:
-        (dict): A dictionary with keys to use for KeePass global auto type
-            Set dict will be formated like:
+        str: The API response containing the KeePass shortcut configuration
+            The shortcut will be a returned as a dict, json.dumped to a string
+            The dict will be formated like:
             { "ctrl": bool, "alt": bool, "shift": bool, "key": str }
     """
 
@@ -141,9 +146,9 @@ def get_keepass_shortcut() -> dict:
 
 # region Textstatus
 def clear_status() -> None:
-    """ Remove current status """
+    """ Clear the current status text """
 
-    data: dict[ str ] = {
+    data: dict[ str, str ] = {
         'set': 'clear'
     }
 
@@ -151,13 +156,13 @@ def clear_status() -> None:
 
 
 def get_status() -> str:
-    """ Get what is currently set as status
+    """ Get the currently displayed status text.
 
     Returns:
-        str: The currently displayed statustext
+        str: The currently displayed status text.
     """
 
-    data: dict[ str ] = {
+    data: dict[ str, str ] = {
         'set': 'get'
     }
 
@@ -167,15 +172,16 @@ def get_status() -> str:
 
 
 def set_status( text: str, append: bool = False ) -> None:
-    """ Set a textstatus
-    Text will be stripped of all new line characters
+    """ Set the status text.
+
+    Newline characters are stripped from the text before it is sent.
 
     Args:
-        text (str): Text to set as status
-        append (bool): Should status text be appended to current status
+        text (str): Text to display as the status.
+        append (bool): Whether to append the text to the current status.
     """
 
-    data: dict[ str, bool ] = {
+    data: dict[ str, bool | str ] = {
         'set': text,
         'append': append
     }

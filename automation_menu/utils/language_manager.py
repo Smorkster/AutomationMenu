@@ -10,9 +10,9 @@ Created: 2025-09-25
 
 from __future__ import annotations
 
-from gettext import GNUTranslations
 from tkinter import Toplevel
-from tkinter.ttk import Button, Checkbutton, Combobox, Frame, Label, Treeview
+from tkinter.ttk import Button, Checkbutton, Combobox, Frame, Label, Notebook, Treeview
+from typing import cast
 
 from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 
@@ -32,7 +32,7 @@ class LanguageManager:
 
         self._widgets_to_update: list[ WidgetForTranslation ] = []
         self._current_language: str = current_language
-        self._: GNUTranslations = _
+        self._ = _
         self._current_language: str = current_language
 
 
@@ -52,100 +52,108 @@ class LanguageManager:
         return tt
 
 
-    def _update_button( self, widget: WidgetForTranslation ) -> None:
+    def _update_button( self, widget: Button, text: str ) -> None:
         """ Update text for ttk.Button
 
         Args:
-            widget (WidgetForTranslation): Tuple of button to update and string, as translation key
+            widget (Button): Button to update
+            text (str): Text to set in the button
         """
 
-        widget.widget.config( text = self.translate( text = widget.default_text ) )
+        widget.config( text = self.translate( text = text ) )
 
 
-    def _update_checkbutton( self, widget: WidgetForTranslation ) -> None:
+    def _update_checkbutton( self, widget: Checkbutton, text: str ) -> None:
         """ Update text for ttk.Checkbutton
 
         Args:
-            widget (WidgetForTranslation): Tuple of checkbutton to update and string, as translation key
+            widget (Checkbutton): Checkbutton to update
+            text (str): String, as translation key
         """
 
-        widget.widget.config( text = self.translate( text = widget.default_text ) )
+        widget.config( text = self.translate( text = text ) )
 
 
-    def _update_combobox( self, widget: WidgetForTranslation ) -> None:
+    def _update_combobox( self, widget: Combobox, texts: list[ str ] ) -> None:
         """ Update combobox items
 
         Args:
-            widget (WidgetForTranslation): Tuple of combobox to update and tuple of strings corresponding to items, as translation key
+            widget (Combobox): Combobox to update
+            texts (list[ str ]): List of strings, as translation keys
         """
 
         pass
 
 
-    def _update_frame( self, widget: WidgetForTranslation ) -> None:
+    def _update_frame( self, widget: Frame, text: str ) -> None:
         """ Update text for Frame
 
         Args:
-            widget (WidgetForTranslation): Tuple of frame to update and string, as translation key
+            widget (Frame): Frame to update
+            text (str): String, as translation key
         """
 
-        idx: int = widget.widget.master.winfo_children().index( widget.widget )
-        widget.widget.master.tab( idx, text = self.translate( text = widget.default_text ) )
-        widget.widget.update_idletasks()
+        idx: int = widget.master.winfo_children().index( widget )
+        cast( Notebook, widget.master ).tab( idx, text = self.translate( text = text ) )
+        widget.update_idletasks()
 
 
-    def _update_label( self, widget: WidgetForTranslation ) -> None:
+    def _update_label( self, widget: Label, text: str ) -> None:
         """ Update label text
 
         Args:
-            widget (WidgetForTranslation): Tuple of label to update and string, as translation key
+            widget (Label): Tuple of label to update
+            text (str): String, as translation key
         """
 
-        widget.widget.config( text = self.translate( widget.default_text ) )
+        widget.config( text = self.translate( text ) )
 
 
-    def _update_treeview( self, widget: WidgetForTranslation ) -> None:
+    def _update_treeview( self, widget: Treeview, texts: dict[ str, list[ str | int ] ] ) -> None:
         """ Update column headers for Treeview
 
         Args:
-            widget (WidgetForTranslation): Holder for translation
+            widget (Treeview): Holder for translation
+            texts (dict[ str, list[ str | int ] ]): Dict with column names and strings, as translation key
         """
 
-        for i, s in widget.default_text.items():
-            widget.widget.heading( i, text = self.translate( text = s[ 0 ] ) )
+        for i, s in texts.items():
+            widget.heading( i, text = self.translate( text = cast( str, s[ 0 ] ) ) )
 
 
-    def _update_toplevel( self, widget: WidgetForTranslation ) -> None:
+    def _update_toplevel( self, widget: Toplevel, text: str ) -> None:
         """ Update text for Toplevel
 
         Args:
-            widget (WidgetForTranslation): Tuple of Toplevel to update and string, as translation key
+            widget (Toplevel): Tuple of Toplevel to update and string, as translation key
+            text (str): String, as translation key
         """
 
-        widget.widget.title( self.translate( widget.default_text ) )
-        widget.widget.update_idletasks()
+        widget.title( self.translate( text ) )
+        widget.update_idletasks()
         pass
 
 
-    def _update_tt( self, widget: WidgetForTranslation ) -> None:
+    def _update_tt( self, widget: AlwaysOnTopToolTip, text: str, script_state: ScriptState, include_application_test_info: bool ) -> None:
         """ Update text for AlwaysOnTopTooltip
 
         Args:
-            widget (WidgetForTranslation): Tuple of tooltip to update, a string, as translation key and two booleans:
-                if development information should be added
-                if application test information should be aded
+            widget (AlwaysOnTopToolTip): Tooltip to update
+            text (str): String, as translation key
+            script_state (ScriptState): State for if development information should be added
+            include_application_test_info (bool): Should information about application test information be aded
         """
 
-        new_text: str = self.translate( widget.default_text )
-        if widget.script_state == ScriptState.DEV:
+        new_text: str = self.translate( text )
+        if script_state == ScriptState.DEV:
             dev_text: str = self.translate( 'In development, and should only be run by its developer.' )
             new_text += f'\n\n{ dev_text }'
 
-        elif widget.include_application_test_info:
+        elif include_application_test_info:
             test_text: str = self.translate( 'Application test script, only used to test application functionality' )
             new_text += f'\n\n{ test_text }'
 
-        widget.widget.config( new_text = new_text )
+        widget.config( new_text = new_text )
 
 
     def add_translatable_widget( self, widget: WidgetForTranslation ) -> None:
@@ -176,28 +184,36 @@ class LanguageManager:
         for widget_holder in self._widgets_to_update:
             try:
                 if isinstance( widget_holder.widget, AlwaysOnTopToolTip ):
-                    self._update_tt( widget_holder )
+                    tt_text: str = cast( str,  widget_holder.default_text )
+                    self._update_tt( widget = widget_holder.widget, text = tt_text, script_state = widget_holder.script_state, include_application_test_info = widget_holder.include_application_test_info )
 
                 elif isinstance( widget_holder.widget, Button ):
-                    self._update_button( widget_holder )
+                    btn_text: str = cast( str,  widget_holder.default_text )
+                    self._update_button( widget = widget_holder.widget, text = btn_text )
 
                 elif isinstance( widget_holder.widget, Checkbutton ):
-                    self._update_checkbutton( widget_holder )
+                    chb_text: str = cast( str,  widget_holder.default_text )
+                    self._update_checkbutton( widget = widget_holder.widget, text = chb_text )
 
                 elif isinstance( widget_holder.widget, Combobox ):
-                    self._update_combobox( widget_holder )
+                    cb_text: list[ str ] = cast( list[ str ],  widget_holder.default_text )
+                    self._update_combobox( widget = widget_holder.widget, texts = cb_text )
 
                 elif isinstance( widget_holder.widget, Frame ):
-                    self._update_frame( widget_holder )
+                    fr_text: str = cast( str,  widget_holder.default_text )
+                    self._update_frame( widget = widget_holder.widget, text = fr_text )
 
                 elif isinstance( widget_holder.widget, Label ):
-                    self._update_label( widget_holder )
+                    lbl_text: str = cast( str,  widget_holder.default_text )
+                    self._update_label( widget = widget_holder.widget, text = lbl_text )
 
                 elif isinstance( widget_holder.widget, Treeview ):
-                    self._update_treeview( widget_holder )
+                    tv_text: dict[ str, list[ str | int ] ] = cast( dict[ str, list[ str | int ] ],  widget_holder.default_text )
+                    self._update_treeview( widget = widget_holder.widget, texts = tv_text )
 
                 elif isinstance( widget_holder.widget, Toplevel ):
-                    self._update_toplevel( widget_holder )
+                    tl_text: str = cast( str,  widget_holder.default_text )
+                    self._update_toplevel( widget = widget_holder.widget, text = tl_text )
 
             except Exception as e:
                 raise e

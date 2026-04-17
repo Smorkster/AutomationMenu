@@ -10,6 +10,7 @@ Created: 2025-10-31
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from automation_menu.models.scriptmetadata import ScriptMetadata
 from automation_menu.models.user import User
@@ -24,24 +25,30 @@ class ScriptInfo:
     fullpath: Path
 
     # Parsed info
-    scriptmeta: ScriptMetadata = None
+    scriptmeta: ScriptMetadata
 
     # Operational settings
     using_breakpoint: bool = False
 
 
-    def add_attr( self, attr_name: str, attr_val: any ) -> None:
+    def __repr__( self ) -> str:
+        """ Custom representation string """
+
+        return str( self.fullpath )
+
+
+    def add_attr( self, attr_name: str, attr_val: Any ) -> None:
         """ Add an attribute to the ScriptInfo object
 
         Args:
             attr_name (str): Name of attribute to add
-            attr_val (any): Value to add
+            attr_val (Any): Value to add
         """
 
         setattr( self, attr_name, attr_val )
 
 
-    def get_attr( self, attr_name: str ) -> any:
+    def get_attr( self, attr_name: str ) -> Any:
         """ Get the value of an attribute if it exists, otherwise return None
 
         Args:
@@ -81,12 +88,12 @@ class ScriptInfo:
 
 
 
-    def set_attr( self, attr_name: str, attr_val:any, append: bool = False ) -> None:
+    def set_attr( self, attr_name: str, attr_val: Any, append: bool = False ) -> None:
         """ Append a value to an existing attribute or create it if it doesn't exist
 
         Args:
             attr_name (str): Name of attribute
-            attr_val (any): Value of attribute to set
+            attr_val (Any): Value of attribute to set
             append (bool): Should the value be appended to existing value
         """
 

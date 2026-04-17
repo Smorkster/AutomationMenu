@@ -13,8 +13,8 @@ import re
 
 from re import Match
 
+from automation_menu.models.custom_exceptions import MissingDocstringError
 from automation_menu.models.enums import ScriptState, ValidScriptInfoFields
-from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 
 def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
@@ -26,11 +26,11 @@ def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
 
     from automation_menu.utils.localization import _
 
-    current_field: str = None
-    current_value: bool | list[ str ] | str = ''
-    fields: dict[ str, bool | list[ str ] | str ] = {}
+    current_field: str = ""
+    current_value: str = ''
+    fields: dict[ str, str | bool | list[ str ] | ScriptState | list[ ScriptInputParameter ] ] = {}
     parameters: list[ ScriptInputParameter ] = []
-    warnings = {
+    warnings: dict[ str, list[ str ] ] = {
         'keys': [],
         'values': [],
         'other': [],
@@ -38,7 +38,7 @@ def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
     field_pattern: re.Pattern = re.compile( r'^:([^:]+):\s*(.*)\s*(\[.*\])*$' )
 
     for line in lines:
-        match: Match = field_pattern.match( line.strip() )
+        match: Match | None = field_pattern.match( line.strip() )
 
         if match:
 
@@ -90,12 +90,12 @@ def _parse_parameter( field: str, value: str ) -> ScriptInputParameter:
 
     param_name: str = field[ 6 : ].strip()
 
-    default_match: str = re.search( r'\(default:\s*([^)]+)\)', value, re.IGNORECASE )
-    default_value: str | None = default_match.group( 1 ).strip() if default_match else None
+    default_match: Match | None = re.search( r'\(default:\s*([^)]+)\)', value, re.IGNORECASE )
+    default_value: str = default_match.group( 1 ).strip() if default_match else ''
 
-    required_match: Match = re.search( r'\(required\)', value, re.IGNORECASE ) != None
+    required_match: bool = re.search( r'\(required\)', value, re.IGNORECASE ) != None
 
-    options_match: Match = re.search( r'\[([^]]+)\]', value, re.IGNORECASE )
+    options_match: Match | None = re.search( r'\[([^]]+)\]', value, re.IGNORECASE )
 
     if options_match:
         options_text: str = options_match.group( 1 )
@@ -142,11 +142,11 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
 
     if not raw_docstring:
 
-        return docstring_dict
+        return docstring_dict, {}
 
     lines: list[ str ] = raw_docstring.strip().split( '\n' )
 
-    fields_start_idx: int = None
+    fields_start_idx: int = 0
     for i, line in enumerate( lines ):
         if line.strip().startswith( ':' ):
             fields_start_idx = i
@@ -171,21 +171,24 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
     return parsed_data, warnings
 
 
-def extract_script_metadata( script_info: ScriptInfo ) -> tuple[ dict, dict ]:
-    """ Extract the docstring for script
+def extract_script_metadata( script_fullpath: str ) -> tuple[ dict, dict ]:
+    """ Extract the docstring for a script
 
     Args:
-        script_info (ScriptInfo): ScriptInfo object for found script file
+        script_fullpath (str): Path to script file
 
     Returns:
-        parsed_data (dict): Description and fields, including script input parameters,
-            specified in the docstring
-        warnings (list[ str ]): List of specified fieldnames that does not correspond
-            to valid field names or are misspelled
+        (tuple[ dict, dict ]): Description and fields specified in the script docstring
+            Warnings for fieldnames that does not correspond to valid field names or are misspelled
     """
 
+    from automation_menu.utils.localization import _
+
+    parsed_docstring: dict = {}
+    warnings: dict = {}
+
     try:
-        with open( script_info.get_attr( 'fullpath' ), 'r', encoding = 'utf-8' ) as f:
+        with open( script_fullpath, 'r', encoding = 'utf-8' ) as f:
             tree: ast.Module = ast.parse( f.read() )
 
         if ( tree.body
@@ -195,9 +198,11 @@ def extract_script_metadata( script_info: ScriptInfo ) -> tuple[ dict, dict ]:
 
             parsed_docstring, warnings = docstring_parser( tree.body[ 0 ].value.value )
 
-            return parsed_docstring, warnings
+        else:
+            raise MissingDocstringError( _( 'File must have docstring at beginning of file' ) )
 
     except SyntaxError as e:
-        from automation_menu.utils.localization import _
 
-        raise ValueError( _( f'Cannot parse {f}:\n{e}' ) ).format( f = script_info.get_attr( 'fullpath' ), e = e )
+        raise SyntaxError( _( 'Cannot parse {file}:\n{err}' ).format( file = script_fullpath, err = e ) )
+
+    return parsed_docstring, warnings

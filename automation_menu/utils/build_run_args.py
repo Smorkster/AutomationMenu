@@ -9,8 +9,15 @@ Created: 2025-12-01
 """
 
 
-def build_run_args( params: list[ dict[ str, str ] ] = [] ) -> list[ str ]:
-    """ Convert a list of parameters to a list of strings """
+from automation_menu.models.presetparam import PreSetParam
+
+
+def build_run_args( params: list[ PreSetParam ] ) -> list[ str ]:
+    """ Convert a list of parameters to a list of strings
+    
+    Args:
+        params (list[PreSetParam]): Parameters to turn into strings
+    """
 
     args: list[ str ] = []
 

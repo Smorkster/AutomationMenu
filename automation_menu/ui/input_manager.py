@@ -9,13 +9,15 @@ Created: 2025-10-31
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
+
+from automation_menu.models.presetparam import PreSetParam
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
 
 from tkinter import E, N, S, W, Canvas, Event, StringVar, Tk
-from tkinter.ttk import Button, Combobox, Entry, Frame, Label, Labelframe, Scrollbar, Widget
+from tkinter.ttk import Button, Combobox, Entry, Frame, Label, LabelFrame, Labelframe, Scrollbar, Widget
 from typing import Callable
 
 from automation_menu.models.scriptinfo import ScriptInfo
@@ -36,9 +38,14 @@ class InputManager:
         self._master_root: Tk = root
         self._language_manager: LanguageManager = language_manager
 
-        self._current_script_info: ScriptInfo = None
+        self._current_script_info: ScriptInfo
         self._current_frame: Frame | None = None
-        self._input_widgets: dict[ str, int | Widget ] = {}
+        self._input_widgets: dict[ str, Button | Canvas | Frame | LabelFrame ] = {}
+        self._input_container: Frame
+        self._container_canvas: Canvas
+        self._input_send_btn: Button
+        self._input_frame: LabelFrame
+        self._container_window: int
 
         self._create_input_root()
         self.hide_input_frame()
@@ -46,6 +53,9 @@ class InputManager:
 
     def _clear_previous_values( self ) -> None:
         """ Remove any entered input values """
+
+        if not self._current_frame:
+            return
 
         for w in self._current_frame.winfo_children():
 
@@ -66,10 +76,10 @@ class InputManager:
         title_frame.grid_columnconfigure( index = 1, weight = 1 )
 
         frame_title: Label = Label( master = title_frame, style = 'LabelFrameTitle.TLabel', text = _( 'Input parameters for ' ) )
-        frame_title.grid( column = 0, row = 0, sticky = ( N, W ) )
+        frame_title.grid( column = 0, row = 0, sticky = 'nw' )
 
         frame_scriptname: Label = Label( master = title_frame, style = 'LabelFrameTitle.TLabel' )
-        frame_scriptname.grid( column = 1, row = 0, sticky = ( N, W ) )
+        frame_scriptname.grid( column = 1, row = 0, sticky = 'nw' )
         self._current_script_name: StringVar = StringVar( master = frame_scriptname )
         frame_scriptname.config( textvariable = self._current_script_name )
 
@@ -77,42 +87,42 @@ class InputManager:
         self._language_manager.add_translatable_widget( wft )
 
         root_input_frame: Labelframe = Labelframe( master = self._master_root, labelwidget = title_frame )
-        root_input_frame.grid( column = 0, columnspan = 2, row = 1, sticky = ( N, S, W, E ) )
+        root_input_frame.grid( column = 0, columnspan = 2, row = 1, sticky = 'nswe' )
         root_input_frame.grid_columnconfigure( index = 0, weight = 1 )
         root_input_frame.grid_columnconfigure( index = 1, weight = 1 )
         root_input_frame.grid_rowconfigure( index = 0, weight = 1 )
         root_input_frame.grid_rowconfigure( index = 1, weight = 0 )
 
         abort_btn: Button = Button( master = root_input_frame, text = _( 'Abort' ) )
-        abort_btn.grid( column = 0, row = 1, sticky = ( S, W ) )
+        abort_btn.grid( column = 0, row = 1, sticky = 'sw' )
         abort_btn.config( command = self.hide_input_frame )
 
         send_input_btn: Button = Button( master = root_input_frame, text = _( 'Send to script' ) )
-        send_input_btn.grid( column = 1, row = 1, sticky = ( S, E ) )
+        send_input_btn.grid( column = 1, row = 1, sticky = 'se' )
 
         param_list_frame: Frame = Frame( master = root_input_frame, borderwidth = 0.1, relief = 'solid' )
-        param_list_frame.grid( column = 0, columnspan = 2, row = 0, sticky = ( N, S, W, E ) )
+        param_list_frame.grid( column = 0, columnspan = 2, row = 0, sticky = 'nswe' )
         param_list_frame.grid_columnconfigure( index = 0, weight = 1 )
         param_list_frame.grid_columnconfigure( index = 1, weight = 0 )
         param_list_frame.grid_rowconfigure( index = 0, weight = 1 )
 
         container_canvas: Canvas = Canvas( master = param_list_frame, height = 150, highlightthickness = 0 )
-        container_canvas.grid( sticky = ( N, S, W, E ) )
+        container_canvas.grid( sticky = 'nswe' )
         container_canvas.grid_columnconfigure( index = 0, weight = 1 )
 
         container_scrollbar: Scrollbar = Scrollbar( master = param_list_frame, orient = 'vertical', command = container_canvas.yview )
-        container_scrollbar.grid( column = 1, row = 0, sticky = ( N, S ) )
+        container_scrollbar.grid( column = 1, row = 0, sticky = 'ns' )
 
         container_canvas.configure( yscrollcommand = container_scrollbar.set )
 
         input_container: Frame = Frame( master = container_canvas )
         window_id: int = container_canvas.create_window( ( 0, 0 ), window = input_container, anchor = 'nw' )
 
-        self._input_widgets[ 'window_id' ] = window_id
-        self._input_widgets[ 'input_container' ] = input_container
-        self._input_widgets[ 'container_canvas' ] = container_canvas
-        self._input_widgets[ 'input_send_btn' ] = send_input_btn
-        self._input_widgets[ 'input_frame' ] = root_input_frame
+        self._container_window = window_id
+        self._input_container = input_container
+        self._container_canvas = container_canvas
+        self._input_send_btn = send_input_btn
+        self._input_frame = root_input_frame
 
         input_container.bind( '<Configure>', self._on_frame_config )
         container_canvas.bind( '<Configure>', self._on_canvas_config )
@@ -128,13 +138,13 @@ class InputManager:
             submit_input_callback (Callable): Function callback for submitting input data
         """
 
-        self._input_widgets[ 'input_send_btn' ].config( command = submit_input_callback )
+        self._input_send_btn.config( command = submit_input_callback )
 
         self._current_frame = param_frame
         self._current_script_info = script_info
         self._script_name_set( script_info.filename )
-        self._input_widgets[ 'input_frame' ].grid()
-        self._input_widgets[ 'input_frame' ].bind_all( '<MouseWheel>' , self._on_mousewheel )
+        self._input_frame.grid()
+        self._input_frame.bind_all( '<MouseWheel>' , self._on_mousewheel )
 
 
     def _get_or_create_input_frame( self, script_info: ScriptInfo ) -> Frame:
@@ -156,7 +166,7 @@ class InputManager:
             event (Event): Event triggering this handler
         """
 
-        self._input_widgets[ 'container_canvas' ].itemconfig( self._input_widgets[ 'window_id' ], width = event.width )
+        self._container_canvas.itemconfig( self._container_window, width = event.width )
 
 
     def _on_frame_config( self, event: Event ) -> None:
@@ -166,10 +176,10 @@ class InputManager:
             event (Event): Event triggering this handler
         """
 
-        self._input_widgets[ 'container_canvas' ].configure( scrollregion = self._input_widgets[ 'container_canvas' ].bbox( 'all' ) )
+        self._container_canvas.configure( scrollregion = self._container_canvas.bbox( 'all' ) )
 
 
-    def _on_key_press( self, event: Event ) -> None:
+    def _on_key_press( self, event: Event ) -> str | None:
         """ Prevent new line characters
 
         Args:
@@ -179,6 +189,8 @@ class InputManager:
         if event.keysym == 'Return':
 
             return 'break'
+        
+        return
 
 
     def _on_keyboard_focus( self, widget: Entry, canvas: Canvas ) -> None:
@@ -191,7 +203,7 @@ class InputManager:
 
         canvas.update_idletasks()
 
-        param_frame: Frame = widget.master
+        param_frame: Frame = cast( Frame, widget.master )
         widget_y: int = param_frame.winfo_y()
         canvas_height: int = canvas.winfo_height()
         bbox: tuple[ int, int, int, int ] = canvas.bbox( 'all' )
@@ -221,7 +233,7 @@ class InputManager:
             event (Event): Event triggering this handler
         """
 
-        self._input_widgets[ 'container_canvas' ].yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
+        self._container_canvas.yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
 
 
     def _script_name_set( self, name: str ) -> None:
@@ -234,28 +246,42 @@ class InputManager:
         self._current_script_name.set( name )
 
 
-    def collect_entered_input( self, frame_to_search: Frame = None ) -> list[ str ]:
+    def collect_entered_input( self, frame_to_search: Frame | None = None ) -> list[ PreSetParam ]:
         """ Collect all entered input
 
         Args:
-            frame_to_search (Frame):
+            frame_to_search (Frame | None): If provided, a separate frame to search for input
 
         Returns:
             entered_input (list[ str ]) Entered input as composite list
         """
 
-        entered_input: list[ str ] = []
+        entered_input: list[ PreSetParam ] = []
 
         if self.is_visible() or frame_to_search:
 
-            if frame_to_search:
-                frame: Frame = frame_to_search
+            frame: Frame | None
+            if frame_to_search is None:
+                frame = self._current_frame
 
             else:
-                frame: Frame = self._current_frame
+                frame = frame_to_search
+
+            if frame is None:
+                return []
 
             for widget in [ w for w in frame.winfo_children() ]:
-                input: Combobox | Entry = widget.winfo_children()[ 1 ]
+                children = widget.winfo_children()
+
+                if len( children ) < 2:
+                    continue
+
+                candidate = children[ 1 ]
+
+                if not isinstance( candidate, ( Combobox, Entry ) ):
+                    continue
+
+                input: Combobox | Entry = candidate
 
                 if type( input ) == Combobox:
                     param_text: str = str( input.get() ).strip()
@@ -266,25 +292,20 @@ class InputManager:
                 if str( param_text ).strip() != '':
                     param_name: str = widget.children[ '!label' ].cget( 'text' )
 
-                    if frame_to_search:
-                        entered_input.append( { 'name': param_name, 'set': param_text } )
-
-                    else:
-                        entered_input.append( f'--{ param_name.strip() }' )
-                        entered_input.append( param_text )
+                    entered_input.append( PreSetParam( name = param_name, set = param_text ) )
 
                 #input.delete( 0, 'end' )
 
         return entered_input
 
 
-    def create_input_widgets( self, parameters: list[ ScriptInputParameter ], parent: Widget = None, pre_set_parameters: list[ dict ] = None ) -> Frame:
+    def create_input_widgets( self, parameters: list[ ScriptInputParameter ], parent: Widget | None = None, pre_set_parameters: list[ PreSetParam ] | None = None ) -> Frame:
         """ Create input widgets for each parameter
 
         Args:
             parameters (list[ ScriptInputParameter ]): Input parameters asked for by script
-            parent (Widget): Widget to attach input frame to
-            pre_set_parameters (list[ dict ]): List of predefined values for parameters
+            parent (Widget | None): Widget to attach input frame to
+            pre_set_parameters (list[ PreSetParam ] | None): List of predefined values for parameters
         """
 
         from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
@@ -300,7 +321,7 @@ class InputManager:
 
         else:
             # Reuse the frame that lives inside the canvas window
-            input_container: Frame = self._input_widgets[ 'input_container' ]
+            input_container: Frame = self._input_container
 
         # Clear any old widgets (from previous script)
         for child in input_container.winfo_children():
@@ -312,21 +333,17 @@ class InputManager:
 
         for param in parameters:
             parameter_frame: Frame = Frame( master = input_container )
-            parameter_frame.grid( column = column_count, row = row, sticky = ( N, S, W, E ), padx = 2, pady = 2 )
+            parameter_frame.grid( column = column_count, row = row, sticky = 'nswe', padx = 2, pady = 2 )
             parameter_frame.grid_columnconfigure( index = 0, weight = 0, uniform = 'name' )
             parameter_frame.grid_columnconfigure( index = 1, weight = 1 )
 
-            param_name: Frame = Label(
-                master = parameter_frame,
-                text = param.name,
-                style = 'LabelFrameTitle.TLabel',
-                width = 15
-            )
-            param_name.grid( column = 0, row = 0, sticky = ( N, W ) )
+            param_name: Label = Label( master = parameter_frame, text = param.name, style = 'LabelFrameTitle.TLabel', width = 15 )
+            param_name.grid( column = 0, row = 0, sticky = 'nw' )
 
+            param_input: Combobox | Entry
             # Create input widget
             if param.alternatives and len( param.alternatives ) > 0:
-                param_input: Combobox = Combobox(
+                param_input = Combobox(
                     master = parameter_frame,
                     style = 'Input.TCombobox',
                     values = param.alternatives,
@@ -337,7 +354,7 @@ class InputManager:
                     param_input.set( next( k for k in pre_set_parameters if k[ 'name' ] == param.name )[ 'set' ] )
 
             else:
-                param_input: Entry = Entry(
+                param_input = Entry(
                     master = parameter_frame,
                     style = 'Input.TEntry'
                 )
@@ -348,11 +365,11 @@ class InputManager:
 
             param_input.bind(
                 '<FocusIn>',
-                lambda e, c = self._input_widgets[ 'container_canvas' ]:
+                lambda e, c = self._container_canvas:
                     self._on_keyboard_focus( e.widget, c )
             )
             param_input.bind( '<Key>', self._on_key_press )
-            param_input.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = ( N, S, W, E ) )
+            param_input.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = 'nswe' )
 
             AlwaysOnTopToolTip( widget = param_name, msg = param.description )
 
@@ -364,7 +381,7 @@ class InputManager:
 
         input_container.update_idletasks()
 
-        canvas: Canvas = self._input_widgets[ 'container_canvas' ]
+        canvas: Canvas = self._container_canvas
         required_height: int = input_container.winfo_reqheight()
         canvas.configure( height = min( required_height, 150 ) )
 
@@ -377,14 +394,16 @@ class InputManager:
         if self._current_frame:
             self._clear_previous_values()
 
-        self._input_widgets[ 'input_frame' ].grid_remove()
+        if self._input_frame:
+            self._input_frame.grid_remove()
+
         self._current_frame = None
 
 
     def is_visible( self ) -> bool:
         """ Is the input frame visible/in use """
 
-        return self._input_widgets[ 'input_frame' ].winfo_ismapped()
+        return self._input_frame.winfo_ismapped()
 
 
     def show_for_script( self, script_info: ScriptInfo, submit_input_callback: Callable ) -> None:

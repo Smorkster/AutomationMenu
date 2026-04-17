@@ -9,7 +9,7 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from dataclasses import dataclass
 
@@ -22,7 +22,7 @@ class ApplicationState:
 
     from automation_menu.models import Secrets, Settings, User
 
-    current_user: User = None
-    running_automation: ScriptMenuItem = None
-    secrets: Secrets = None
-    settings: Settings = None
+    secrets: Secrets
+    current_user: User
+    settings: Settings
+    running_automation: Optional[ ScriptMenuItem ] = None

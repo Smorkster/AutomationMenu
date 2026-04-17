@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -8,10 +8,10 @@ include = ["automation_menu"]
 
 [project]
 name = "automation-menu"
-version = "1.0.0"
-description = "A GUI application to collect and run automation scripts"
+version = "2.0.0b1"
+description = "Windows desktop application for automation script discovery and execution"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "Smorkster", email = "smorkster@gmail.com"},
@@ -21,12 +21,46 @@ classifiers = [
     "Intended Audience :: System Administrators",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: English",
+    "Natural Language :: Swedish",
+    "Topic :: System :: Systems Administration",
+    "Topic :: System :: Systems Administration :: Authentication/Directory :: LDAP",
+    "Topic :: Utilities"
 ]
+
+keywords = [
+    "active-directory",
+    "automation",
+    "desktop-gui",
+    "gui",
+    "it-admin",
+    "ldap",
+    "localization",
+    "script-runner",
+    "tkinter",
+    "uiautomation",
+    "windows",
+]
+
 dependencies = [
     "alwaysontop_tooltip==1.3",
-    "dynamicinputbox==1.3.1",
+    "dynamicinputbox==3.0",
     "ldap3==2.9.1",
+    "outcome>=1.3.0.post0",
+    "pillow>=12.2.0",
+    "psutil>=7.2.2",
     "pywin32==311",
     "UiAutomation==2.0.29"
 ]
-scripts = {main = "main:main"}
+gui-scripts = {main = "main:main"}
+
+[project.urls]
+Homepage = "https://github.com/Smorkster/AutomationMenu"
+Repository = "https://github.com/Smorkster/AutomationMenu"
+Issues = "https://github.com/Smorkster/AutomationMenu/issues"
