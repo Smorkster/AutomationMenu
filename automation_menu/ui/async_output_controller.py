@@ -344,7 +344,8 @@ class AsyncOutputController:
             self._loop_thread.join( timeout = 3 )
 
             try:
-                self.loop.call_soon_threadsafe( self.loop.stop )
+                if not self.loop.is_closed():
+                    self.loop.call_soon_threadsafe( self.loop.stop )
 
             except:
                 raise

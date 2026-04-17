@@ -471,14 +471,16 @@ class AutomationMenuWindow:
 
             dynamicinputbox.dynamic_inputbox( title = _( 'Write settings error' ), message = _( 'Could not save settings to file: {e}' ).format( e = e ) ).show()
 
+            return
+
+        self.root.destroy()
+
         if hasattr( self, 'output_controller' ):
             try:
                 self.output_controller.closedown()
 
             except Exception as e:
                 self.app_context.debug_logger.warning( _( 'Error shutting down output controller: {e}' ).format( e = e ) )
-
-        self.root.destroy()
 
 
     def set_current_language( self, event: Event ) -> None:
