@@ -40,8 +40,10 @@ class CustomMenu:
         self.parent: Frame = parent
         self.exec_list: dict[ str, Sequence ] | list[ ScriptInfo ] = exec_list
         self.main_object: AutomationMenuWindow = main_object
-        self._visible: bool = False
+
         self._max_height: int = 500
+        self._skip_next_open:bool = False
+        self._visible: bool = False
 
         # Button that acts as menu base
         self.menu_button: Button = Button( master = parent, text = text, command = self.show_popup_menu )
@@ -69,8 +71,8 @@ class CustomMenu:
         self.popup.overrideredirect( True )  # Remove window decorations
         self.popup.config( relief = 'flat', borderwidth = 2, highlightcolor = "#6F7577", highlightthickness = 2 )
 
-        self.popup.bind( '<Escape>', self.hide_popup_menu )
-        self.popup.bind( '<FocusOut>', self.hide_popup_menu )
+        self.popup.bind( '<Escape>', self._on_escape_popup )
+        self.popup.bind( '<FocusOut>', self._on_popup_focus_set )
         self.popup.bind( '<Button-1>', self._check_click_outside )
 
         self._menu_container.bind( '<Configure>', self._on_container_config )
@@ -150,6 +152,23 @@ class CustomMenu:
             self._scrollbar.grid_remove()
 
 
+    def _on_escape_popup( self, event: Event ) -> str:
+        """ Handle pressing Escape key while menu is open
+
+        Args:
+            event (Event): Event that triggered handler
+        """
+
+        if not self._visible:
+
+            return 'break'
+
+        self.hide_popup_menu()
+        self.menu_button.focus_set()
+
+        return 'break'
+
+
     def _on_mousewheel( self, event: Event ) -> None:
         """ Bind mouse wheel scrolling
 
@@ -160,6 +179,26 @@ class CustomMenu:
         self._canvas.yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
 
 
+    def _on_popup_focus_set( self, event: Event ) -> None:
+        """ Handle popup losing focus
+
+        Args:
+            event (Event): Event that triggered handler
+        """
+
+        if not self._visible:
+
+            return
+
+        widget = self.parent.winfo_containing(
+            self.parent.winfo_pointerx(),
+            self.parent.winfo_pointery()
+        )
+
+        self._skip_next_open = widget is self.menu_button
+        self.hide_popup_menu()
+
+
     def hide_popup_menu( self, *args: Any ) -> None:
         """ Hide the popup menu
 
@@ -168,6 +207,7 @@ class CustomMenu:
         """
 
         self.popup.withdraw()
+        self.popup.unbind_all( '<MouseWheel>' )
         self._visible = False
 
 
@@ -206,9 +246,13 @@ class CustomMenu:
     def show_popup_menu( self ) -> None:
         """ Show the popup menu """
 
+        if self._skip_next_open:
+            self._skip_next_open = False
+
+            return
+
         if self._visible:
-            self.popup.withdraw()
-            self._visible = False
+            self.hide_popup_menu()
 
             return
 
