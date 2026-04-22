@@ -14,13 +14,6 @@ from types import FunctionType
 from typing import TYPE_CHECKING, Any, Dict, Literal, cast
 import uuid
 
-from outcome import Value
-
-from automation_menu.core.script_runner import ScriptRunner
-from automation_menu.models.presetparam import PreSetParam
-from automation_menu.models.scriptinfo import ScriptInfo
-from automation_menu.models.widget_for_translation import WidgetForTranslation
-
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.models.application_state import ApplicationState
@@ -29,10 +22,14 @@ if TYPE_CHECKING:
 import alwaysontop_tooltip
 import threading
 
-from tkinter import E, N, S, W, BooleanVar, Canvas, Event, Scrollbar
+from tkinter import W, BooleanVar, Canvas, Event, Scrollbar
 from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Notebook, Treeview
 from typing import Callable
 
+from automation_menu.core.script_runner import ScriptRunner
+from automation_menu.models.presetparam import PreSetParam
+from automation_menu.models.scriptinfo import ScriptInfo
+from automation_menu.models.widget_for_translation import WidgetForTranslation
 from automation_menu.models.enums import OutputStyleTags, SysInstructions
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 from automation_menu.models.sequence import Sequence

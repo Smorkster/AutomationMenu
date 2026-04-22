@@ -139,8 +139,8 @@ def send_error_mail( app_state: ApplicationState, error_msg: str, script_info: S
             ldap_connection = ldap_connection
         )
 
-        server = SMTP(str(app_state.secrets.get('smtprelay')))
-        server.send_message(msg)
+        server = SMTP( str( app_state.secrets.get( 'smtprelay' ) ) )
+        server.send_message( msg )
         server.quit()
 
         return True
