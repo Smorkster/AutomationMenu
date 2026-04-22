@@ -63,7 +63,8 @@ class SettingsManager:
         except:
             self._settings_widgets[ 'script_folders_list' ].insert( parent = '',
                                                                    index = 'end',
-                                                                   text = str( path )
+                                                                   text = str( path ),
+                                                                   tags = 'exists'
                                                                    )
             self._settings.script_folders.append( Path( directory ) )
 
