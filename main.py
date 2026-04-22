@@ -85,8 +85,16 @@ def main() -> None:
     from automation_menu.utils.localization import _ as _
 
     input_parser = argparse.ArgumentParser()
-    input_parser.add_argument( '--application_state', action = 'store', choices = [ 'dev', 'test', 'prod' ], default = 'prod' )
-    input_parser.add_argument( '--loglevel', action = 'store' )
+    input_parser.add_argument( '--application_state',
+                              action = 'store',
+                              choices = [ 'dev', 'test', 'prod' ],
+                              default = 'prod'
+                              )
+    input_parser.add_argument( '--loglevel',
+                              action = 'store',
+                              choices = [ 'debug', 'info', 'warning', 'error', 'critical' ],
+                              default = 'info'
+                              )
 
     input_args = input_parser.parse_args()
 
