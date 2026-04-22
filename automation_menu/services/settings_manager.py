@@ -15,6 +15,7 @@ License: MIT
 
 from __future__ import annotations
 from pathlib import Path
+from tkinter import filedialog
 from tkinter.ttk import Frame, Notebook
 from typing import TYPE_CHECKING, Callable
 
@@ -47,6 +48,37 @@ class SettingsManager:
         self._settings_file_path: Path
 
 
+    def _add_script_folder( self ) -> None:
+        """ Open folder dialog to add new script folder
+
+        If folder is already listed, do nothing
+        """
+
+        directory: str = filedialog.askdirectory()
+        path: Path = Path( directory )
+
+        try:
+            self._settings.script_folders.index( path )
+
+        except:
+            self._settings_widgets[ 'script_folders_list' ].insert( parent = '',
+                                                                   index = 'end',
+                                                                   text = str( path )
+                                                                   )
+            self._settings.script_folders.append( Path( directory ) )
+
+
+    def _remove_script_folder( self ) -> None:
+        """ Remove the selected folder """
+
+        tree = self._settings_widgets[ 'script_folders_list' ]
+        selected_item = tree.focus()
+        path = tree.item( selected_item )[ 'text' ]
+        tree.delete( selected_item )
+
+        self._settings.script_folders.remove( Path( path ) )
+
+
     def build_tab_content( self ) -> SettingsUiDict:
         """ Build the settings tab widgets for the current settings.
 
@@ -54,7 +86,11 @@ class SettingsManager:
             SettingsUiDict: Dictionary of created settings-related widgets.
         """
 
-        self._settings_widgets = build_settings( tab = self._tab, settings = self._settings, main_self = self._app_context.main_window )
+        callbacks = {
+            'add_script_folder': self._add_script_folder,
+            'remove_script_folder': self._remove_script_folder
+        }
+        self._settings_widgets = build_settings( tab = self._tab, settings = self._settings, main_self = self._app_context.main_window, bind_callbacks = callbacks )
 
         return self._settings_widgets
 

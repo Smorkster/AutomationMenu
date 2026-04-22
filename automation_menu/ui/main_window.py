@@ -34,7 +34,7 @@ from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
 from automation_menu.ui.input_manager import InputManager
 from automation_menu.ui.op_buttons import ButtonDict, get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
-from automation_menu.ui.settings_tab import SettingsUiDict, build_settings, get_settings_tab
+from automation_menu.ui.settings_tab import SettingsUiDict
 from automation_menu.ui.statusbar import StatusDict, get_statusbar
 from automation_menu.utils.decorators import ui_guard_method
 
@@ -154,7 +154,7 @@ class AutomationMenuWindow:
 
         # Create settings tab
         tab_index += 1
-        self.tabSettings: Frame = get_settings_tab( tabcontrol = self.tab_control, translate_store_callback = self.app_context.LanguageManager.add_translatable_widget )
+        self.tabSettings: Frame = app_context.SettingsManager.create_tab( parent_tab = self.tab_control, translate_store_callback = self.app_context.LanguageManager.add_translatable_widget )
         self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
 
         # Create history tab
@@ -303,7 +303,7 @@ class AutomationMenuWindow:
                 self.app_context.SequenceManager.build_tab_content()
 
             elif idx == 2:
-                self.settings_ui: SettingsUiDict = build_settings( tab = self.tabSettings, settings = self.app_state.settings, main_self = self )
+                self.settings_ui: SettingsUiDict = self.app_context.SettingsManager.build_tab_content()
 
             elif idx == 3:
                 self.app_context.HistoryManager.build_tab_content( translate_store_callback = self.app_context.LanguageManager.add_translatable_widget, translate_callback = self.app_context.LanguageManager.translate )

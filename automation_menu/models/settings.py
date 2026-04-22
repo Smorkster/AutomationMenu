@@ -77,15 +77,13 @@ class Settings:
         for f in self._saved_script_folders:
             p = Path( f )
 
-            if p.exists():
-                try:
-                    self._script_folders.index( p )
+            try:
+                self._script_folders.index( p )
 
-                except:
-                    self._script_folders.append( p )
-
-            else:
-                self._settings_errors.append( _( 'Script folder \'{d}\' can not be found' ).format( d = f ) )
+            except:
+                self._script_folders.append( p )
+                if not p.exists():
+                    self._settings_errors.append( _( 'Script folder \'{d}\' is not a valid path' ).format( d = f ) )
 
         self._save_callback: Callable = save_callback
 
@@ -344,7 +342,7 @@ class Settings:
         }
 
         sf = []
-        for f in self._saved_script_folders:
+        for f in self._script_folders:
             sf.append( str( f ) )
         d[ 'script_folders' ] = sf
 

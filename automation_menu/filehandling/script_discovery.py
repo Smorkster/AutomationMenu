@@ -200,6 +200,9 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
 
     for dir in script_dirs:
 
+        if not dir.exists():
+            continue
+
         for i, file in enumerate(
             sorted(
                 [
