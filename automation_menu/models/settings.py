@@ -11,6 +11,7 @@ Created: 2025-10-31
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Callable, TypedDict
 
 from automation_menu.models.sequence import Sequence
@@ -34,15 +35,21 @@ class Settings:
             settings_dict (dict | None): Settings read from file
         """
 
+        from automation_menu.utils.localization import _
+
+        default_script_folder = Path( __file__ ).resolve().parent.parent.parent / 'Script'
+        self._settings_errors = []
+        self._saved_script_folders: list[ str ] = []
+        self._script_folders: list[ Path ] = []
+
         if settings_dict is None:
             self._current_language: str = 'sv_SE'
             self._force_focus_post_execution: bool = False
             self._include_ss_in_error_mail: bool = False
-            self._keepass_shortcut: KeePassDict = { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' }
+            self._keepass_shortcut: KeePassDict = KeePassDict( { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } )
             self._minimize_on_running: bool = False
             self._on_top: bool = False
             self._send_mail_on_error: bool = False
-
             self._saved_sequences: list[ Sequence ] = []
 
 
@@ -50,12 +57,35 @@ class Settings:
             self._current_language: str = settings_dict.get( 'current_language', 'sv_SE' )
             self._force_focus_post_execution: bool = settings_dict.get( 'force_focus_post_execution', False )
             self._include_ss_in_error_mail: bool = settings_dict.get( 'include_ss_in_error_mail', False )
-            self._keepass_shortcut: KeePassDict = settings_dict.get( 'keepass_shortcut', { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } )
+            self._keepass_shortcut: KeePassDict = KeePassDict( **settings_dict.get( 'keepass_shortcut', { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } ) )
             self._minimize_on_running: bool = settings_dict.get( 'minimize_on_running', False )
             self._on_top: bool = settings_dict.get( 'on_top', False )
             self._send_mail_on_error: bool = settings_dict.get( 'send_mail_on_error', False )
-
+            self._saved_script_folders = settings_dict.get( 'script_folders', [] )
             self._saved_sequences: list[ Sequence ] = settings_dict.get( 'saved_sequences', [] )
+
+        if len( self._saved_script_folders ) == 0:
+            self._script_folders.append( default_script_folder )
+
+        else:
+            try:
+                self._script_folders.index( default_script_folder )
+
+            except:
+                self._script_folders.append( default_script_folder )
+
+        for f in self._saved_script_folders:
+            p = Path( f )
+
+            if p.exists():
+                try:
+                    self._script_folders.index( p )
+
+                except:
+                    self._script_folders.append( p )
+
+            else:
+                self._settings_errors.append( _( 'Script folder \'{d}\' can not be found' ).format( d = f ) )
 
         self._save_callback: Callable = save_callback
 
@@ -232,14 +262,52 @@ class Settings:
             self._save_callback( self )
 
 
-    def get( self, key: str ) -> bool | str | KeePassDict | list[ Sequence ]:
+    @property
+    def script_folders( self ) -> list[ Path ]:
+        """ Property function to get 'script_folders'
+
+        Returns:
+            list[ Path ]: List of saved script folder paths
+        """
+
+        return self._script_folders
+
+
+    @script_folders.setter
+    def script_folders( self, value: list[ Path ] ) -> None:
+        """ Property setter function to set 'script_folders'
+
+        Args:
+            value (list[ Path ]): Value to set
+        """
+
+        self._script_folders = value
+
+        if self._save_callback:
+            self._save_callback( self )
+
+
+    def get( self, key: str ) -> bool | str | KeePassDict | list[ Sequence ] | list[ Path ]:
         """ Get attribute with requested name
 
         Args:
             key (str): Key of dict
+
+        Returns:
+            bool | str | KeePassDict | list[ Sequence ] | list[ Path ]: The requested setting
         """
 
         return getattr( self, f'_{ key }' )
+
+
+    def get_setting_errors( self ) -> list[ str ]:
+        """ Get errors from loading settings
+
+        Returns:
+            list[ str ]: List of generated errors
+        """
+
+        return self._settings_errors
 
 
     def set_keepass_shortcut( self, shortcut_key: str, shortcut_val: bool | str ) -> None:
@@ -263,8 +331,21 @@ class Settings:
             (dict): Json formated dict of setting object
         """
 
-        d: dict[ str, bool | str ] = { k.lstrip( '_' ): v
-             for k, v in self.__dict__.items()
-             if not callable( self.__dict__[ k ] ) }
+        d: dict[ str, bool | KeePassDict | list | str ] = {
+            'current_language': self._current_language,
+            'force_focus_post_execution': self._force_focus_post_execution,
+            'include_ss_in_error_mail': self._include_ss_in_error_mail,
+            'minimize_on_running': self._minimize_on_running,
+            'on_top': self._on_top,
+            'send_mail_on_error': self._send_mail_on_error,
+            'keepass_shortcut': self._keepass_shortcut,
+            'script_folders': [],
+            'saved_sequences': self._saved_sequences,
+        }
+
+        sf = []
+        for f in self._saved_script_folders:
+            sf.append( str( f ) )
+        d[ 'script_folders' ] = sf
 
         return json.dumps( d, indent = 2 )

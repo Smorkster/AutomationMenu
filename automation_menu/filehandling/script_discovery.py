@@ -19,7 +19,7 @@ import os
 import re
 
 from operator import attrgetter
-from pathlib import WindowsPath
+from pathlib import Path
 from queue import Queue
 
 from automation_menu.models import ScriptInfo, User
@@ -196,69 +196,71 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
     application_test_files: list[ ScriptInfo ] = []
     indexed_files: list[ ScriptInfo ] = []
     scriptswithbreakpoint: list[ ScriptInfo] = []
-    script_dir: WindowsPath = app_state.secrets[ 'script_dir_path' ]
+    script_dirs: list[ Path ] = app_state.settings.script_folders
 
-    for i, file in enumerate(
-        sorted(
-            [
-                f for f in os.scandir( script_dir )
-                if f.is_file() and pattern.match( string = f.name )
-            ],
-            key = lambda x: x.name.lower()
-        )
-    ):
-        if file.name.startswith( 'AMTest_' ) and app_run_state == ApplicationRunState.PROD:
-            continue
+    for dir in script_dirs:
 
-        try:
-            script_info, parse_warnings, approved = _read_scriptfile( file = file, current_user = app_state.current_user, app_run_state = app_run_state )
-
-            # Guard against format changes that has not been implemented
-            for key in ( 'keys', 'values', 'other' ):
-                if key not in parse_warnings:
-                    raise ValueError( _( '\'parse_warnings\' missing key {key}' ).format( key = key ) )
-
-            if len( parse_warnings[ 'keys' ] ) > 0:
-                raise ValueError( _( 'ScriptInfo contained fields that are not valid, or are misspelled: {names}' ).format( names = ', '.join( parse_warnings[ 'keys' ] ) ) )
-
-            if len( parse_warnings[ 'values' ] ) > 0:
-                raise ValueError( _( 'ScriptInfo contained values that are not valid, or are misspelled: {names}' ).format( names = ', '.join( parse_warnings[ 'values' ] ) ) )
-
-            if len( parse_warnings[ 'other' ] ) > 0:
-                raise ValueError( _( 'Parsing ScriptInfo generated error for these fields: {names}' ).format( names = ', '.join( parse_warnings[ 'other' ] ) ) )
-
-            if approved == 2:
+        for i, file in enumerate(
+            sorted(
+                [
+                    f for f in os.scandir( dir )
+                    if f.is_file() and pattern.match( string = f.name )
+                ],
+                key = lambda x: x.name.lower()
+            )
+        ):
+            if file.name.startswith( 'AMTest_' ) and app_run_state == ApplicationRunState.PROD:
                 continue
 
-            else:
-                if approved == 1:
-                    scriptswithbreakpoint.append( script_info )
+            try:
+                script_info, parse_warnings, approved = _read_scriptfile( file = file, current_user = app_state.current_user, app_run_state = app_run_state )
 
-                if file.name.startswith( 'AMTest_' ):
-                    application_test_files.append( script_info )
+                # Guard against format changes that has not been implemented
+                for key in ( 'keys', 'values', 'other' ):
+                    if key not in parse_warnings:
+                        raise ValueError( _( '\'parse_warnings\' missing key {key}' ).format( key = key ) )
+
+                if len( parse_warnings[ 'keys' ] ) > 0:
+                    raise ValueError( _( 'ScriptInfo contained fields that are not valid, or are misspelled: {names}' ).format( names = ', '.join( parse_warnings[ 'keys' ] ) ) )
+
+                if len( parse_warnings[ 'values' ] ) > 0:
+                    raise ValueError( _( 'ScriptInfo contained values that are not valid, or are misspelled: {names}' ).format( names = ', '.join( parse_warnings[ 'values' ] ) ) )
+
+                if len( parse_warnings[ 'other' ] ) > 0:
+                    raise ValueError( _( 'Parsing ScriptInfo generated error for these fields: {names}' ).format( names = ', '.join( parse_warnings[ 'other' ] ) ) )
+
+                if approved == 2:
+                    continue
 
                 else:
-                    indexed_files.append( script_info )
+                    if approved == 1:
+                        scriptswithbreakpoint.append( script_info )
 
-        except ScriptInfoError as e:
-            output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
-                               'tag': OutputStyleTags.SYSERROR
-                               }
-                            )
+                    if file.name.startswith( 'AMTest_' ):
+                        application_test_files.append( script_info )
 
-        except ValueError as e:
-            output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
-                               'tag': OutputStyleTags.SYSWARNING
-                               }
-                            )
+                    else:
+                        indexed_files.append( script_info )
 
-        except Exception as e:
-            output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
-                               'tag': OutputStyleTags.SYSERROR
-                               }
-                            )
+            except ScriptInfoError as e:
+                output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
+                                'tag': OutputStyleTags.SYSERROR
+                                }
+                                )
 
-            continue
+            except ValueError as e:
+                output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
+                                'tag': OutputStyleTags.SYSWARNING
+                                }
+                                )
+
+            except Exception as e:
+                output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
+                                'tag': OutputStyleTags.SYSERROR
+                                }
+                                )
+
+                continue
 
     if len( scriptswithbreakpoint ) > 0:
         line: str = _( 'Some scripts have at least one active breakpoint in the code. Handling this has not been fully tested yet:' )

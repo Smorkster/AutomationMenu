@@ -15,10 +15,10 @@ from __future__ import annotations
 import sys
 
 from pathlib import Path, WindowsPath
-from typing import Callable
 
 from automation_menu.models.startup_arguments import StartupArguments
 from automation_menu.services.error_manager import ErrorManager
+from automation_menu.services.settings_manager import SettingsManager
 
 # Add the project root to Python path if needed
 project_root = Path( __file__ ).parent.parent
@@ -33,8 +33,7 @@ from automation_menu.core.app_context import ApplicationContext
 from automation_menu.core.script_execution_manager import ScriptExecutionManager
 from automation_menu.filehandling.exec_history_handler import write_exec_history
 from automation_menu.filehandling.secrets_handler import read_secrets_file
-from automation_menu.filehandling.settings_handler import read_settingsfile, write_settingsfile
-from automation_menu.models import Secrets, Settings, User
+from automation_menu.models import Secrets, User
 from automation_menu.models.enums import ApplicationRunState
 from automation_menu.models.application_state import ApplicationState
 from automation_menu.ui.history_manager import HistoryManager
@@ -83,15 +82,6 @@ def setup_logger( level: str = 'DEBUG' ) -> Logger:
 def main() -> None:
     """ Main entry point """
 
-    def save_settings( obj: Settings ) -> None:
-        """ Callback function to save settings to file
-
-        Args:
-            obj (Settings): Settings object to save
-        """
-
-        write_settingsfile( settings = obj, settings_file_path = app_state.secrets[ 'settings_file_path' ] )
-
     from automation_menu.utils.localization import _ as _
 
     input_parser = argparse.ArgumentParser()
@@ -109,26 +99,26 @@ def main() -> None:
 
         debug_logger = setup_logger( level = startup_arguments[ 'loglevel' ] )
         secrets = Secrets( read_secrets_file( file_path = str( Path( __file__ ).resolve().parent / 'secrets.json' ) ) )
-        read_settings: dict = read_settingsfile( settings_file_path = secrets[ 'settings_file_path' ], debug_logger = debug_logger )
-        settings = Settings( settings_dict = read_settings, save_callback = save_settings )
 
         from automation_menu.core.auth import connect_to_AD, get_user_adobject
         ldap_connection = connect_to_AD( ldap_server = secrets[ 'ldap_server' ], domain_name = secrets[ 'domain_name' ] )
         current_user = User( get_user_adobject( ldap_search_base = secrets[ 'ldap_search_base' ], ldap_connection = ldap_connection ) )
 
-        app_state = ApplicationState( current_user = current_user, secrets = secrets, settings = settings )
         app_context = ApplicationContext( debug_logger = debug_logger, startup_arguments = startup_arguments )
+        app_context.SettingsManager = SettingsManager( app_context = app_context )
 
+        settings = app_context.SettingsManager.read_saved_settings( settings_file_path = secrets[ 'settings_file_path' ] )
+
+        app_state = ApplicationState( current_user = current_user, secrets = secrets, settings = settings )
         debug_logger.debug( msg = f'sequence list loaded with "{ len( app_state.settings.saved_sequences ) }" sequences' )
-
         change_language( language_code = app_state.settings.current_language )
-        app_context._language_manager = LanguageManager( current_language = app_state.settings.current_language )
-        app_context._script_manager = ScriptManager( script_dir_path = secrets[ 'script_dir_path' ], current_user = current_user )
-        app_context._script_manager.gather_scripts( output_queue = app_context.OutputQueue, app_state = app_state, app_run_state = startup_arguments[ 'app_run_state' ] )
-        app_context._error_manager = ErrorManager( app_state = app_state, ldap_connection = ldap_connection )
-        app_context._execution_manager = ScriptExecutionManager( output_queue = app_context.OutputQueue, app_state = app_state, error_manager = app_context.ErrorManager )
-        app_context._sequence_manager = SequenceManager( app_context = app_context, app_state = app_state, saved_sequences = app_state.settings.saved_sequences )
-        app_context._history_manager = HistoryManager( logger = app_context.debug_logger )
+        app_context.LanguageManager = LanguageManager( current_language = app_state.settings.current_language )
+        app_context.ScriptManager = ScriptManager( script_dir_path = settings.script_folders, current_user = current_user )
+        app_context.ScriptManager.gather_scripts( output_queue = app_context.OutputQueue, app_state = app_state, app_run_state = startup_arguments[ 'app_run_state' ] )
+        app_context.ErrorManager = ErrorManager( app_state = app_state, ldap_connection = ldap_connection )
+        app_context.ExecutionManager = ScriptExecutionManager( output_queue = app_context.OutputQueue, app_state = app_state, error_manager = app_context.ErrorManager )
+        app_context.SequenceManager = SequenceManager( app_context = app_context, app_state = app_state, saved_sequences = app_state.settings.saved_sequences )
+        app_context.HistoryManager = HistoryManager( logger = app_context.debug_logger )
 
         # Launch the main application window
         from automation_menu.ui.main_window import AutomationMenuWindow

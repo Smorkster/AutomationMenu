@@ -25,15 +25,15 @@ from automation_menu.models.scriptinfo import ScriptInfo
 
 
 class ScriptManager:
-    def __init__( self, script_dir_path: Path, current_user: User ) -> None:
+    def __init__( self, script_dir_path: list[ Path ], current_user: User ) -> None:
         """ Manage script discovery and listing
 
         Args:
-            script_dir_path (Path): Path to script directory
+            script_dir_path (list[ Path ]): Path to script directory
             current_user (User): Current user of application
         """
 
-        self.script_dir_path: Path = script_dir_path
+        self.script_dir_path: list[ Path ] = script_dir_path
         self._current_user: User = current_user
 
         self._script_list: list[ ScriptInfo ]

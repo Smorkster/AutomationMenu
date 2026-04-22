@@ -10,37 +10,20 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable, TypedDict
+from typing import TYPE_CHECKING, Callable, cast
+
+from automation_menu.models.settings_ui_dict import SettingsUiDict
 
 
 if TYPE_CHECKING:
     from automation_menu.ui.main_window import AutomationMenuWindow
 
 from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
-from tkinter import E, N, S, W, BooleanVar, StringVar
-from tkinter.ttk import Checkbutton, Combobox, Entry, Frame, Label, LabelFrame, Notebook
+from tkinter import BooleanVar, Canvas, Event, StringVar
+from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, LabelFrame, Notebook, Scrollbar, Treeview
 
 from automation_menu.models import Settings
 from automation_menu.models.widget_for_translation import WidgetForTranslation
-
-
-class SettingsUiDict( TypedDict ):
-    """ Defined dict for settings widgets """
-
-    chbTopMost: Checkbutton
-    chbMinimizeOnRunning: Checkbutton
-    chb_force_focus_post_execution: Checkbutton
-    cmbCurrentLanguage: Combobox
-    keepass_shortcut_ctrl: Checkbutton
-    keepass_shortcut_ctrl_val: BooleanVar
-    keepass_shortcut_alt: Checkbutton
-    keepass_shortcut_alt_val: BooleanVar
-    keepass_shortcut_shift: Checkbutton
-    keepass_shortcut_shift_val: BooleanVar
-    keepass_shortcut_key: Entry
-    keepass_shortcut_key_val: StringVar
-    chbSendMailOnError: Checkbutton
-    chbIncludeSsInErrorMail: Checkbutton
 
 
 def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWindow ) -> SettingsUiDict:
@@ -54,15 +37,99 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
 
     from automation_menu.utils.localization import _, get_available_languages
 
+
+    def _refresh_scrollregion() -> None:
+        """ Refresh the canvas scrollregion after geometry updates settle. """
+
+        bbox: tuple[ int, int, int, int ] | None = container_canvas.bbox( 'all' )
+
+        if bbox is not None:
+            container_canvas.configure( scrollregion = bbox )
+
+
+    def _on_canvas_config( event: Event ) -> None:
+        """ Update canvas width when canvas window changes
+
+        Args:
+            event (Event): Event triggering this handler
+        """
+
+        container_canvas.itemconfig( window_id, width = event.width )
+        container_canvas.after_idle( _refresh_scrollregion )
+
+
+    def _on_frame_config( event: Event ) -> None:
+        """ Update scrollregion when frame region changes
+
+        Args:
+            event (Event): Event triggering this handler
+        """
+
+        container_canvas.after_idle( _refresh_scrollregion )
+
+
+    def _on_mousewheel( event: Event ) -> None:
+        """ Bind mouse wheel scrolling
+
+        Args:
+            event (Event): Event triggering this handler
+        """
+
+        delta: int = getattr( event, 'delta', 0 )
+
+        if delta == 0:
+            return
+
+        step_count: int = max( 1, abs( delta ) // 120 )
+        direction: int = -1 if delta > 0 else 1
+        container_canvas.yview_scroll( direction * step_count, 'units' )
+
+
+    def _on_tree_select( event: Event ) -> None:
+        """ Enable or disable the script-folder remove button based on selection.
+
+        Args:
+            event (Event): Treeview selection event.
+        """
+
+        w: Treeview = cast( Treeview, event.widget )
+        if len( w.selection() ) > 0:
+            script_folder_btn_remove.config( state = '!disabled' )
+
+        else:
+            script_folder_btn_remove.config( state = 'disabled' )
+
+
     settings_ui: dict = {}
-    tab.columnconfigure( index = 0, weight = 1 )
+    frame_root: Frame = Frame( master = tab )
+    frame_root.grid( column = 0, columnspan=2, row = 0, sticky = 'nswe' )
+    frame_root.columnconfigure( index = 0, weight = 1 )
+    frame_root.columnconfigure( index = 1, weight = 0 )
+    frame_root.rowconfigure( index = 0, weight = 1 )
+
+    container_canvas: Canvas = Canvas( master = frame_root, highlightthickness = 0 )
+    container_canvas.grid( sticky = 'nswe' )
+    container_canvas.grid_columnconfigure( index = 0, weight = 1 )
+
+    container_scrollbar: Scrollbar = Scrollbar( master = frame_root, orient = 'vertical', command = container_canvas.yview )
+    container_scrollbar.grid( column = 1, row = 0, sticky = 'ns' )
+
+    container_canvas.configure( yscrollcommand = container_scrollbar.set )
+
+    settings_widget_container: Frame = Frame( master = container_canvas )
+    settings_widget_container.columnconfigure( index = 0, weight = 1 )
+    window_id: int = container_canvas.create_window( ( 0, 0 ), window = settings_widget_container, anchor = 'nw' )
+
+    settings_widget_container.bind( '<Configure>', _on_frame_config )
+    container_canvas.bind( '<Configure>', _on_canvas_config )
+    container_canvas.bind_all( '<MouseWheel>', _on_mousewheel )
 
     ######################
     # Application settings
     tab_frame_row: int = 0
 
     app_settings_group_title: Label = Label( text=_( 'Application settings' ), style = 'LabelFrameTitle.TLabel' )
-    app_settings_group: LabelFrame = LabelFrame( master = tab, labelwidget = app_settings_group_title )
+    app_settings_group: LabelFrame = LabelFrame( master = settings_widget_container, labelwidget = app_settings_group_title )
     app_settings_group.grid( column = 0, row = tab_frame_row, sticky = 'nwe' )
     app_settings_group.grid_columnconfigure( index = 0, weight = 0, uniform = 'titles' )
     app_settings_group.grid_columnconfigure( index = 1, weight = 1, uniform = 'values' )
@@ -147,7 +214,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                               values = get_available_languages(),
                                               textvariable = val_cmb_current_language )
     cmb_current_language.bind( '<<ComboboxSelected>>', main_self.set_current_language )
-    cmb_current_language.grid( column = 1, row = row, padx = 5, pady = 5, sticky = 'we' )
+    cmb_current_language.grid( column = 1, columnspan = 2, row = row, padx = 5, pady = 5, sticky = 'we' )
 
     if settings.current_language in cmb_current_language[ 'values' ]:
         val_cmb_current_language.set( settings.current_language )
@@ -215,7 +282,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     keepass_shortcut_key: Entry = Entry( master = keepass_shortcut_value_frame,
                                  textvariable = val_keepass_shortcut_key )
     val_keepass_shortcut_key.trace_add( mode = 'write', callback = lambda *args: main_self.app_state.settings.set_keepass_shortcut( shortcut_key = 'key', shortcut_val = val_keepass_shortcut_key.get() ) )
-    keepass_shortcut_key.grid( column = 3, row = 0, padx = 5, pady = 5, sticky = ( W ) )
+    keepass_shortcut_key.grid( column = 3, row = 0, padx = 5, pady = 5, sticky = 'w' )
     settings_ui[ 'keepass_shortcut_key' ] = keepass_shortcut_key
     settings_ui[ 'keepass_shortcut_key_val' ] = val_keepass_shortcut_key
 
@@ -224,13 +291,53 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Shortcut used to activate KeePass for auto typing' )
     main_self.app_context.LanguageManager.add_translatable_widget( wft )
 
+    row += 1
+
+    app_settings_group.rowconfigure( index = row, weight = 0 )
+    script_folders_title: Label = Label( master = app_settings_group, text = _( 'Script folders' ), padding = ( 5, 10 ) )
+    script_folders_title.grid( column = 0, row = row, sticky = 'nw' )
+
+    wft: WidgetForTranslation = WidgetForTranslation( widget = script_folders_title, default_text = 'Script folders' )
+    main_self.app_context.LanguageManager.add_translatable_widget( wft )
+
+    script_folders_list: Treeview = Treeview( master = app_settings_group,
+                                             columns = ( 'name', 'path' ),
+                                             displaycolumns = 'name',
+                                             show = '',
+                                             selectmode = 'browse',
+                                             height = 5
+                                             )
+    for f in settings.script_folders:
+        folder_id: str = script_folders_list.insert( parent = '',
+                                                    index = 'end',
+                                                    text = str( f ),
+                                                    values = [ f ] )
+    script_folders_list.column( 'name', anchor = 'w' )
+    script_folders_list.grid( column = 1, row = row, rowspan = 2, sticky = 'we' )
+    script_folders_list.bind( '<<TreeviewSelect>>', _on_tree_select )
+    settings_ui[ 'script_folders_list' ] = script_folders_list
+
+    script_folder_btn_add: Button = Button( master = app_settings_group, text = _( 'Add' ) )
+    script_folder_btn_add.grid( column = 2, row = row, sticky = 'nw' )
+
+    row += 1
+
+    script_folder_btn_remove: Button = Button( master = app_settings_group, text = _( 'Remove' ) )
+    script_folder_btn_remove.grid( column = 2, row = row, sticky = 'nw' )
+    script_folder_btn_remove.config( default = 'disabled' )
+    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = keepass_shortcut_key, msg = _( 'Shortcut used to activate KeePass for auto typing' ) )
+
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Shortcut used to activate KeePass for auto typing' )
+    main_self.app_context.LanguageManager.add_translatable_widget( wft )
+
+
 
     ###############
     # Errorhandling
     tab_frame_row += 1
 
     error_group_title: Label = Label( text = _( 'Errorhandling' ), style = 'LabelFrameTitle.TLabel' )
-    error_group: LabelFrame = LabelFrame( tab, labelwidget = error_group_title )
+    error_group: LabelFrame = LabelFrame( settings_widget_container, labelwidget = error_group_title )
     error_group.grid_columnconfigure( index = 0, weight = 0, uniform = 'titles' )
     error_group.grid_columnconfigure( index = 1, weight = 1, uniform = 'values' )
     error_group.grid( column = 0, row = tab_frame_row, sticky = 'nwe' )
@@ -297,7 +404,10 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
         'keepass_shortcut_key': keepass_shortcut_key,
         'keepass_shortcut_key_val': val_keepass_shortcut_key,
         'chbSendMailOnError': chb_send_mail_on_error,
-        'chbIncludeSsInErrorMail': chb_include_screenshot_in_errormail
+        'chbIncludeSsInErrorMail': chb_include_screenshot_in_errormail,
+        'script_folders_list': script_folders_list,
+        'script_folder_btn_add': script_folder_btn_add,
+        'script_folder_btn_remove': script_folder_btn_remove,
     }
 
 
@@ -312,7 +422,9 @@ def get_settings_tab( tabcontrol: Notebook, translate_store_callback: Callable )
     from automation_menu.utils.localization import _
 
     tabSettings: Frame = Frame( tabcontrol , padding = ( 5, 5, 5, 5 ), name = 'settings' )
-    tabSettings.grid( sticky = 'nsew' )
+    tabSettings.grid( sticky = 'nswe' )
+    tabSettings.columnconfigure( index = 0, weight = 1 )
+    tabSettings.rowconfigure( index = 0, weight = 1 )
 
     tabcontrol.add( child = tabSettings, text = _( 'Settings' ) )
 
