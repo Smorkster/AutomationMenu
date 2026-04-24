@@ -12,7 +12,7 @@ Created: 2025-09-25
 from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, cast
 
-from automation_menu.models.settings_ui_dict import SettingsUiDict
+from automation_menu.models.settings_ui import SettingsUi
 
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ from automation_menu.models import Settings
 from automation_menu.models.widget_for_translation import WidgetForTranslation
 
 
-def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWindow, bind_callbacks: dict[ str, Callable ] ) -> SettingsUiDict:
+def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWindow, bind_callbacks: dict[ str, Callable ] ) -> SettingsUi:
     """ Create widgets for application settings
 
     Args:
@@ -42,6 +42,11 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     def _refresh_scrollregion() -> None:
         """ Refresh the canvas scrollregion after geometry updates settle. """
 
+        canvas_width: int = container_canvas.winfo_width()
+
+        if canvas_width > 1:
+            container_canvas.itemconfig( window_id, width = canvas_width )
+
         bbox: tuple[ int, int, int, int ] | None = container_canvas.bbox( 'all' )
 
         if bbox is not None:
@@ -55,7 +60,6 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
             event (Event): Event triggering this handler
         """
 
-        container_canvas.itemconfig( window_id, width = event.width )
         container_canvas.after_idle( _refresh_scrollregion )
 
 
@@ -102,7 +106,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
             script_folder_btn_remove.config( state = 'disabled' )
 
 
-    settings_ui: dict = {}
+    settings_ui: SettingsUi = SettingsUi()
     add_translatable_widget: Callable = main_self.app_context.LanguageManager.add_translatable_widget
 
     frame_root: Frame = Frame( master = tab )
@@ -155,7 +159,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                              variable = val_chb_on_top,
                              command = lambda: main_self.set_on_top( val_chb_on_top.get() ) )
     chb_on_top.grid( column = 1, row = row, sticky = 'nw' )
-    settings_ui[ 'chbTopMost' ] = chb_on_top
+    settings_ui.chbTopMost = chb_on_top
 
     tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_on_top, msg = _ ( 'Shall the window be set as topmost, above all other windows' ) )
 
@@ -176,7 +180,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                           variable = val_chb_minimize_on_running,
                                           command = lambda: main_self.set_minimize_on_running( val_chb_minimize_on_running.get() ) )
     chb_minimize_on_running.grid( column = 1, row = row, sticky = 'nw' )
-    settings_ui[ 'chbMinimizeOnRunning' ] = chb_minimize_on_running
+    settings_ui.chbMinimizeOnRunning = chb_minimize_on_running
 
     tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_minimize_on_running, msg = _( 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' ) )
 
@@ -197,7 +201,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                           variable = val_chb_force_focus_post_execution,
                                           command = lambda: main_self.set_force_focus_post_execution( val_chb_force_focus_post_execution.get() ) )
     chb_force_focus_post_execution.grid( column = 1, row = row, sticky = 'nw' )
-    settings_ui[ 'chb_force_focus_post_execution' ] = chb_force_focus_post_execution
+    settings_ui.chb_force_focus_post_execution = chb_force_focus_post_execution
 
     tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_force_focus_post_execution, msg = _( 'Should the main window be forced back to focus after execution of script or sequence have finished' ) )
 
@@ -226,8 +230,8 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     else:
         val_cmb_current_language.set( cmb_current_language[ 'values' ][ 0 ] )
 
-    settings_ui[ 'cmbCurrentLanguage' ] = cmb_current_language
-    settings_ui[ 'cmbCurrentLanguage_val' ] = val_cmb_current_language
+    settings_ui.cmbCurrentLanguage = cmb_current_language
+    settings_ui.cmbCurrentLanguage_val = val_cmb_current_language
 
     tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = cmb_current_language, msg = _( 'Language to use in the application' ) )
 
@@ -252,8 +256,8 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                         variable = val_keepass_shortcut_ctrl,
                                         command = lambda: main_self.app_state.settings.set_keepass_shortcut( shortcut_key = 'ctrl', shortcut_val = val_keepass_shortcut_ctrl.get() ) )
     keepass_shortcut_ctrl.grid( column = 0, row = 0, sticky = 'nw' )
-    settings_ui[ 'keepass_shortcut_ctrl' ] = keepass_shortcut_ctrl
-    settings_ui[ 'keepass_shortcut_ctrl_val' ] = val_keepass_shortcut_ctrl
+    settings_ui.keepass_shortcut_ctrl = keepass_shortcut_ctrl
+    settings_ui.keepass_shortcut_ctrl_val = val_keepass_shortcut_ctrl
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_ctrl, default_text = 'CTRL' )
     add_translatable_widget( wft )
@@ -264,8 +268,8 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                        variable = val_keepass_shortcut_alt,
                                        command = lambda : main_self.app_state.settings.set_keepass_shortcut( shortcut_key = 'alt', shortcut_val = val_keepass_shortcut_alt.get() ) )
     keepass_shortcut_alt.grid( column = 1, row = 0, sticky = 'nw' )
-    settings_ui[ 'keepass_shortcut_alt' ] = keepass_shortcut_alt
-    settings_ui[ 'keepass_shortcut_alt_val' ] = val_keepass_shortcut_alt
+    settings_ui.keepass_shortcut_alt = keepass_shortcut_alt
+    settings_ui.keepass_shortcut_alt_val = val_keepass_shortcut_alt
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_alt, default_text = 'ALT' )
     add_translatable_widget( wft )
@@ -276,8 +280,8 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                          variable = val_keepass_shortcut_shift,
                                          command = lambda *args: main_self.app_state.settings.set_keepass_shortcut( shortcut_key = 'shift', shortcut_val = val_keepass_shortcut_shift.get() ) )
     keepass_shortcut_shift.grid( column = 2, row = 0, sticky = 'nw' )
-    settings_ui[ 'keepass_shortcut_shift' ] = keepass_shortcut_shift
-    settings_ui[ 'keepass_shortcut_shift_val' ] = val_keepass_shortcut_shift
+    settings_ui.keepass_shortcut_shift = keepass_shortcut_shift
+    settings_ui.keepass_shortcut_shift_val = val_keepass_shortcut_shift
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_shift, default_text = 'Shift' )
     add_translatable_widget( wft )
@@ -287,8 +291,8 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                  textvariable = val_keepass_shortcut_key )
     val_keepass_shortcut_key.trace_add( mode = 'write', callback = lambda *args: main_self.app_state.settings.set_keepass_shortcut( shortcut_key = 'key', shortcut_val = val_keepass_shortcut_key.get() ) )
     keepass_shortcut_key.grid( column = 3, row = 0, padx = 5, pady = 5, sticky = 'w' )
-    settings_ui[ 'keepass_shortcut_key' ] = keepass_shortcut_key
-    settings_ui[ 'keepass_shortcut_key_val' ] = val_keepass_shortcut_key
+    settings_ui.keepass_shortcut_key = keepass_shortcut_key
+    settings_ui.keepass_shortcut_key_val = val_keepass_shortcut_key
 
     tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = keepass_shortcut_key, msg = _( 'Shortcut used to activate KeePass for auto typing' ) )
 
@@ -322,7 +326,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                                      tags = tags )
     script_folders_list.grid( column = 1, row = row, rowspan = 2, sticky = 'we' )
     script_folders_list.bind( '<<TreeviewSelect>>', _on_tree_select )
-    settings_ui[ 'script_folders_list' ] = script_folders_list
+    settings_ui.script_folders_list = script_folders_list
 
     script_folder_btn_add: Button = Button( master = app_settings_group,
                                            text = _( 'Add' ),
@@ -372,7 +376,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                           variable = val_chb_send_mail_on_error,
                                           command = lambda: main_self.set_send_mail_on_error( val_chb_send_mail_on_error.get() ) )
     chb_send_mail_on_error.grid( column = 1, row = 0, sticky = 'we' )
-    settings_ui[ 'chbSendMailOnError' ] = chb_send_mail_on_error
+    settings_ui.chbSendMailOnError = chb_send_mail_on_error
 
     tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_send_mail_on_error, msg = _( 'Should an mail be sent to its developer if an error occurs in the script?' ) )
 
@@ -393,7 +397,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
                                                       variable = val_chb_include_ss_in_error_mail,
                                                       command = lambda: main_self.set_include_ss_in_error_mail( val_chb_include_ss_in_error_mail.get() ) )
     chb_include_screenshot_in_errormail.grid( column = 1, row = row, sticky = 'we' )
-    settings_ui[ 'chbIncludeSsInErrorMail' ] = chb_include_screenshot_in_errormail
+    settings_ui.chbIncludeSsInErrorMail = chb_include_screenshot_in_errormail
 
     tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_include_screenshot_in_errormail, msg = _( 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' ) )
 
@@ -403,25 +407,7 @@ def build_settings( tab: Frame, settings: Settings, main_self: AutomationMenuWin
     if not val_chb_send_mail_on_error.get():
         chb_include_screenshot_in_errormail.config( state = 'disabled' )
 
-    return {
-        'chbTopMost': chb_on_top,
-        'chbMinimizeOnRunning': chb_minimize_on_running,
-        'chb_force_focus_post_execution': chb_force_focus_post_execution,
-        'cmbCurrentLanguage': cmb_current_language,
-        'keepass_shortcut_ctrl': keepass_shortcut_ctrl,
-        'keepass_shortcut_ctrl_val': val_keepass_shortcut_ctrl,
-        'keepass_shortcut_alt': keepass_shortcut_alt,
-        'keepass_shortcut_alt_val': val_keepass_shortcut_alt,
-        'keepass_shortcut_shift': keepass_shortcut_shift,
-        'keepass_shortcut_shift_val': val_keepass_shortcut_shift,
-        'keepass_shortcut_key': keepass_shortcut_key,
-        'keepass_shortcut_key_val': val_keepass_shortcut_key,
-        'chbSendMailOnError': chb_send_mail_on_error,
-        'chbIncludeSsInErrorMail': chb_include_screenshot_in_errormail,
-        'script_folders_list': script_folders_list,
-        'script_folder_btn_add': script_folder_btn_add,
-        'script_folder_btn_remove': script_folder_btn_remove,
-    }
+    return settings_ui
 
 
 def get_settings_tab( tabcontrol: Notebook, translate_store_callback: Callable ) -> Frame:

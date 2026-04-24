@@ -11,11 +11,9 @@ Created: 2025-09-25
 from __future__ import annotations
 import json
 from pathlib import Path
-import time
-from typing import TYPE_CHECKING, Any, Callable, Dict, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 from automation_menu.models.geometry import Geometry
-from automation_menu.ui.custom_menu import CustomMenu
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
@@ -23,18 +21,18 @@ if TYPE_CHECKING:
 
 import dynamicinputbox
 
-from tkinter import E, N, S, W, Event, Tk, Widget, messagebox
+from tkinter import END, Event, Tk, messagebox
 from tkinter.ttk import Button, Combobox, Frame, Notebook, Style
 from typing import Tuple
 
 from automation_menu.filehandling.settings_handler import write_settingsfile
-from automation_menu.models.enums import ApplicationRunState, OutputStyleTags, SysInstructions
+from automation_menu.models.enums import ApplicationRunState, OutputStyleTags
 from automation_menu.ui.async_output_controller import AsyncOutputController
 from automation_menu.ui.config_ui_style import set_output_styles, set_ui_style
 from automation_menu.ui.input_manager import InputManager
 from automation_menu.ui.op_buttons import ButtonDict, get_op_buttons
 from automation_menu.ui.output_tab import get_output_tab
-from automation_menu.ui.settings_tab import SettingsUiDict
+from automation_menu.ui.settings_tab import SettingsUi
 from automation_menu.ui.statusbar import StatusDict, get_statusbar
 from automation_menu.utils.decorators import ui_guard_method
 
@@ -303,7 +301,7 @@ class AutomationMenuWindow:
                 self.app_context.SequenceManager.build_tab_content()
 
             elif idx == 2:
-                self.settings_ui: SettingsUiDict = self.app_context.SettingsManager.build_tab_content()
+                self.settings_ui: SettingsUi = self.app_context.SettingsManager.build_tab_content()
 
             elif idx == 3:
                 self.app_context.HistoryManager.build_tab_content( translate_store_callback = self.app_context.LanguageManager.add_translatable_widget, translate_callback = self.app_context.LanguageManager.translate )
@@ -360,7 +358,6 @@ class AutomationMenuWindow:
         self._blink_state = not self._blink_state
 
         self.root.after( 100, lambda: button.config( style = 'BlinkBg.TButton' if self._blink_state else 'TButton' ) )
-        self.root.update_idletasks()
 
         self._blink_job = self.root.after( 600, self._pause_button_blinking )
 
@@ -433,7 +430,10 @@ class AutomationMenuWindow:
         from automation_menu.utils.localization import _
 
         self.tab_control.select( 0 )
-        self.app_context.OutputQueue.put( SysInstructions.CLEAROUTPUT )
+        self.textbox_output.config( state = 'normal') # .text_widget.config( state = 'normal' )
+        self.textbox_output.delete( '1.0', END )
+        self.textbox_output.config( state = 'disabled' )
+
         self.app_context.InputManager.hide_input_frame()
 
         if self.app_state.settings.get( 'minimize_on_running' ):
@@ -507,11 +507,12 @@ class AutomationMenuWindow:
 
         self.app_state.settings.force_focus_post_execution = new_value
 
-        if new_value:
-            self.settings_ui[ 'chb_force_focus_post_execution' ].config( state = 'normal' )
+        if self.settings_ui.chb_force_focus_post_execution:
+            if new_value:
+                self.settings_ui.chb_force_focus_post_execution.config( state = 'normal' )
 
-        else:
-            self.settings_ui[ 'chb_force_focus_post_execution' ].config( state = 'disabled' )
+            else:
+                self.settings_ui.chb_force_focus_post_execution.config( state = 'disabled' )
 
 
     def set_display_dev( self ) -> None:
@@ -532,11 +533,12 @@ class AutomationMenuWindow:
 
         self.app_state.settings.send_mail_on_error = new_value
 
-        if new_value:
-            self.settings_ui[ 'chbIncludeSsInErrorMail' ].config( state = 'normal' )
+        if self.settings_ui.chbIncludeSsInErrorMail:
+            if new_value:
+                self.settings_ui.chbIncludeSsInErrorMail.config( state = 'normal' )
 
-        else:
-            self.settings_ui[ 'chbIncludeSsInErrorMail' ].config( state = 'disabled' )
+            else:
+                self.settings_ui.chbIncludeSsInErrorMail.config( state = 'disabled' )
 
 
     def set_include_ss_in_error_mail( self, new_value: bool ) -> None:

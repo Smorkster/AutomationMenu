@@ -10,7 +10,7 @@ Created: 2025-09-25
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable
 
 from psutil import Process
 

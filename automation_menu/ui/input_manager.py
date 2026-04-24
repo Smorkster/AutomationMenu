@@ -9,14 +9,11 @@ Created: 2025-10-31
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 from automation_menu.models.presetparam import PreSetParam
 
-if TYPE_CHECKING:
-    from automation_menu.core.app_context import ApplicationContext
-
-from tkinter import E, N, S, W, Canvas, Event, StringVar, Tk
+from tkinter import Canvas, Event, StringVar, Tk
 from tkinter.ttk import Button, Combobox, Entry, Frame, Label, LabelFrame, Labelframe, Scrollbar, Widget
 from typing import Callable
 
@@ -166,7 +163,7 @@ class InputManager:
             event (Event): Event triggering this handler
         """
 
-        self._container_canvas.itemconfig( self._container_window, width = event.width )
+        self._container_canvas.after_idle( lambda: self._container_canvas.itemconfig( self._container_window, width = event.width ) )
 
 
     def _on_frame_config( self, event: Event ) -> None:
@@ -176,7 +173,7 @@ class InputManager:
             event (Event): Event triggering this handler
         """
 
-        self._container_canvas.configure( scrollregion = self._container_canvas.bbox( 'all' ) )
+        self._container_canvas.after_idle( lambda: self._container_canvas.configure( scrollregion = self._container_canvas.bbox( 'all' ) ) )
 
 
     def _on_key_press( self, event: Event ) -> str | None:
@@ -299,29 +296,33 @@ class InputManager:
         return entered_input
 
 
-    def create_input_widgets( self, parameters: list[ ScriptInputParameter ], parent: Widget | None = None, pre_set_parameters: list[ PreSetParam ] | None = None ) -> Frame:
+    def create_input_widgets( self, parameters: list[ ScriptInputParameter ], parent: Widget | None = None, pre_set_parameters: list[ PreSetParam ] | None = None, canvas: Canvas | None = None ) -> Frame:
         """ Create input widgets for each parameter
 
         Args:
             parameters (list[ ScriptInputParameter ]): Input parameters asked for by script
             parent (Widget | None): Widget to attach input frame to
             pre_set_parameters (list[ PreSetParam ] | None): List of predefined values for parameters
+            canvas (Canvas | None): Container canvas holding input
         """
 
         from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
         from automation_menu.utils.localization import _
 
         column_count: int = 0
+        input_container: Frame
         number_of_columns: int = 2
         row: int = 0
 
+        target_canvas = canvas or self._container_canvas
+
         if parent:
             # Create a frame for use for sequence step
-            input_container: Frame = Frame( master = parent )
+            input_container = Frame( master = parent )
 
         else:
             # Reuse the frame that lives inside the canvas window
-            input_container: Frame = self._input_container
+            input_container = self._input_container
 
         # Clear any old widgets (from previous script)
         for child in input_container.winfo_children():
@@ -365,7 +366,7 @@ class InputManager:
 
             param_input.bind(
                 '<FocusIn>',
-                lambda e, c = self._container_canvas:
+                lambda e, c = target_canvas:
                     self._on_keyboard_focus( e.widget, c )
             )
             param_input.bind( '<Key>', self._on_key_press )
@@ -381,9 +382,8 @@ class InputManager:
 
         input_container.update_idletasks()
 
-        canvas: Canvas = self._container_canvas
         required_height: int = input_container.winfo_reqheight()
-        canvas.configure( height = min( required_height, 150 ) )
+        target_canvas.configure( height = min( required_height, 150 ) )
 
         return input_container
 

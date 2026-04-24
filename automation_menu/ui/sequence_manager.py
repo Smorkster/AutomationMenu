@@ -11,8 +11,10 @@ Created: 2025-11-20
 
 from __future__ import annotations
 from types import FunctionType
-from typing import TYPE_CHECKING, Any, Dict, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast, Literal, cast
 import uuid
+
+from automation_menu.models.sequence_ui import SequenceUi
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
@@ -22,8 +24,8 @@ if TYPE_CHECKING:
 import alwaysontop_tooltip
 import threading
 
-from tkinter import W, BooleanVar, Canvas, Event, Scrollbar
-from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Notebook, Treeview
+from tkinter import W, BooleanVar, Canvas, Event
+from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Notebook, Scrollbar, Treeview
 from typing import Callable
 
 from automation_menu.core.script_runner import ScriptRunner
@@ -71,8 +73,8 @@ class SequenceManager:
         self._current_sequence: Sequence | None = None
         self._current_step_for_edit: SequenceStep | None = None
         self._parent: Notebook | None = None
-        self._sequences: Dict[ str, Sequence ] = {}
-        self._sequence_widgets: dict= {}
+        self._sequences: dict[ str, Sequence ] = {}
+        self._sequence_widgets: SequenceUi = SequenceUi()
         self._sequence_callbacks: dict = {}
 
         for s in sorted( normalized_sequences, key = lambda x: x.name.lower() ):
@@ -85,15 +87,15 @@ class SequenceManager:
     def _clear_sequence_info( self ) -> None:
         """ Clear widgets of loaded sequence info """
 
-        self._sequence_widgets[ 'name_field' ].delete( 0, 'end' )
-        self._sequence_widgets[ 'description_field' ].delete( 0, 'end' )
-        self._sequence_widgets[ 'stop_sequence_on_error_var' ].set( False )
+        self._sequence_widgets.name_field.delete( 0, 'end' )
+        self._sequence_widgets.description_field.delete( 0, 'end' )
+        self._sequence_widgets.stop_sequence_on_error_var.set( False )
 
 
     def _clear_sequence_steps( self ) -> None:
         """ Delete widgets for all listed sequence steps """
 
-        for c in self._sequence_widgets[ 'steps_container' ].winfo_children():
+        for c in self._sequence_widgets.steps_container.winfo_children():
             c.destroy()
 
 
@@ -102,7 +104,7 @@ class SequenceManager:
 
         from automation_menu.utils.localization import _
 
-        sequence_op_frame: Frame = Frame( master = self._sequence_widgets[ 'main_frame' ] )
+        sequence_op_frame: Frame = Frame( master = self._sequence_widgets.main_frame )
         sequence_op_frame.grid( column = 0, row = 1, sticky = 'we' )
 
         col: int = 0
@@ -110,7 +112,7 @@ class SequenceManager:
         sequence_op_frame.grid_columnconfigure( index = col, weight = 0 )
         create_new_sequence: Button = Button( master = sequence_op_frame, text = _( 'Create new sequence' ), command = self._sequence_callbacks[ 'op_create_new_sequence' ] )
         create_new_sequence.grid( column = col, row = 0, sticky = 'nw' )
-        self._sequence_widgets[ 'new_sequence_btn' ] = create_new_sequence
+        self._sequence_widgets.new_sequence_btn = create_new_sequence
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = create_new_sequence, default_text = 'Create new sequence' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
@@ -120,7 +122,7 @@ class SequenceManager:
         sequence_op_frame.grid_columnconfigure( index = col, weight = 0 )
         edit_sequence: Button = Button( master = sequence_op_frame, text = _( 'Edit' ), command = self._sequence_callbacks[ 'op_edit_sequence' ], state = 'disable' )
         edit_sequence.grid( column = col, row = 0, sticky = 'nw' )
-        self._sequence_widgets[ 'edit_sequence_btn' ] = edit_sequence
+        self._sequence_widgets.edit_sequence_btn = edit_sequence
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = edit_sequence, default_text = 'Edit' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
@@ -134,7 +136,7 @@ class SequenceManager:
         sequence_op_frame.grid_columnconfigure( index = col, weight = 0 )
         run_sequence: Button = Button( master = sequence_op_frame, text = _( 'Run selected' ), command = self._sequence_callbacks[ 'op_run_sequence' ], state = 'disable' )
         run_sequence.grid( column = col, row = 0, sticky = 'nw' )
-        self._sequence_widgets[ 'run_sequence_btn' ] = run_sequence
+        self._sequence_widgets.run_sequence_btn = run_sequence
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = run_sequence, default_text = 'Run selected' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
@@ -145,16 +147,16 @@ class SequenceManager:
 
         from automation_menu.utils.localization import _
 
-        sequence_ops: Frame = Frame( master = self._sequence_widgets[ 'sequence_form' ] )
+        sequence_ops: Frame = Frame( master = self._sequence_widgets.sequence_form )
         sequence_ops.grid( column = 0, columnspan = 2, row = 4, sticky = 'se' )
-        self._sequence_widgets[ 'sequence_ops' ] = sequence_ops
+        self._sequence_widgets.sequence_ops = sequence_ops
 
         col: int = 0
 
         sequence_ops.grid_columnconfigure( index = col, weight = 0 )
         add_step_button: Button = Button( master = sequence_ops, text = _( 'Add step' ) , command = self._sequence_callbacks[ 'op_add_sequence_step' ] )
         add_step_button.grid( column = col, row = 0 )
-        self._sequence_widgets[ 'add_step_btn' ] = add_step_button
+        self._sequence_widgets.add_step_btn = add_step_button
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = add_step_button, default_text = 'Add step' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
@@ -164,7 +166,7 @@ class SequenceManager:
         sequence_ops.grid_columnconfigure( index = col, weight = 0 )
         save_sequence: Button = Button( master = sequence_ops, text = _( 'Save sequence' ), command = self._sequence_callbacks[ 'op_save_sequence' ] )
         save_sequence.grid( column = col, row = 0 )
-        self._sequence_widgets[ 'save_sequence_btn' ] = save_sequence
+        self._sequence_widgets.save_sequence_btn = save_sequence
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = save_sequence, default_text = 'Save sequence' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
@@ -174,7 +176,7 @@ class SequenceManager:
         sequence_ops.grid_columnconfigure( index = col, weight = 0 )
         delete_sequence: Button = Button( master = sequence_ops, text = _( 'Delete sequence' ), command = self._sequence_callbacks[ 'op_delete_sequence' ] )
         delete_sequence.grid( column = col, row = 0, sticky = 'nw' )
-        self._sequence_widgets[ 'delete_sequence_btn' ] = delete_sequence
+        self._sequence_widgets.delete_sequence_btn = delete_sequence
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = delete_sequence, default_text = 'Delete' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
@@ -184,7 +186,7 @@ class SequenceManager:
         sequence_ops.grid_columnconfigure( index = col, weight = 0 )
         abort_sequence_edit: Button = Button( master = sequence_ops, text = _( 'Abort edit' ), command = self._sequence_callbacks[ 'op_abort_sequence_edit' ] )
         abort_sequence_edit.grid( column = col, row = 0, sticky = 'nw' )
-        self._sequence_widgets[ 'abort_sequence_edit_btn' ] = abort_sequence_edit
+        self._sequence_widgets.abort_sequence_edit_btn = abort_sequence_edit
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = abort_sequence_edit, default_text = 'Abort edit' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
@@ -197,7 +199,7 @@ class SequenceManager:
 
         from automation_menu.utils.localization import _
 
-        sequence_form: Frame = Frame( master = self._sequence_widgets[ 'main_frame' ] )
+        sequence_form: Frame = Frame( master = self._sequence_widgets.main_frame )
         sequence_form.grid( column = 0, row = 2, rowspan = 2, sticky = 'nswe' )
         sequence_form.grid_columnconfigure( index = 0, weight = 0 )
         sequence_form.grid_columnconfigure( index = 1, weight = 1 )
@@ -207,7 +209,7 @@ class SequenceManager:
         sequence_form.grid_rowconfigure( index = 2, weight = 0 ) # Stop on error
         sequence_form.grid_rowconfigure( index = 3, weight = 1 ) # Empty
         sequence_form.grid_rowconfigure( index = 4, weight = 1 ) # Sequence op buttons
-        self._sequence_widgets[ 'sequence_form' ] = sequence_form
+        self._sequence_widgets.sequence_form = sequence_form
 
         row: int = 0
 
@@ -219,7 +221,7 @@ class SequenceManager:
 
         name_field: Entry = Entry( master = sequence_form )
         name_field.grid( column = 1, columnspan = 2, row = row, sticky = 'we' )
-        self._sequence_widgets[ 'name_field' ] = name_field
+        self._sequence_widgets.name_field = name_field
 
         row += 1
 
@@ -231,7 +233,7 @@ class SequenceManager:
 
         description_field: Entry = Entry( master = sequence_form )
         description_field.grid( column = 1, columnspan = 2, row = row, sticky = 'we' )
-        self._sequence_widgets[ 'description_field' ] = description_field
+        self._sequence_widgets.description_field = description_field
 
         row += 1
 
@@ -241,23 +243,23 @@ class SequenceManager:
         wft: WidgetForTranslation = WidgetForTranslation( widget = stop_on_error_title, default_text = 'Stop on error' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
 
-        self._sequence_widgets[ 'stop_sequence_on_error_var' ] = BooleanVar( master = sequence_form, value = False )
-        stop_on_error_field: Checkbutton = Checkbutton( master = sequence_form, variable = self._sequence_widgets[ 'stop_sequence_on_error_var' ] )
+        self._sequence_widgets.stop_sequence_on_error_var = BooleanVar( master = sequence_form, value = False )
+        stop_on_error_field: Checkbutton = Checkbutton( master = sequence_form, variable = self._sequence_widgets.stop_sequence_on_error_var )
         stop_on_error_field.grid( column = 1, columnspan = 2, row = row, sticky = 'we' )
-        self._sequence_widgets[ 'stop_sequence_on_error_field' ] = stop_on_error_field
+        self._sequence_widgets.stop_sequence_on_error_field = stop_on_error_field
 
 
     def _create_sequence_list( self ) -> None:
         """ Define a list to display available sequences """
 
-        sequence_list: Treeview = Treeview( master = self._sequence_widgets[ 'main_frame' ], columns = ( 'name', 'id' ), displaycolumns = 'name', show = '', selectmode = 'browse' )
+        sequence_list: Treeview = Treeview( master = self._sequence_widgets.main_frame, columns = ( 'name', 'id' ), displaycolumns = 'name', show = '', selectmode = 'browse' )
         sequence_list.column( 'name', anchor = 'w' )
         sequence_list.column( 'id', anchor = 'w' )
         sequence_list.bind( '<ButtonRelease-1>', self._on_listbox_click )
         sequence_list.grid( column = 0, row = 0, sticky = 'nswe' )
-        self._sequence_widgets[ 'sequence_list' ] = sequence_list
+        self._sequence_widgets.sequence_list = sequence_list
 
-        list_scrollbar: Scrollbar = Scrollbar( master = self._sequence_widgets[ 'main_frame' ] )
+        list_scrollbar: Scrollbar = Scrollbar( master = self._sequence_widgets.main_frame )
         list_scrollbar.grid( column = 0, row = 0, sticky = 'nse' )
 
         sequence_list.config( yscrollcommand = list_scrollbar.set )
@@ -272,14 +274,14 @@ class SequenceManager:
 
         from automation_menu.utils.localization import _
 
-        steps_display_frame: Frame = Frame( master = self._sequence_widgets[ 'main_frame' ] )
+        steps_display_frame: Frame = Frame( master = self._sequence_widgets.main_frame )
         steps_display_frame.grid( column = 1, row = 0, rowspan = 3, sticky = 'nswe' )
         steps_display_frame.grid_columnconfigure( index = 0, weight = 1 )
         steps_display_frame.grid_columnconfigure( index = 1, weight = 0 )
         steps_display_frame.grid_rowconfigure( index = 0, weight = 0 )
         steps_display_frame.grid_rowconfigure( index = 1, weight = 1 )
         steps_display_frame.grid_rowconfigure( index = 2, weight = 0 )
-        self._sequence_widgets[ 'steps_display_frame' ] = steps_display_frame
+        self._sequence_widgets.steps_display_frame = steps_display_frame
 
         steps_title: Label = Label( master = steps_display_frame, text = _( 'Steps in sequence' ), style = 'BiggerTitle.TLabel' )
         steps_title.grid( column = 0, row = 0, sticky = ( W ) )
@@ -291,29 +293,29 @@ class SequenceManager:
         display_container.grid( column = 0, columnspan = 2, row = 1, sticky = 'nswe' )
         display_container.grid_columnconfigure( index = 0, weight = 1 )
         display_container.grid_rowconfigure( index = 0, weight = 1 )
-        self._sequence_widgets[ 'display_container' ] = display_container
+        self._sequence_widgets.display_container = display_container
 
         container_canvas: Canvas = Canvas( master = display_container, highlightthickness = 0 )
         container_canvas.grid( sticky = 'nswe' )
         container_canvas.grid_columnconfigure( index = 0, weight = 1 )
         container_canvas.bind( '<Configure>', self._on_canvas_config )
-        self._sequence_widgets[ 'container_canvas' ] = container_canvas
+        self._sequence_widgets.steps_list_container_canvas = container_canvas
         container_canvas.bind_all( '<MouseWheel>' , self._on_mousewheel )
 
         container_scrollbar: Scrollbar = Scrollbar( master = display_container, orient = 'vertical', command = container_canvas.yview )
         container_scrollbar.grid( column = 1, row = 0, sticky = 'ns' )
-        self._sequence_widgets[ 'container_scrollbar' ] = container_scrollbar
+        self._sequence_widgets.container_scrollbar = container_scrollbar
 
         container_canvas.configure( yscrollcommand = container_scrollbar.set )
 
         steps_container: Frame = Frame( master = container_canvas )
         steps_container.grid_columnconfigure( index = 0, weight = 1 )
         steps_container.grid_rowconfigure( index = 0, weight = 1 )
-        steps_container.bind( '<Configure>', self._on_frame_config )
-        self._sequence_widgets[ 'steps_container' ] = steps_container
+        steps_container.bind( '<Configure>', self._on_steps_container_frame_config )
+        self._sequence_widgets.steps_container = steps_container
 
         window_id = container_canvas.create_window( ( 0, 0 ), window = steps_container, anchor = 'nw' )
-        self._sequence_widgets[ 'window_id' ] = window_id
+        self._sequence_widgets.steps_list_input_window_id = window_id
 
 
     def _create_step_form( self ) -> None:
@@ -321,11 +323,11 @@ class SequenceManager:
 
         from automation_menu.utils.localization import _
 
-        step_form: Frame = Frame( master = self._sequence_widgets[ 'steps_display_frame' ], style = 'SequenceStep.TFrame', borderwidth = 2, relief = 'solid' )
-        step_form.grid( column = 0, row = 2, rowspan = 3, sticky = 'nswe' )
+        step_form: Frame = Frame( master = self._sequence_widgets.steps_display_frame, style = 'SequenceStep.TFrame', borderwidth = 2, relief = 'solid' )
+        step_form.grid( column = 0, row = 2, sticky = 'we' )
         step_form.grid_columnconfigure( index = 0, weight = 0 )
         step_form.grid_columnconfigure( index = 1, weight = 1 )
-        self._sequence_widgets[ 'step_form' ] = step_form
+        self._sequence_widgets.step_form = step_form
 
         row: int = 0
 
@@ -337,10 +339,10 @@ class SequenceManager:
         self._app_context.LanguageManager.add_translatable_widget( wft )
 
         script_names: list[ str ] = sorted( [ s.filename for s in self._app_context.ScriptManager.get_script_list() ] )
-        script_field: Combobox = Combobox( master = step_form, values = script_names )
-        script_field.bind( '<<ComboboxSelected>>', self._on_step_script_selected )
-        script_field.grid( column = 1, row = row, padx = 5, sticky = 'nw' )
-        self._sequence_widgets[ 'step_script_field' ] = script_field
+        script_list: Combobox = Combobox( master = step_form, values = script_names, state = 'readonly' )
+        script_list.bind( '<<ComboboxSelected>>', self._on_step_script_selected )
+        script_list.grid( column = 1, row = row, padx = 5, sticky = 'nw' )
+        self._sequence_widgets.step_script_list = script_list
 
         row += 1
 
@@ -351,8 +353,8 @@ class SequenceManager:
         wft: WidgetForTranslation = WidgetForTranslation( widget = stop_on_error_title, default_text = 'Stop on error' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
 
-        self._sequence_widgets[ 'stop_step_on_error_var' ] = BooleanVar( master = step_form, value = False )
-        stop_on_error_field: Checkbutton = Checkbutton( master = step_form, variable = self._sequence_widgets[ 'stop_step_on_error_var' ] )
+        self._sequence_widgets.stop_step_on_error_var = BooleanVar( master = step_form, value = False )
+        stop_on_error_field: Checkbutton = Checkbutton( master = step_form, variable = self._sequence_widgets.stop_step_on_error_var )
         stop_on_error_field.grid( column = 1, row = row, sticky = 'w' )
 
         row += 1
@@ -360,7 +362,7 @@ class SequenceManager:
         step_form.grid_rowconfigure( index = row, weight = 0 ) # Input title
         input_title: Label = Label( master = step_form, text = _( 'Script input parameters' ), style = 'History.TLabel' )
         input_title.grid( column = 0, row = row, sticky = 'nw' )
-        self._sequence_widgets[ 'step_input_title' ] = input_title
+        self._sequence_widgets.step_input_title = input_title
 
         wft: WidgetForTranslation = WidgetForTranslation( widget = input_title, default_text = 'Script input parameters' )
         self._app_context.LanguageManager.add_translatable_widget( wft )
@@ -368,13 +370,44 @@ class SequenceManager:
         row += 1
 
         step_form.grid_rowconfigure( index = row, weight = 0 ) # Input parameters
-        input_frame: Frame = Frame( master = step_form )
-        input_frame.grid( column = 0, columnspan = 3, row = row, sticky = 'nswe' )
-        self._sequence_widgets[ 'step_input_frame' ] = input_frame
+        input_container: Frame = Frame( master = step_form )
+        input_container.grid( column = 0, columnspan = 2, row = row, sticky = 'we' )
+        input_container.grid_columnconfigure( index = 0, weight = 1 )
+        input_container.grid_columnconfigure( index = 1, weight = 0 )
+        input_container.grid_rowconfigure( index = 0, weight = 0 )
+
+        container_canvas: Canvas = Canvas( master = input_container, height = 150, highlightthickness = 0 )
+        container_canvas.grid( column = 0, row = 0, sticky = 'we' )
+        container_canvas.grid_columnconfigure( index = 0, weight = 1 )
+
+        container_scrollbar: Scrollbar = Scrollbar( master = input_container, orient = 'vertical', command = container_canvas.yview )
+        container_scrollbar.grid( column = 1, row = 0, sticky = 'ns' )
+
+        container_canvas.configure( yscrollcommand = container_scrollbar.set )
+
+        input_frame: Frame = Frame( master = container_canvas )
+        window_id: int = container_canvas.create_window( ( 0, 0 ), window = input_frame, anchor = 'nw' )
+
+        self._sequence_widgets.step_input_container = input_container
+        self._sequence_widgets.step_form_container_canvas = container_canvas
+        self._sequence_widgets.step_input_window_id = window_id
+        self._sequence_widgets.step_input_frame = input_frame
+
+        input_frame.bind(
+            '<Configure>',
+            lambda e: container_canvas.configure(
+                scrollregion = container_canvas.bbox( 'all' )
+                )
+        )
+
+        container_canvas.bind(
+            '<Configure>',
+            lambda e: container_canvas.itemconfig( window_id, width = e.width )
+        )
 
         row += 1
 
-        step_form.grid_rowconfigure( index = row, weight = 0 ) # Input parameters
+        step_form.grid_rowconfigure( index = row, weight = 0 ) # Step op buttons
 
         step_op_buttons_frame: Frame = Frame( master = step_form )
         step_op_buttons_frame.grid( column = 1, row = row, sticky = 'se' )
@@ -417,7 +450,7 @@ class SequenceManager:
                 None if no sequence is selected
         """
 
-        values = self._sequence_widgets[ 'sequence_list' ].item( self._sequence_widgets[ 'sequence_list' ].focus() ).get( 'values', [] )
+        values = self._sequence_widgets.sequence_list.item( self._sequence_widgets.sequence_list.focus() ).get( 'values', [] )
 
         if len( values ) < 2 or not isinstance( values[ 1 ], str ):
 
@@ -433,17 +466,19 @@ class SequenceManager:
             event (Event): Event that triggered handler
         """
 
-        self._sequence_widgets[ 'container_canvas' ].itemconfig( self._sequence_widgets[ 'window_id' ], width = event.width, height = event.height )
+        canvas: Canvas = self._sequence_widgets.steps_list_container_canvas
+        canvas.after_idle( lambda: canvas.itemconfig( self._sequence_widgets.steps_list_input_window_id, width = event.width ) if self._sequence_widgets.steps_list_input_window_id else '' )
 
 
-    def _on_frame_config( self, event: Event ) -> None:
+    def _on_steps_container_frame_config( self, event: Event ) -> None:
         """ Eventhandler for when sequence step frame changes size
 
         Args:
             event (Event): Event that triggered handler
         """
 
-        self._sequence_widgets[ 'container_canvas' ].configure( scrollregion = self._sequence_widgets[ 'container_canvas' ].bbox( 'all' ) )
+        canvas: Canvas = self._sequence_widgets.steps_list_container_canvas
+        canvas.after_idle( lambda: canvas.configure( scrollregion = canvas.bbox( 'all' ) ) )
 
 
     def _on_listbox_click( self, event: Event ) -> None:
@@ -468,8 +503,8 @@ class SequenceManager:
 
                 return
 
-            self._sequence_widgets[ 'edit_sequence_btn' ].config( state = 'normal' )
-            self._sequence_widgets[ 'run_sequence_btn' ].config( state = 'normal' )
+            self._sequence_widgets.edit_sequence_btn.config( state = 'normal' )
+            self._sequence_widgets.run_sequence_btn.config( state = 'normal' )
 
         return
 
@@ -481,7 +516,7 @@ class SequenceManager:
             event (Event): Event that triggered handler
         """
 
-        self._sequence_widgets[ 'container_canvas' ].yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
+        self._sequence_widgets.steps_list_container_canvas.yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
 
 
     def _on_step_click( self, step: SequenceStep ) -> None:
@@ -510,6 +545,12 @@ class SequenceManager:
         """
 
         from automation_menu.utils.localization import _
+
+        step_input_frame: Frame | None = self._sequence_widgets.step_input_frame
+
+        if step_input_frame is not None and step_input_frame.winfo_exists():
+            for c in step_input_frame.winfo_children():
+                c.destroy()
 
         selected_name: str = cast( Combobox, event.widget ).get()
         selected_script: ScriptInfo = self._app_context.ScriptManager.get_script_info_by_filename( selected_name )
@@ -550,18 +591,18 @@ class SequenceManager:
             sequence (Sequence): Sequence to take information from
         """
 
-        self._sequence_widgets[ 'sequence_ops' ].grid()
+        self._sequence_widgets.sequence_ops.grid()
 
-        self._sequence_widgets[ 'name_field' ].config( state = 'normal' )
-        self._sequence_widgets[ 'name_field' ].delete( 0, 'end' )
-        self._sequence_widgets[ 'name_field' ].insert( 0, sequence.name )
+        self._sequence_widgets.name_field.config( state = 'normal' )
+        self._sequence_widgets.name_field.delete( 0, 'end' )
+        self._sequence_widgets.name_field.insert( 0, sequence.name )
 
-        self._sequence_widgets[ 'description_field' ].config( state = 'normal' )
-        self._sequence_widgets[ 'description_field' ].delete( 0, 'end' )
-        self._sequence_widgets[ 'description_field' ].insert( 0, sequence.description )
+        self._sequence_widgets.description_field.config( state = 'normal' )
+        self._sequence_widgets.description_field.delete( 0, 'end' )
+        self._sequence_widgets.description_field.insert( 0, sequence.description )
 
-        self._sequence_widgets[ 'stop_sequence_on_error_field' ].config( state = 'normal' )
-        self._sequence_widgets[ 'stop_sequence_on_error_var' ].set( sequence.stop_on_error )
+        self._sequence_widgets.stop_sequence_on_error_field.config( state = 'normal' )
+        self._sequence_widgets.stop_sequence_on_error_var.set( sequence.stop_on_error )
 
         self._populate_sequence_steps( sequence )
 
@@ -580,8 +621,8 @@ class SequenceManager:
         for step in sequence.steps:
             lambda_bind: FunctionType = lambda e, i = step: self._on_step_click( step = i )
 
-            self._sequence_widgets[ 'steps_container' ].grid_rowconfigure( index = step.step_index, weight = 0 )
-            step_frame: Frame = Frame( master = self._sequence_widgets[ 'steps_container' ], borderwidth = 2, relief = 'solid', padding = 5 )
+            self._sequence_widgets.steps_container.grid_rowconfigure( index = step.step_index, weight = 0 )
+            step_frame: Frame = Frame( master = self._sequence_widgets.steps_container, borderwidth = 2, relief = 'solid', padding = 5 )
             step_frame.grid( column = 0, row = step.step_index, sticky = 'we' )
             step_frame.bind( '<Button-1>', lambda_bind )
 
@@ -614,7 +655,7 @@ class SequenceManager:
     def _list_sequences( self ) -> None:
         """ List available sequences """
 
-        tree: Treeview = self._sequence_widgets[ 'sequence_list' ]
+        tree: Treeview = self._sequence_widgets.sequence_list
 
         tree.delete( *tree.get_children() )
 
@@ -637,10 +678,10 @@ class SequenceManager:
             self._current_sequence.steps.append( self._current_step_for_edit )
             self._current_step_for_edit.step_index = self._current_sequence.steps.index( self._current_step_for_edit )
 
-        selected_script: ScriptInfo = self._app_context.ScriptManager.get_script_info_by_filename( filename = self._sequence_widgets[ 'step_script_field' ].get() )
+        selected_script: ScriptInfo = self._app_context.ScriptManager.get_script_info_by_filename( filename = self._sequence_widgets.step_script_list.get() )
         self._current_step_for_edit.script_file = selected_script.fullpath
         self._current_step_for_edit.script_info = selected_script
-        self._current_step_for_edit.stop_on_error = self._sequence_widgets[ 'stop_step_on_error_var' ].get()
+        self._current_step_for_edit.stop_on_error = self._sequence_widgets.stop_step_on_error_var.get()
 
         try:
             index: int = self._current_sequence.steps.index( self._current_step_for_edit )
@@ -651,10 +692,10 @@ class SequenceManager:
 
         self._current_step_for_edit.step_index = index
 
-        if self._sequence_widgets.get( 'input_params_frame', False ):
-            ipf: Frame = self._sequence_widgets[ 'input_params_frame' ]
+        if self._sequence_widgets.input_params_frame is None:
+            ipf: Frame | None = self._sequence_widgets.input_params_frame
 
-            if ipf.winfo_exists():
+            if ipf and ipf.winfo_exists():
                 step_input: list[ PreSetParam ] = self._app_context.InputManager.collect_entered_input( frame_to_search = ipf )
                 self._current_step_for_edit.pre_set_parameters = step_input
 
@@ -754,35 +795,35 @@ class SequenceManager:
     def _show_step_form( self ) -> None:
         """ Display the form to edit/add sequence step """
 
-        step_form: Frame | None = self._sequence_widgets.get( 'step_form' )
+        step_form: Frame | None = self._sequence_widgets.step_form
 
         if step_form is None or not step_form.winfo_exists():
             self._create_step_form()
-            step_form = self._sequence_widgets[ 'step_form' ]
+            step_form = self._sequence_widgets.step_form
 
-        self._sequence_widgets[ 'step_form' ].grid()
+        self._sequence_widgets.step_form.grid()
 
-        step_input_frame: Frame | None = self._sequence_widgets.get( 'step_input_frame' )
+        step_input_frame: Frame | None = self._sequence_widgets.step_input_frame
 
         if step_input_frame is not None and step_input_frame.winfo_exists():
-            for c in self._sequence_widgets[ 'step_input_frame' ].winfo_children():
+            for c in step_input_frame.winfo_children():
                 c.destroy()
 
         if self._current_step_for_edit:
-            s_info = self._current_step_for_edit.script_info
-            self._sequence_widgets[ 'step_script_field' ].set( s_info.filename )
-            self._sequence_widgets[ 'stop_step_on_error_var' ].set( self._current_step_for_edit.stop_on_error )
+            script_info = self._current_step_for_edit.script_info
+            self._sequence_widgets.step_script_list.set( script_info.filename )
+            self._sequence_widgets.stop_step_on_error_var.set( self._current_step_for_edit.stop_on_error )
 
-            if len( s_info.scriptmeta.script_input_parameters ) > 0:
-                self._show_step_form_input( input = s_info.scriptmeta.script_input_parameters, pre_set = self._current_step_for_edit.pre_set_parameters )
+            if len( script_info.scriptmeta.script_input_parameters ) > 0:
+                self._show_step_form_input( input = script_info.scriptmeta.script_input_parameters, pre_set = self._current_step_for_edit.pre_set_parameters )
 
             else:
                 self._show_step_form_input( show = False )
 
         else:
             self._current_step_for_edit = SequenceStep()
-            self._sequence_widgets[ 'step_script_field' ].set( '' )
-            self._sequence_widgets[ 'stop_step_on_error_var' ].set( False )
+            self._sequence_widgets.step_script_list.set( '' )
+            self._sequence_widgets.stop_step_on_error_var.set( False )
 
             self._show_step_form_input()
 
@@ -796,11 +837,11 @@ class SequenceManager:
             show (bool): Should the input frame be shown
         """
 
-        ipf: Frame | None = self._sequence_widgets.get( 'input_params_frame' )
+        ipf: Frame | None = self._sequence_widgets.input_params_frame
 
         if show:
-            self._sequence_widgets[ 'step_input_title' ].grid()
-            self._sequence_widgets[ 'step_input_frame' ].grid()
+            self._sequence_widgets.step_input_title.grid()
+            self._sequence_widgets.step_input_container.grid()
 
             if ipf is not None and ipf.winfo_exists():
                 ipf.grid()
@@ -809,14 +850,15 @@ class SequenceManager:
                 input_params_frame = self._app_context.InputManager.create_input_widgets(
                     parameters = input,
                     pre_set_parameters = pre_set,
-                    parent = self._sequence_widgets[ 'step_input_frame' ]
+                    parent = self._sequence_widgets.step_input_frame,
+                    canvas = self._sequence_widgets.step_form_container_canvas
                 )
                 input_params_frame.grid()
-                self._sequence_widgets[ 'input_params_frame' ] = input_params_frame
+                self._sequence_widgets.input_params_frame = input_params_frame
 
         else:
-            self._sequence_widgets[ 'step_input_title' ].grid_remove()
-            self._sequence_widgets[ 'step_input_frame' ].grid_remove()
+            self._sequence_widgets.step_input_title.grid_remove()
+            self._sequence_widgets.step_input_container.grid_remove()
 
             if ipf is not None and ipf.winfo_exists():
                 ipf.grid_remove()
@@ -831,19 +873,19 @@ class SequenceManager:
         self._clear_sequence_info()
         self._clear_sequence_steps()
 
-        step_form: Frame = self._sequence_widgets[ 'step_form' ]
+        step_form: Frame = self._sequence_widgets.step_form
 
         if step_form is not None and step_form.winfo_exists():
             step_form.grid_remove()
 
-        sequence_ops: Frame = self._sequence_widgets[ 'sequence_ops' ]
+        sequence_ops: Frame = self._sequence_widgets.sequence_ops
 
         if sequence_ops is not None and sequence_ops.winfo_exists():
             sequence_ops.grid_remove()
 
-        self._sequence_widgets[ 'name_field' ].config( state = 'disable' )
-        self._sequence_widgets[ 'description_field' ].config( state = 'disable' )
-        self._sequence_widgets[ 'stop_sequence_on_error_field' ].config( state = 'disable' )
+        self._sequence_widgets.name_field.config( state = 'disable' )
+        self._sequence_widgets.description_field.config( state = 'disable' )
+        self._sequence_widgets.stop_sequence_on_error_field.config( state = 'disable' )
 
 
     def build_tab_content( self ) -> None:
@@ -895,7 +937,7 @@ class SequenceManager:
         wft: WidgetForTranslation = WidgetForTranslation( widget = main_frame, default_text = 'Automation sequence' )
         translate_callback( wft )
 
-        self._sequence_widgets[ 'main_frame' ] = main_frame
+        self._sequence_widgets.main_frame = main_frame
 
         return main_frame
 
@@ -959,10 +1001,10 @@ class SequenceManager:
     def hide_step_form( self ) -> None:
         """ Hide sequence step editing form """
 
-        self._sequence_widgets[ 'step_script_field' ].set( '' )
-        self._sequence_widgets[ 'stop_step_on_error_var' ].set( False )
+        self._sequence_widgets.step_script_list.set( '' )
+        self._sequence_widgets.stop_step_on_error_var.set( False )
 
-        step_form: Frame = self._sequence_widgets[ 'step_form' ]
+        step_form: Frame = self._sequence_widgets.step_form
 
         if step_form is not None and step_form.winfo_exists():
             step_form.grid_remove()
@@ -1012,6 +1054,7 @@ class SequenceManager:
 
         # Use the sequence selected in list
         if sid is None:
+
             return
 
         seq: Sequence = self._sequences[ sid ]
@@ -1041,8 +1084,8 @@ class SequenceManager:
 
             raise ValueError( _( '\'Current sequence\' was lost, can\'t save data' ) )
 
-        self._current_sequence.name = self._sequence_widgets[ 'name_field' ].get()
-        self._current_sequence.description = self._sequence_widgets[ 'description_field' ].get()
+        self._current_sequence.name = self._sequence_widgets.name_field.get()
+        self._current_sequence.description = self._sequence_widgets.description_field.get()
 
         self._sequences[ self._current_sequence.id ] = self._current_sequence
         self._persist_sequences()
@@ -1052,7 +1095,7 @@ class SequenceManager:
     def toggle_step_form( self ) -> None:
         """ Show/hide step editing form """
 
-        if self._sequence_widgets[ 'step_form' ].winfo_ismapped():
+        if self._sequence_widgets.step_form.winfo_ismapped():
             self.hide_step_form()
 
         else:

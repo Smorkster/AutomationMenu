@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Callable
 from automation_menu.filehandling.settings_handler import read_settingsfile, write_settingsfile
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.models.settings import Settings
-from automation_menu.models.settings_ui_dict import SettingsUiDict
+from automation_menu.models.settings_ui import SettingsUi
 from automation_menu.ui.settings_tab import build_settings, get_settings_tab
 
 
@@ -43,7 +43,7 @@ class SettingsManager:
 
         self._app_context: ApplicationContext = app_context
 
-        self._settings_widgets: SettingsUiDict
+        self._settings_widgets: SettingsUi
         self._settings: Settings
         self._settings_file_path: Path
 
@@ -80,7 +80,7 @@ class SettingsManager:
         self._settings.script_folders.remove( Path( path ) )
 
 
-    def build_tab_content( self ) -> SettingsUiDict:
+    def build_tab_content( self ) -> SettingsUi:
         """ Build the settings tab widgets for the current settings.
 
         Returns:

@@ -474,7 +474,7 @@ msgstr "Skript för detta steg"
 
 #: automation_menu/ui/sequence_manager.py:361
 msgid "Script input parameters"
-msgstr "Inparametrar för"
+msgstr "Inparametrar"
 
 #: automation_menu/ui/sequence_manager.py:385
 msgid "Save step"
