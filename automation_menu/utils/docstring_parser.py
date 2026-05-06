@@ -4,8 +4,6 @@ Read script file content for any defined meta data
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-10-08
 """
 
 import ast
@@ -18,10 +16,13 @@ from automation_menu.models.enums import ScriptState, ValidScriptInfoFields
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 
 def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
-    """ Parse metadata fields
+    """ Parse metadata fields from docstring lines.
 
     Args:
-        lines (list[ str ]): List of rows
+        lines (list[str]): List of docstring lines to parse.
+
+    Returns:
+        fields (dict), warnings (dict): Parsed metadata fields and collected parsing warnings.
     """
 
     from automation_menu.utils.localization import _
@@ -76,16 +77,19 @@ def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:
 
 
 def _parse_parameter( field: str, value: str ) -> ScriptInputParameter:
-    """ Extract script input parameters info
+    """ Extract script input parameter information from a docstring field.
 
     Parse fields like:
-    param name: description
-    param param_with_default: description (default: value)
-    param required_param: description (required)
+    `param name: description`
+    `param param_with_default: description (default: value)`
+    `param required_param: description (required)`
 
     Args:
-        field (str): Field name from docstring
-        value (str): Field value from docstring
+        field (str): Field name from the docstring.
+        value (str): Field value from the docstring.
+
+    Returns:
+        ScriptInputParameter: Parsed script input parameter definition.
     """
 
     param_name: str = field[ 6 : ].strip()
@@ -123,19 +127,13 @@ def _parse_parameter( field: str, value: str ) -> ScriptInputParameter:
 
 
 def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
-    """ Parse docstring text and extract teh rows with field definitions
+    """ ParsParse docstring text and extract field definitions.
 
     Args:
-        raw_docstring (str): The full text inside the docstring definition
+        raw_docstring (str): Full text inside the docstring definition.
 
     Returns:
-        parsed_data (dict): Description and fields, including script input parameters,
-            specified in the docstring
-        warnings (list[ str ]): List of specified fieldnames that does not correspond
-            to valid field names or are misspelled
-
-    Raises:
-        ValueError for any exception when trying to read docstring in file
+        parsed_data (dict), warnings (dict): Parsed description and fields from the docstring, and warnings for invalid or misspelled field names.
     """
 
     docstring_dict: dict = {}
@@ -172,14 +170,13 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
 
 
 def extract_script_metadata( script_fullpath: str ) -> tuple[ dict, dict ]:
-    """ Extract the docstring for a script
+    """ Extract metadata from a script file docstring.
 
     Args:
-        script_fullpath (str): Path to script file
+        script_fullpath (str): Path to the script file.
 
     Returns:
-        (tuple[ dict, dict ]): Description and fields specified in the script docstring
-            Warnings for fieldnames that does not correspond to valid field names or are misspelled
+        parsed_docstring (dict), warnings (dict): Parsed description and fields from the script docstring, and warnings for invalid or misspelled field names.
     """
 
     from automation_menu.utils.localization import _
@@ -199,6 +196,7 @@ def extract_script_metadata( script_fullpath: str ) -> tuple[ dict, dict ]:
             parsed_docstring, warnings = docstring_parser( tree.body[ 0 ].value.value )
 
         else:
+
             raise MissingDocstringError( _( 'File must have docstring at beginning of file' ) )
 
     except SyntaxError as e:

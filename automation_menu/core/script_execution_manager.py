@@ -5,9 +5,8 @@ Use as ScriptExecutionManagare and not ScriptRunner seperately
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0.0
-Created: 2025-09-25
 """
+
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Generator
@@ -28,7 +27,7 @@ from automation_menu.core.script_runner import ScriptRunner
 from automation_menu.models.application_state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.models.scriptinfo import ScriptInfo
-from automation_menu.ui.main_window import AutomationMenuWindow
+from automation_menu.ui.windows.main_window import AutomationMenuWindow
 
 
 class ScriptExecutionManager:
@@ -41,7 +40,6 @@ class ScriptExecutionManager:
             error_manager (ErrorManager): Manager for handling errors
         """
 
-        #self._current_runner: ScriptRunner
         self.current_runner: ScriptRunner | None = None
         self._output_queue: Queue = output_queue
         self.app_state: ApplicationState = app_state
@@ -79,7 +77,11 @@ class ScriptExecutionManager:
 
 
     def is_paused( self ) -> bool:
-        """ Check if current script is paused """
+        """ Check if current script is paused
+
+        Returns:
+            (bool): True if runner is currently paused
+        """
 
         return self._paused
 
@@ -88,7 +90,7 @@ class ScriptExecutionManager:
         """ Verify if a script is running
 
         Returns:
-            (bool): True if a runner is currently executing
+            (bool): True if runner is currently executing
         """
 
         with self._lock:
@@ -96,7 +98,11 @@ class ScriptExecutionManager:
 
 
     def pause_current_script( self ) -> bool:
-        """ Pause the currently running script """
+        """ Pause the currently running script
+
+        Returns:
+            (bool): True if current runner was paused
+        """
 
         import psutil
 
@@ -133,7 +139,11 @@ class ScriptExecutionManager:
 
 
     def resume_current_script( self ) -> bool:
-        """ Resume execution of current script """
+        """ Resume execution of current script
+
+        Returns:
+            (bool): True if current runner execution was resumed
+        """
 
         import psutil
 

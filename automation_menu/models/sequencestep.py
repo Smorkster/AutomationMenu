@@ -4,14 +4,12 @@ Definition of a step for an automatic sequence
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0.0
-Created: 2025-11-20
 """
 
 from __future__ import annotations
-
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+import uuid
 
 from automation_menu.models.presetparam import PreSetParam
 from automation_menu.models.scriptinfo import ScriptInfo
@@ -21,23 +19,12 @@ from automation_menu.models.scriptinfo import ScriptInfo
 class SequenceStep:
     """ Definition of a sequence step """
 
-    def __init__( self, script_info: ScriptInfo | None = None, script_file: Path | None = None, pre_set_parameters: list[ PreSetParam ] | None= None, step_index: int = 0, stop_on_error: bool = False ) -> None:
-        """ Define a step in a sequence
-
-        Args:
-            script_info (ScriptInfo | None): Info about the script in this step
-            script_file (Path | None): Path to the script
-            pre_set_parameters (list[ PreSetParam ] | None): List of parameters to use
-                when running the script
-            step_index (int): Index of step in sequence list
-            stop_on_error (bool): Should sequence stop if script fails
-        """
-
-        self._script_info: ScriptInfo | None = script_info
-        self._script_file: Path | None = script_file
-        self._pre_set_parameters: list[ PreSetParam ] = pre_set_parameters if pre_set_parameters else []
-        self.step_index: int = step_index
-        self.stop_on_error: bool = stop_on_error
+    _script_info: ScriptInfo | None = None
+    _script_file: Path | None = None
+    _pre_set_parameters: list[ PreSetParam ] = field( default_factory = list )
+    step_index: int = 0
+    stop_on_error: bool = False
+    id: str = field( default_factory = lambda: str( uuid.uuid4() ) )
 
 
     @property
@@ -138,14 +125,37 @@ class SequenceStep:
             raise TypeError( _( 'Expected dict, got {t}').format( t = type( data ) ) )
 
         return cls(
-            script_file = data.get( 'script_file' ),
-            pre_set_parameters = [
-                PreSetParam( **psp )
+            _script_file = data.get( 'script_file' ),
+            _pre_set_parameters = [
+                PreSetParam.from_dict( psp )
                 for psp in data.get( 'pre_set_parameters', [] )
             ],
-            script_info = None,
+            _script_info = None,
             step_index = data.get( 'step_index', 0 ),
-            stop_on_error = data.get( 'stop_on_error', False )
+            stop_on_error = data.get( 'stop_on_error', False ),
+            id = data.get( 'id', str( uuid.uuid4() ) )
+        )
+
+
+    @classmethod
+    def from_step( cls: type[ SequenceStep ], step: SequenceStep ) -> SequenceStep:
+        """ Create a sequence step from another sequence step.
+
+        Args:
+            cls (type[SequenceStep]): Current sequence step class.
+            step (SequenceStep): Sequence step to copy.
+
+        Returns:
+            SequenceStep: New sequence step with copied values.
+        """
+
+        return cls(
+            _script_info = step.script_info,
+            _script_file = step.script_file,
+            _pre_set_parameters = [ PreSetParam().from_psp( psp ) for psp in step.pre_set_parameters ],
+            step_index = step.step_index,
+            stop_on_error = step.stop_on_error,
+            id = step.id
         )
 
 
@@ -162,13 +172,13 @@ class SequenceStep:
 
         if self.pre_set_parameters:
             for param in self.pre_set_parameters:
-                if not ( param is PreSetParam ) or 'name' not in param.keys() or 'set' not in param.keys():
+                if not isinstance( param, PreSetParam ):
 
                     raise ValueError( _( 'Invalid pre_set_parameters for step {f}: {p}' ).format( f = self.script_file, p = param ) )
 
                 new_param: dict[ str, str ] = {
-                    'name': param[ 'name' ],
-                    'set': param[ 'set' ]
+                    'name': param.name,
+                    'set': param.set
                 }
                 parameters.append( new_param )
 
@@ -176,5 +186,6 @@ class SequenceStep:
             'script_file': self.script_file,
             'stop_on_error': self.stop_on_error,
             'step_index': self.step_index,
-            'pre_set_parameters': parameters
+            'pre_set_parameters': parameters,
+            'id': self.id
         }

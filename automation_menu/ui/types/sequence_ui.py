@@ -1,3 +1,10 @@
+"""
+Define widget references used by the sequence management UI.
+
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+"""
 
 
 from tkinter import BooleanVar, Canvas
@@ -5,10 +12,10 @@ from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Scro
 
 
 class SequenceUi():
-    """ Defined dict for sequence widgets """
+    """ Store widget references used by the sequence management UI."""
 
     def __init__(self) -> None:
-        """ Widget storage for sequence ui """
+        """ Initialize the sequence UI widget reference container."""
 
         pass
 

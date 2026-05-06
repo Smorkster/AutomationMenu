@@ -4,22 +4,21 @@ Object representing a menu item for a sequence
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-12-01
 """
 
+
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable, cast
-
-from automation_menu.models.sequence import Sequence
-
-if TYPE_CHECKING:
-    from automation_menu.ui.main_window import AutomationMenuWindow
 
 import alwaysontop_tooltip
 
 from tkinter import Event
 from tkinter.ttk import Frame, Label
+from typing import TYPE_CHECKING, Callable, cast
+
+if TYPE_CHECKING:
+    from automation_menu.ui.windows.main_window import AutomationMenuWindow
+
+from automation_menu.models.sequence import Sequence
 
 
 class SequenceMenuItem:
@@ -37,7 +36,7 @@ class SequenceMenuItem:
 
         self._sequence_menu: Frame = sequence_menu
         self._sequence: Sequence = sequence
-        self._main_object: AutomationMenuWindow = main_object
+        self._main_self: AutomationMenuWindow = main_object
         self._hide_menu: Callable = menu_hide_callback
 
         style: str = 'ScriptNormal.TLabel'
@@ -58,7 +57,7 @@ class SequenceMenuItem:
         """
 
         self._hide_menu()
-        self._main_object.app_context.SequenceManager.run_sequence( sequence_id = self._sequence.id, on_finished = self._main_object.execution_post_work )
+        self._main_self.app_context.SequenceManager.sequence_ui_controller.run_sequence( sequence_id = self._sequence.id )
 
 
     def on_enter( self, event: Event ) -> None:

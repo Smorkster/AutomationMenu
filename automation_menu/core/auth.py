@@ -7,13 +7,14 @@ License: MIT
 """
 
 from __future__ import annotations
-from typing import Any, Callable, cast
+from typing import Callable
 
 import os
 
 from dynamicinputbox import ResultDict, ResultTuple, dynamic_inputbox as inputbox
 from ldap3 import ALL, Connection, Entry, Server
 from ldap3.core.exceptions import LDAPSocketOpenError
+
 
 def connect_to_AD( ldap_server: str, domain_name: str ) -> Connection:
     """ Connect to Active Directory and return an authenticated connection.

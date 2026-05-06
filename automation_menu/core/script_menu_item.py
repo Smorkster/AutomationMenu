@@ -5,26 +5,24 @@ Contains script info and a runner
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-09-25
 """
 
+
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable
-
-from psutil import Process
-
-from automation_menu.models.widget_for_translation import WidgetForTranslation
-
-if TYPE_CHECKING:
-    from automation_menu.ui.main_window import AutomationMenuWindow
 
 import logging
 import threading
 
+from psutil import Process
 from tkinter import Event
 from tkinter.ttk import Frame, Label
+from typing import TYPE_CHECKING, Callable
 
+
+if TYPE_CHECKING:
+    from automation_menu.ui.windows.main_window import AutomationMenuWindow
+
+from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
 from automation_menu.models import ScriptInfo
 from automation_menu.models.enums import ScriptState
 
@@ -164,23 +162,23 @@ class ScriptMenuItem:
 
             with self.master_self.app_context.ExecutionManager.create_runner() as runner:
                 runner.run_script( script_info = self.script_info,
-                                   main_window = self.master_self.root,
-                                   api_callbacks = self.master_self.api_callbacks,
-                                   enable_stop_button_callback = self.master_self.enable_stop_script_button,
-                                   enable_pause_button_callback = self.master_self.enable_pause_script_button,
-                                   stop_pause_button_blinking_callback = self.master_self.stop_pause_button_blinking,
-                                   run_input = entered_input
-                                 )
+                                  main_window = self.master_self.root,
+                                  api_callbacks = self.master_self.api_callbacks,
+                                  enable_stop_button_callback = self.master_self.enable_stop_script_button,
+                                  enable_pause_button_callback = self.master_self.enable_pause_script_button,
+                                  stop_pause_button_blinking_callback = self.master_self.execution_controller.stop_pause_button_blinking,
+                                  run_input = entered_inputs
+                                  )
 
-            self.master_self.execution_post_work( disable_minimize = disable_minimize )
+            self.master_self.execution_controller.execution_post_work( disable_minimize = disable_minimize )
 
-        entered_input: list[ str ] = []
+        entered_inputs: list[ str ] = []
 
-        for ei in self.master_self.app_context.InputManager.collect_entered_input():
-            entered_input.extend( [ f'--{ ei[ 'name' ] }', f'{ ei[ 'set' ] }' ] )
+        for entered in self.master_self.app_context.InputManager.collect_entered_input():
+            entered_inputs.extend( [ f'--{ entered.name }', f'{ entered.set }' ] )
 
         disable_minimize = self.script_info.scriptmeta.disable_minimize_on_running
 
-        self.master_self.execution_pre_work( disable_minimize = disable_minimize )
+        self.master_self.execution_controller.execution_pre_work( disable_minimize = disable_minimize )
 
         threading.Thread( target = script_process_wrapper, daemon = True ).start()

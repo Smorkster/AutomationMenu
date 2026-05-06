@@ -4,23 +4,24 @@ Create a Frame and a Text widget for displaying output from a running script
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-09-25
 """
 
-from tkinter import E, N, S, W, Text
-from tkinter.ttk import Entry, Frame, Notebook, Scrollbar
+from tkinter import Text
+from tkinter.ttk import Frame, Notebook, Scrollbar
 from typing import Callable
 
-from automation_menu.models.widget_for_translation import WidgetForTranslation
+from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
 
 
 def get_output_tab( tabcontrol: Notebook, translate_callback: Callable ) -> tuple[ Frame, Text ]:
-    """ Create a frame used as tab to display output data from script execution
+    """ Create the output tab used to display script execution output.
 
     Args:
-        tabcontrol (Notebook): Tabcontrol (Notebook) to place the frame in
-        translate_callback (Callable): Function callback for storing widgets for translation
+        tabcontrol (Notebook): Notebook widget to attach the output tab to.
+        translate_callback (Callable): Callback used to register widgets for translation.
+
+    Returns:
+        tuple[Frame, Text]: Created output tab frame and output text widget.
     """
 
     from automation_menu.utils.localization import _

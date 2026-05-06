@@ -4,8 +4,6 @@ Manage settings config files
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-09-25
 """
 
 from __future__ import annotations
@@ -18,20 +16,22 @@ from automation_menu.models import Settings
 
 
 def read_settingsfile( settings_file_path: str, debug_logger: Logger ) -> dict:
-    """ Read settings from a JSON file
+    """ Read settings from a JSON file.
 
     Args:
-        settings_file_path (str): Path to settings file
+        settings_file_path (str): Path to the settings file.
+        debug_logger (Logger): Logger used to report file read errors.
 
     Returns:
-        (dict): Collection of settings from file
+        dict: Collection of settings loaded from the file.
 
     Raises:
-        On reading exception, a default settings object is returned
+        On reading exception, a default settings object is returned.
     """
 
     try:
         with open( settings_file_path, mode = 'r', encoding = 'utf-8' ) as f:
+
             return json.load( f )
 
     except Exception as e:
@@ -41,14 +41,14 @@ def read_settingsfile( settings_file_path: str, debug_logger: Logger ) -> dict:
 
 
 def write_settingsfile( settings: Settings, settings_file_path: str ) -> None:
-    """ Write settings to JSON file
-    
+    """ Write settings to a JSON file.
+
     Args:
-        settings (Settings): Settings to write to file
-        settingsfile_path (str): Path to file to write
+        settings (Settings): Settings to write to the file.
+        settings_file_path (str): Path to the file to write.
 
     Raises:
-        FileNotFoundError when the path is not valid
+        FileNotFoundError: If the path is not valid.
     """
 
     from automation_menu.utils.localization import _
@@ -58,7 +58,9 @@ def write_settingsfile( settings: Settings, settings_file_path: str ) -> None:
             f.write( settings.to_json() )
 
     except FileNotFoundError as e:
+
         raise FileNotFoundError( _( 'Writing settings error; file not found: {file_path}' ).format( file_path = settings_file_path ) ) from e
 
     except Exception as e:
+
         raise e

@@ -14,101 +14,72 @@ License: MIT
 """
 
 from __future__ import annotations
+
 from pathlib import Path
-from tkinter import filedialog
 from tkinter.ttk import Frame, Notebook
-from typing import TYPE_CHECKING, Callable
-
-from automation_menu.filehandling.settings_handler import read_settingsfile, write_settingsfile
-from automation_menu.models.enums import OutputStyleTags
-from automation_menu.models.settings import Settings
-from automation_menu.models.settings_ui import SettingsUi
-from automation_menu.ui.settings_tab import build_settings, get_settings_tab
-
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
 
+from automation_menu.filehandling.settings_handler import read_settingsfile, write_settingsfile
+from automation_menu.models.enums import OutputStyleTags
+from automation_menu.models.settings import Settings
+from automation_menu.ui.controllers.settings_ui_controller import SettingsUiController
+from automation_menu.ui.tabs.settings_tab import build_settings, create_settings_tab
+from automation_menu.ui.types.settings_ui import SettingsUi
+
 
 class SettingsManager:
-    """ Coordinate settings loading, UI construction, and persistence """
+    """ Coordinate settings loading, UI construction, and persistence."""
 
-    def __init__( self, app_context: ApplicationContext ) -> None:
+    def __init__( self, app_context: ApplicationContext, settings_file_path: str ) -> None:
         """ Initialize the settings manager.
 
         Args:
-            app_context (ApplicationContext): Shared application context used
-                for logging, output, and access to the main window.
+            app_context (ApplicationContext): Shared application context
+                used for logging, output, and access to the main window.
+            settings_file_path (str): Path to the settings file.
         """
 
         self._app_context: ApplicationContext = app_context
 
-        self._settings_widgets: SettingsUi
-        self._settings: Settings
+        self.read_saved_settings( settings_file_path = settings_file_path )
+
+        self.settings: Settings
+        self.settings_ui: SettingsUi
         self._settings_file_path: Path
-
-
-    def _add_script_folder( self ) -> None:
-        """ Open folder dialog to add new script folder
-
-        If folder is already listed, do nothing
-        """
-
-        directory: str = filedialog.askdirectory()
-        path: Path = Path( directory )
-
-        try:
-            self._settings.script_folders.index( path )
-
-        except:
-            self._settings_widgets[ 'script_folders_list' ].insert( parent = '',
-                                                                   index = 'end',
-                                                                   text = str( path ),
-                                                                   tags = 'exists'
-                                                                   )
-            self._settings.script_folders.append( Path( directory ) )
-
-
-    def _remove_script_folder( self ) -> None:
-        """ Remove the selected folder """
-
-        tree = self._settings_widgets[ 'script_folders_list' ]
-        selected_item = tree.focus()
-        path = tree.item( selected_item )[ 'text' ]
-        tree.delete( selected_item )
-
-        self._settings.script_folders.remove( Path( path ) )
+        self.settings_ui_controller: SettingsUiController
 
 
     def build_tab_content( self ) -> SettingsUi:
         """ Build the settings tab widgets for the current settings.
 
         Returns:
-            SettingsUiDict: Dictionary of created settings-related widgets.
+            (SettingsUi): Created settings UI widget collection.
         """
 
-        callbacks = {
-            'add_script_folder': self._add_script_folder,
-            'remove_script_folder': self._remove_script_folder
-        }
-        self._settings_widgets = build_settings( tab = self._tab, settings = self._settings, main_self = self._app_context.main_window, bind_callbacks = callbacks )
+        self.settings_ui_controller = SettingsUiController( settings = self.settings, root_window = self._app_context.main_window.root, change_app_language = self._app_context.LanguageManager.change_app_language )
+        self.settings_ui = build_settings( tab = self._tab,
+                                          settings = self.settings,
+                                          settings_ui_controller = self.settings_ui_controller,
+                                          add_translatable = self._app_context.LanguageManager.add_translatable_widget )
+        self.settings_ui_controller.bind_ui( settings_ui = self.settings_ui )
 
-        return self._settings_widgets
+        return self.settings_ui
 
 
-    def create_tab( self, parent_tab: Notebook, translate_store_callback: Callable ) -> Frame:
+    def create_tab( self, parent_tab: Notebook ) -> Frame:
         """ Create the settings tab container.
 
         Args:
             parent_tab (Notebook): Notebook that will contain the settings tab.
-            translate_store_callback (Callable): Callback used to register
-                translatable text for later language updates.
 
         Returns:
-            Frame: The created settings tab frame.
+            (Frame): Created settings tab frame.
         """
 
-        self._tab = get_settings_tab( tabcontrol = parent_tab, translate_store_callback = translate_store_callback )
+        self._tab = create_settings_tab( tab_control = parent_tab, translate_store_callback = self._app_context.LanguageManager.add_translatable_widget )
 
         return self._tab
 
@@ -125,14 +96,14 @@ class SettingsManager:
             settings_file_path (str): Path to the settings file.
 
         Returns:
-            Settings: The initialized settings object.
+            (Settings): The initialized settings object.
         """
 
         saved = read_settingsfile( settings_file_path = settings_file_path, debug_logger = self._app_context.debug_logger )
-        self._settings = Settings( settings_dict = saved, save_callback = self.save_settings )
+        self.settings = Settings( settings_dict = saved, save_callback = self.save_settings )
         self._settings_file_path = Path( settings_file_path )
 
-        setting_errors = self._settings.get_setting_errors()
+        setting_errors = self.settings.get_setting_errors()
 
         if len( setting_errors ) > 0:
             from automation_menu.utils.localization import _
@@ -142,15 +113,14 @@ class SettingsManager:
                     'tag': OutputStyleTags.SYSERROR
                 } )
 
-        return self._settings
+        return self.settings
 
 
     def save_settings( self, obj: Settings ) -> None:
-        """ Persist the current settings object to disk.
+        """ Persist a settings object to disk.
 
         Args:
             obj (Settings): Settings object to write to the configured file.
         """
 
         write_settingsfile( settings = obj, settings_file_path = str( self._settings_file_path ) )
-

@@ -5,32 +5,31 @@ Convert to PNG and save to disc
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-09-25
 """
 
 import os
-from pathlib import Path
 import tempfile
 import win32con
 import win32gui
 import win32ui
 
 from datetime import datetime
+from pathlib import Path
 from PIL import Image, ImageFile
 from tkinter import Tk
 
 from automation_menu.models import ScriptInfo
 
+
 def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> Path:
-    """ Convert a BMP file to PNG format
+    """ Convert a BMP file to PNG format.
 
     Args:
-        bmp_path (str): Path to BMP-file to convert
-        delete_bmp (bool): Should the BMP-file be deleted after convertion
+        bmp_path (str): Path to the BMP file to convert.
+        delete_bmp (bool): Whether the BMP file should be deleted after conversion.
 
     Returns:
-        str: Path to the new PNG-file
+        png_path (Path): Path to the new PNG file.
     """
 
     png_path: Path = Path( os.path.join( tempfile.gettempdir() , f'{ os.path.basename( bmp_path ).split( '.' )[0] }.png' ) )
@@ -44,15 +43,15 @@ def _convert_bmp_to_png( bmp_path: str = '', delete_bmp: bool = False ) -> Path:
 
 
 def take_screenshot( root_window: Tk, script_info: ScriptInfo, file_name_prefix: str ) -> Path:
-    """ Take a screenshot of the main window and save it as a PNG file
+    """ Take a screenshot of the main window and save it as a PNG file.
 
     Args:
-        root_window (Tk): TopLevel Tk widget to take screenshot of
-        script_info (ScriptInfo): ScriptInfo about script last run
-        file_name_prefix (str): A prefix for the file name
+        root_window (Tk): Top-level Tk widget to take a screenshot of.
+        script_info (ScriptInfo): Information about the script that was last run.
+        file_name_prefix (str): Prefix to use for the screenshot file name.
 
     Returns:
-        str: Path to the new BMP-file
+        png_path (Path): Path to the created PNG file.
     """
 
     hwnd: int = win32gui.FindWindow( None, root_window.title() )

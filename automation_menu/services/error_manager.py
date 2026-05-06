@@ -7,13 +7,14 @@ License: MIT
 """
 
 from __future__ import annotations
-from pathlib import Path
 
 from ldap3 import Connection
+from pathlib import Path
 
 from automation_menu.models.application_state import ApplicationState
 from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.utils.email_handler import send_error_mail
+
 
 class ErrorManager:
     def __init__( self, app_state: ApplicationState, ldap_connection: Connection | None ) -> None:

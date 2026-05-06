@@ -2,39 +2,36 @@
 Creates a custom simple menu, based on a button and popup window
 
 Author: Smorkster
-GitHub:
+GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0.0
-Created: 2025-09-25
 """
 
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any
-
-from automation_menu.models.sequence import Sequence
-
-if TYPE_CHECKING:
-    from automation_menu.ui.main_window import AutomationMenuWindow
-
-
 from tkinter import Canvas, Event, Misc, Scrollbar, Toplevel
 from tkinter.ttk import Button, Frame
+
+if TYPE_CHECKING:
+    from automation_menu.ui.windows.main_window import AutomationMenuWindow
 
 from automation_menu.core.sequence_menu_item import SequenceMenuItem
 from automation_menu.core.script_menu_item import ScriptMenuItem
 from automation_menu.models import ScriptInfo
+from automation_menu.models.sequence import Sequence
 
 
 class CustomMenu:
+    """ Create and manage a custom popup menu for scripts or sequences."""
+
     def __init__( self, parent: Frame, text: str, exec_list: dict[ str, Sequence ] | list[ ScriptInfo ], main_object: AutomationMenuWindow ) -> None:
-        """ Create a custom meny as a button. This launches a separatewindow
-        containing clickable labels for each menuitem
+        """ Initialize a custom popup menu button and popup window.
 
         Args:
-            parent (Frame): The parent window/widget to attach the button to
-            text (str): String to display in the button
-            exec_list (dict[ str, Sequence ] | list[ ScriptInfo ]): A list of items to be displayed in the menu
-            main_object (AutomationMenuWindow): The main object, is used in each menuitem
+            parent (Frame): Parent widget to attach the menu button to.
+            text (str): Text to display on the menu button.
+            exec_list (dict[str, Sequence] | list[ScriptInfo]): Items to display in the popup menu.
+            main_object (AutomationMenuWindow): Main window object used by menu items.
         """
 
         self.parent: Frame = parent
@@ -80,10 +77,10 @@ class CustomMenu:
 
 
     def _check_click_outside( self, event: Event ) -> None:
-        """ Check if click was outside popup bounds
+        """ Hide the popup menu if a click occurs outside its bounds.
 
         Args:
-            event (Event): Event that triggered handler
+            event (Event): Event that triggered the handler.
         """
 
         widget: Misc | None = event.widget.winfo_containing( event.x_root, event.y_root )
@@ -93,7 +90,7 @@ class CustomMenu:
 
 
     def _create_popup_content( self ) -> None:
-        """ Create the popup menu content, with tooltips """
+        """ Create the popup menu content and bind menu item hover handlers."""
 
         items: list[ ScriptInfo ] | list[ Sequence ]
 
@@ -121,20 +118,20 @@ class CustomMenu:
 
 
     def _on_canvas_config( self, event: Event ) -> None:
-        """ Canvas got a resize, set inner window to same size
+        """ Resize the inner popup window to match the canvas width.
 
         Args:
-            event (Event): Event that triggered handler
+            event (Event): Event that triggered the handler.
         """
 
         self._canvas.itemconfig( self._window_id, width = event.width )
 
 
     def _on_container_config( self, event: Event ) -> None:
-        """ Update scrollregion, clamp height, and toggle scrollbar
+        """ Update popup scroll region, visible size, and scrollbar state.
 
         Args:
-            event (Event): Event that triggered handler
+            event (Event): Event that triggered the handler.
         """
 
         self._canvas.configure( scrollregion = self._canvas.bbox( self._window_id ) )
@@ -153,10 +150,13 @@ class CustomMenu:
 
 
     def _on_escape_popup( self, event: Event ) -> str:
-        """ Handle pressing Escape key while menu is open
+        """ Handle Escape key presses while the popup menu is open.
 
         Args:
-            event (Event): Event that triggered handler
+            event (Event): Event that triggered the handler.
+
+        Returns:
+            (str): Tkinter event handling instruction string.
         """
 
         if not self._visible:
@@ -170,20 +170,20 @@ class CustomMenu:
 
 
     def _on_mousewheel( self, event: Event ) -> None:
-        """ Bind mouse wheel scrolling
+        """ Scroll the popup menu content with the mouse wheel.
 
         Args:
-            event (Event): Event that triggered handler
+            event (Event): Event that triggered the handler.
         """
 
         self._canvas.yview_scroll( int( -1 * ( event.delta / 120 ) ), 'units' )
 
 
     def _on_popup_focus_set( self, event: Event ) -> None:
-        """ Handle popup losing focus
+        """ Handle the popup menu losing focus.
 
         Args:
-            event (Event): Event that triggered handler
+            event (Event): Event that triggered the handler.
         """
 
         if not self._visible:
@@ -200,10 +200,10 @@ class CustomMenu:
 
 
     def hide_popup_menu( self, *args: Any ) -> None:
-        """ Hide the popup menu
+        """ Hide the popup menu.
 
         Args:
-            args: Any arguments catcher
+            args (Any): Unused positional arguments accepted by the handler.
         """
 
         self.popup.withdraw()
@@ -212,10 +212,10 @@ class CustomMenu:
 
 
     def rebuild_menu( self, exec_list: dict[ str, Sequence ] | list[ ScriptInfo ] ) -> None:
-        """ Rebuild the popup menu when the script/sequence list changes
+        """ Rebuild the popup menu when the displayed items change.
 
         Args:
-            exec_list (dict[ str, Sequence ] | list[ ScriptInfo ]): Content to display in menu
+            exec_list (dict[str, Sequence] | list[ScriptInfo]): Content to display in the menu.
         """
 
         self.exec_list: dict[ str, Sequence ] | list[ ScriptInfo ] = exec_list
@@ -244,7 +244,7 @@ class CustomMenu:
 
 
     def show_popup_menu( self ) -> None:
-        """ Show the popup menu """
+        """ Show the popup menu and position it below the menu button."""
 
         if self._skip_next_open:
             self._skip_next_open = False

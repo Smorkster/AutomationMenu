@@ -7,16 +7,15 @@ GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
 """
 
-from pathlib import Path
 import re
 
 from datetime import datetime
 from email.headerregistry import Address
 from email.message import EmailMessage
-from re import Match
-from smtplib import SMTP
-
 from ldap3 import Connection, Entry
+from re import Match
+from pathlib import Path
+from smtplib import SMTP
 
 from automation_menu.core.auth import get_user_adobject
 from automation_menu.models import ScriptInfo
@@ -24,17 +23,17 @@ from automation_menu.models.application_state import ApplicationState
 
 
 def _compose( script_info: ScriptInfo | None, error_msg: str, screenshot: Path | None, app_state: ApplicationState, ldap_connection: Connection ) -> EmailMessage:
-    """ Compose the mail body
+    """Compose an error-report email message.
 
     Args:
-        script_info (ScriptInfo | None): Info about the script currently running
-        error_msg (str): Message to for the mail
-        screenshot (Path | None): Path to screenshot to include in the mail
-        app_state (ApplicationState): User running the application
-        ldap_connection (Connection): Connection used for obtaining developer of script
+        script_info (ScriptInfo | None): Information about the script currently running.
+        error_msg (str): Error message to include in the email.
+        screenshot (Path | None): Path to a screenshot to attach to the email.
+        app_state (ApplicationState): Application state containing current user and configuration data.
+        ldap_connection (Connection): LDAP connection used to resolve the script author.
 
     Returns:
-        msg (EmailMessage): The composed email
+        msg (EmailMessage): Composed email message.
     """
 
     from automation_menu.utils.localization import _
@@ -117,17 +116,17 @@ def _compose( script_info: ScriptInfo | None, error_msg: str, screenshot: Path |
 
 
 def send_error_mail( app_state: ApplicationState, error_msg: str, script_info: ScriptInfo , screenshot: Path , ldap_connection: Connection ) -> bool:
-    """ Send the composed mail to script author
+    """Send an error-report email to the script author.
 
     Args:
-        app_state (ApplicationState): App state to take info from
-        error_msg (str): Message to send to script author
-        script_info (ScriptInfo): Info about script currently running
-        screenshot (Path): Path to screenshot to include
-        ldap_connection (Connection): Connection to LDAP server
+        app_state (ApplicationState): Application state to take mail configuration and user info from.
+        error_msg (str): Error message to send.
+        script_info (ScriptInfo): Information about the script currently running.
+        screenshot (Path): Path to the screenshot to include.
+        ldap_connection (Connection): Connection to the LDAP server.
 
     Returns:
-        (bool): True if the mail was sent successfully
+        bool: True if the email was sent successfully.
     """
 
     try:
@@ -146,4 +145,5 @@ def send_error_mail( app_state: ApplicationState, error_msg: str, script_info: S
         return True
 
     except Exception as e:
+
         raise e

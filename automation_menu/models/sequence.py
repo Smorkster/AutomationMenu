@@ -4,22 +4,20 @@ Definition of a predefined, automatic, run sequence
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0.0
-Created: 2025-11-20
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Self
 import uuid
+
+from dataclasses import dataclass, field
 
 from automation_menu.models.sequencestep import SequenceStep
 
 
 @dataclass
 class Sequence:
-    """ Define an automatic run sequence """
+    """ Represents a predefined automatic run sequence."""
 
     description: str = ''
     id: str = ''
@@ -35,31 +33,62 @@ class Sequence:
         Args:
             cls (type[Sequence]): Current sequence
             data (dict): Dictionary to turn into a Sequence
+
+        Returns:
+            A new sequence instance.
+
+        Raises:
+            TypeError: If `data` is not a dictionary.
+
         """
 
         from automation_menu.utils.localization import _
 
         if not isinstance( data, dict ):
 
-            raise TypeError( _( f'Data was not type as dict; got {t}' ).format( t = type( data ) ) )
+            raise TypeError( _( f'Data was not of type \'dict\', got {t}' ).format( t = type( data ) ) )
 
         return cls(
-            description = data[ 'description' ] or _( '<Description not set>' ),
-            id = data[ 'id' ] or str( uuid.uuid4() ),
-            name = data[ 'name' ],
+            description = data.get( 'description', _( '<Description not set>' ) ),
+            id = data.get( 'id', str( uuid.uuid4() ) ),
+            name = data.get( 'name', _( 'Unnamed sequence' ) ),
             steps = [
                 SequenceStep.from_dict( step )
                 for step in data.get( 'steps', [] )
             ],
-            stop_on_error = data[ 'stop_on_error' ] or False
+            stop_on_error = data.get( 'stop_on_error', False )
+        )
+
+
+    @classmethod
+    def from_sequence( cls: type[ Sequence ], seq: Sequence ) -> Sequence:
+        """ Create a copy of an existing sequence.
+
+        Args:
+            cls (type[ Sequence ]): Current sequence
+            seq(Sequence): Sequence instance to copy.
+
+        Returns:
+            A new sequence instance with copied step data.
+        """
+
+        return cls(
+            description = seq.description,
+            id = seq.id,
+            name = seq.name,
+            steps = [
+                SequenceStep.from_step( step = step )
+                for step in seq.steps
+            ],
+            stop_on_error = seq.stop_on_error
         )
 
 
     def to_dict( self ) -> dict:
-        """ Transform sequence to a dict
+        """ Convert the sequence to a dictionary
 
         Returns:
-            (dict): Sequence as a dict
+            (dict): Dictionary representation of the sequence.
         """
 
         steps: list[ dict ] = []

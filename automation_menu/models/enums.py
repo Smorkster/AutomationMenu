@@ -4,8 +4,6 @@ Collecting enums used throughout the application
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-10-20
 """
 
 from enum import Enum

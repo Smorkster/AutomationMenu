@@ -4,33 +4,32 @@ Manager class for handling script files
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0.0
-Created: 2025-11-26
 """
 
 from __future__ import annotations
+
 from pathlib import Path
 from queue import Queue
 from typing import TYPE_CHECKING
 
-from automation_menu.models.enums import ApplicationRunState
-from automation_menu.models.user import User
-
 if TYPE_CHECKING:
-    from automation_menu.core.app_context import ApplicationContext
     from automation_menu.models.application_state import ApplicationState
 
 from automation_menu.filehandling.script_discovery import get_scripts
+from automation_menu.models.enums import ApplicationRunState
 from automation_menu.models.scriptinfo import ScriptInfo
+from automation_menu.models.user import User
 
 
 class ScriptManager:
+    """ Manage script discovery and retrieval for available scripts."""
+
     def __init__( self, script_dir_path: list[ Path ], current_user: User ) -> None:
-        """ Manage script discovery and listing
+        """ Initialize the script manager.
 
         Args:
-            script_dir_path (list[ Path ]): Path to script directory
-            current_user (User): Current user of application
+            script_dir_path (list[Path]): Paths to script directories.
+            current_user (User): Current user of the application.
         """
 
         self.script_dir_path: list[ Path ] = script_dir_path
@@ -40,28 +39,28 @@ class ScriptManager:
 
 
     def gather_scripts( self, output_queue: Queue, app_state: ApplicationState, app_run_state: ApplicationRunState ) -> None:
-        """ Call to collect available script files
+        """ Collect available script files.
 
         Args:
-            output_queue (Queue): Queue to post info to
-            app_state (ApplicationState): Application state container
-            app_run_state (ApplicationRunState): In what state is application running
+            output_queue (Queue): Queue to post progress and output information to.
+            app_state (ApplicationState): Application state container.
+            app_run_state (ApplicationRunState): Current application run state.
         """
 
         self._script_list = get_scripts( output_queue = output_queue, app_state = app_state, app_run_state = app_run_state )
 
 
     def get_script_info_by_filename( self, filename: str ) -> ScriptInfo:
-        """ Retrieve ScriptInfo for script at path
+        """ Retrieve script information for a script by filename.
 
         Args:
-            filename (str): Filename to match to
+            filename (str): Filename to match.
 
         Returns:
-            (ScriptInfo): Found ScriptInfo
+            si (ScriptInfo): Found script information.
 
         Raises:
-            (ValueError): If no ScriptInfo was found with provided filename
+            ValueError: If no ScriptInfo was found with the provided filename.
         """
 
         for si in self._script_list:
@@ -69,22 +68,22 @@ class ScriptManager:
 
                 return si
 
-        from localization import _
+        from automation_menu.utils.localization import _
 
         raise ValueError( _( 'No ScriptInfo was found' ) )
 
 
     def get_script_info_by_path( self, path: Path | str | None ) -> ScriptInfo:
-        """ Retrieve ScriptInfo for script at path
+        """ Retrieve script information for a script by path.
 
         Args:
-            path (Path | str | None): Path to match to
+            path (Path | str | None): Path to match.
 
         Returns:
-            (ScriptInfo): Found ScriptInfo, or None
+            si (ScriptInfo): Found script information.
 
         Raises:
-            (ValueError): If no ScriptInfo was found with provided name
+            ValueError: If no ScriptInfo was found with the provided path.
         """
 
         for si in self._script_list:
@@ -92,12 +91,16 @@ class ScriptManager:
 
                 return si
 
-        from localization import _
+        from automation_menu.utils.localization import _
 
         raise ValueError( _( 'No ScriptInfo was found' ) )
 
 
     def get_script_list( self ) -> list[ ScriptInfo ]:
-        """ Return list of available scripts """
+        """ Get the list of available scripts.
+
+        Returns:
+            (list[ScriptInfo]): Available scripts.
+        """
 
         return self._script_list

@@ -4,47 +4,40 @@ Output queue controller
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-09-25
 """
 
 import asyncio
 import json
 import logging
 import queue
-from re import Match
 import threading
 import tkinter as tk
 
 from datetime import datetime
 from logging import Logger
+from re import Match
 from tkinter.ttk import Button
 from typing import Callable
 
 from automation_menu.models import SysInstructions
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.models.exechistory import ExecHistory, Output
-from automation_menu.ui.history_manager import HistoryManager
+from automation_menu.services.history_manager import HistoryManager
 
 
 class AsyncOutputController:
-    def __init__( self,
-                output_queue: queue.Queue,
-                text_widget: tk.Text,
-                breakpoint_button: Button,
-                history_manager: HistoryManager,
-                api_callbacks: dict[ str, Callable ],
-                logger: Logger
-                ) -> None:
-        """ Controller for output queue
+    """ Control asynchronous processing of output queue messages and UI updates."""
+
+    def __init__( self, output_queue: queue.Queue, text_widget: tk.Text, breakpoint_button: Button, history_manager: HistoryManager, api_callbacks: dict[ str, Callable ], logger: Logger ) -> None:
+        """ Initialize the async output controller.
 
         Args:
-            output_queue (queue.Queue): Queue to handle
-            text_widget (tk.Text): Tk Text widget to recieve output text
-            breakpoint_button (Button): The button to return execution after breakpoint in script
-            history_manager (HistoryManager): History manager to access history list
-            api_callbacks (dict[ str, Callable ]): Dictionary with API callbacks
-            logger (Logger): General purpose logging object used through out application
+            output_queue (queue.Queue): Queue to process.
+            text_widget (tk.Text): Tkinter text widget that receives output text.
+            breakpoint_button (Button): Button used to continue execution after a breakpoint.
+            history_manager (HistoryManager): History manager used to store completed execution items.
+            api_callbacks (dict[str, Callable]): Dictionary containing API callback functions.
+            logger (Logger): General-purpose logger used throughout the application.
        """
 
         self.history_manager: HistoryManager = history_manager
@@ -60,18 +53,18 @@ class AsyncOutputController:
 
 
     def _api_handler( self, handler: str, data: dict ) -> None:
-        """ Run API-callback
+        """ Run a registered API callback.
 
         Args:
-            handler (str): Name of API handler callback
-            data (dict): API data, this will be sent, unedited, to specified callback
+            handler (str): Name of the API handler callback to run.
+            data (dict): API data passed unmodified to the callback.
         """
 
         self.api_callbacks[ handler ]( data )
 
 
     async def _async_processor( self ) -> None:
-        """ Loop to handle queue insertions """
+        """ Run the asynchronous loop that processes output queue items."""
 
         while self._running:
             try:
@@ -94,13 +87,13 @@ class AsyncOutputController:
 
 
     async def _async_process_queue_item( self, queue_item: str | SysInstructions | dict[ str, object ] ) -> dict[ str, object ] | SysInstructions | None:
-        """ Process gathered queue item
+        """ Process a queue item before scheduling a UI update.
 
         Args:
-            queue_item (str | SysInstructions | dict[ str, object ]): Queue item to process
+            queue_item (str | SysInstructions | dict[str, object]): Queue item to process.
 
         Returns:
-            (dict[ str, object ] | SysInstructions | None): Message normalized to a dict
+            (dict[str, object] | SysInstructions | None): Normalized queue item, or None if no UI update should be scheduled.
         """
 
         if queue_item == 'timeout':
@@ -116,10 +109,10 @@ class AsyncOutputController:
 
 
     def _get_queue_item(self) -> str | dict[ str, object ] | SysInstructions:
-        """ Get the last queue item inserted
+        """ Get the next queue item.
 
         Returns:
-            (dict | str): Queue item
+            (str | dict[str, object] | SysInstructions): Next queue item, or the string `'timeout'` if the queue is empty.
         """
 
         try:
@@ -132,10 +125,10 @@ class AsyncOutputController:
 
 
     def _handle_ui_update( self, queue_item: dict[ str, object ] | str | SysInstructions ) -> None:
-        """ Do the actual UI update
+        """ Apply a processed queue item to the UI.
 
         Args:
-            queue_item (dict[ str, object ] | str | SysInstructions): Queued item to update UI from
+            queue_item (dict[str, object] | str | SysInstructions): Queue item used to update the UI.
         """
 
         from automation_menu.utils.localization import _
@@ -199,13 +192,13 @@ class AsyncOutputController:
 
 
     def _normalize_queue_item( self, queue_item: dict[ str, object ] | str | SysInstructions ) -> dict[ str, object ] | SysInstructions:
-        """ Normalize message to a dict
+        """ Normalize a queue item into a UI-ready format.
 
         Args:
-            queue_item (dict[ str, object ] | str | SysInstructions): Item from output queue
+            queue_item (dict[str, object] | str | SysInstructions): Item read from the output queue.
 
         Returns:
-            (dict[ str, object ] | SysInstructions): Object formed for UI handling
+            (dict[str, object] | SysInstructions): Normalized object for UI handling.
         """
 
         if isinstance( queue_item, str ):
@@ -241,13 +234,13 @@ class AsyncOutputController:
 
 
     def _parse_api_message( self, api_message: str ) -> dict[ str, object ] | str:
-        """ Parse API call from queue item
+        """ Parse an embedded API message from queue output.
 
         Args:
-            api_message (str): Queue item to parse
+            api_message (str): Queue message to parse.
 
         Returns:
-            (dict): Dictionary with name of API handler and recieved data
+            api_msg_dict (dict[str, object]) | api_message (str): Parsed API message data, or the original message if no API payload was found.
         """
 
         import re
@@ -295,7 +288,7 @@ class AsyncOutputController:
 
 
     def _run_async_loop( self ) -> None:
-        """" Startup the async loop """
+        """ Start and run the asynchronous event loop."""
 
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop( self.loop )
@@ -313,10 +306,10 @@ class AsyncOutputController:
 
 
     def _schedule_ui_update( self, processed_queue_item: dict | SysInstructions ) -> None:
-        """ Schedule UI update with the processed message
+        """ Schedule a processed queue item for UI handling.
 
         Args:
-            processed_queue_item (dict | SysInstructions): Queued item to schedule update for
+            processed_queue_item (dict | SysInstructions): Queue item to schedule for UI update.
         """
 
         if processed_queue_item:
@@ -324,7 +317,7 @@ class AsyncOutputController:
 
 
     async def _shutdown( self ) -> None:
-        """ Gather and cancel all tasks and stop the async loop """
+        """ Cancel running async tasks and stop the event loop."""
 
         tasks: list[ asyncio.Task ] = [ t for t in asyncio.all_tasks( self.loop ) if t is not asyncio.current_task() ]
 
@@ -336,7 +329,7 @@ class AsyncOutputController:
 
 
     def closedown( self ) -> None:
-        """ Close asyncio """
+        """ Stop queue processing and shut down the async loop thread."""
 
         self._running = False
 
@@ -352,7 +345,7 @@ class AsyncOutputController:
 
 
     def start( self ) -> None:
-        """ Start thread to parse queue """
+        """ Start the background thread that processes output queue items."""
 
         if not self._running:
             self._running = True

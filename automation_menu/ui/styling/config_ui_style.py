@@ -4,22 +4,20 @@ Collected UI styling for main window
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-10-08
 """
 
 from __future__ import annotations
 
 from tkinter import Text
-from tkinter.ttk import Entry, Style
+from tkinter.ttk import Style
 from typing import Literal
 
 
 def set_output_styles( widget: Text ) -> None:
-    """ Setup Text widget tag configurations
+    """ Configure text tag styles for the output widget.
 
     Args:
-        widget (Text): Widget to set text tags for
+        widget (Text): Text widget to configure output tags for.
     """
 
     widget.tag_config( tagName = 'suite_error', foreground = 'Red', font = ( 'Arial', 12, 'bold' ) )
@@ -32,10 +30,10 @@ def set_output_styles( widget: Text ) -> None:
 
 
 def set_ui_style( style: Style ) -> None:
-    """ Configure widget styles
+    """ Configure ttk widget styles for the application UI.
 
     Args:
-        style (Style): Main style to set
+        style (Style): Main ttk style object to configure.
     """
 
     style.theme_use( 'clam' )

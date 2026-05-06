@@ -4,8 +4,6 @@ Definition of a User object
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-10-31
 """
 
 import os

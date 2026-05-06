@@ -4,21 +4,19 @@ Model for holding execution history from one execution
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-10-17
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
-
-from automation_menu.models.output import Output
-
-if TYPE_CHECKING:
-    from automation_menu.models import ScriptInfo
 
 import json
 
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.models import ScriptInfo
+
+from automation_menu.models.output import Output
 
 
 class ExecHistory:
@@ -39,13 +37,22 @@ class ExecHistory:
 
 
     def __getitem__( self ) -> ExecHistory:
-        """ Return this object """
+        """ Return this object
+
+        Returns:
+            (ExecHistory): Current object
+        """
 
         return self
 
 
     def __repr__( self ) -> str:
-        """ Custom representation """
+        """ Custom representation
+
+        Returns:
+            (str): A custom string representation of this
+                object
+        """
 
         repr_str = {
             'script': {
@@ -101,7 +108,11 @@ class ExecHistory:
 
 
     def to_dict( self ) -> dict:
-        """ Convert object to dict """
+        """ Convert object to dict
+
+        Returns:
+            (dict): Parses this object to a dictionary
+        """
 
         return {
             'script': {

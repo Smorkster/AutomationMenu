@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from automation_menu.core.script_execution_manager import ScriptExecutionManager
-    from automation_menu.ui.main_window import AutomationMenuWindow
+    from automation_menu.ui.windows.main_window import AutomationMenuWindow
 
 import queue
 
@@ -25,12 +25,12 @@ from logging import Logger
 
 from automation_menu.models.startup_arguments import StartupArguments
 from automation_menu.services.error_manager import ErrorManager
-from automation_menu.ui.history_manager import HistoryManager
-from automation_menu.ui.input_manager import InputManager
-from automation_menu.ui.sequence_manager import SequenceManager
+from automation_menu.services.history_manager import HistoryManager
+from automation_menu.ui.controllers.input_manager import InputManager
+from automation_menu.services.sequence_manager import SequenceManager
 from automation_menu.services.settings_manager import SettingsManager
-from automation_menu.utils.language_manager import LanguageManager
-from automation_menu.utils.script_manager import ScriptManager
+from automation_menu.ui.i18n.language_manager import LanguageManager
+from automation_menu.services.script_manager import ScriptManager
 
 
 @dataclass

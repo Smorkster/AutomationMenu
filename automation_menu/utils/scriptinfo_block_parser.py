@@ -3,12 +3,9 @@ Read script file content for any defined ScriptInfo
 This is the old format of script meta data, and should
 only be used in PowerShell script files
 
-
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-10-31
 """
 
 import re
@@ -19,13 +16,13 @@ from automation_menu.models.enums import ScriptState, ValidScriptInfoFields
 
 
 def scriptinfo_block_parser( full_text: str ) -> tuple[ dict, dict ]:
-    """ Parse the file content and extract script information
+    """ Parse file content and extract script information from a ScriptInfo block.
 
     Args:
-        full_text (str): Scriptfile content to parse
+        full_text (str): Script file content to parse.
 
     Returns:
-        (tuple[ scriptinfo_meta, warnings ]): Script information from the script info block and list of invalid keys and values
+        scriptinfo_meta (dict), warnings (dict): Script information extracted from the ScriptInfo block, and warnings for invalid keys or values.
     """
 
     match: Match | None = re.search( r'ScriptInfo\s*(.*?)\s*ScriptInfoEnd', full_text, re.DOTALL )

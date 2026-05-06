@@ -6,28 +6,20 @@ Main launcher for the automation script management interface.
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0.0
-Created: 2025-09-25
 """
 
 from __future__ import annotations
 
+import argparse
+import logging
 import sys
 
+from logging import Formatter, Logger, StreamHandler
 from pathlib import Path, WindowsPath
-
-from automation_menu.models.startup_arguments import StartupArguments
-from automation_menu.services.error_manager import ErrorManager
-from automation_menu.services.settings_manager import SettingsManager
 
 # Add the project root to Python path if needed
 project_root = Path( __file__ ).parent.parent
 sys.path.insert( 0, str( project_root ) )
-
-import argparse
-import logging
-
-from logging import Formatter, Logger, StreamHandler
 
 from automation_menu.core.app_context import ApplicationContext
 from automation_menu.core.script_execution_manager import ScriptExecutionManager
@@ -36,23 +28,25 @@ from automation_menu.filehandling.secrets_handler import read_secrets_file
 from automation_menu.models import Secrets, User
 from automation_menu.models.enums import ApplicationRunState
 from automation_menu.models.application_state import ApplicationState
-from automation_menu.ui.history_manager import HistoryManager
-from automation_menu.ui.sequence_manager import SequenceManager
-from automation_menu.utils.language_manager import LanguageManager
+from automation_menu.models.startup_arguments import StartupArguments
+from automation_menu.services.error_manager import ErrorManager
+from automation_menu.services.history_manager import HistoryManager
+from automation_menu.services.script_manager import ScriptManager
+from automation_menu.services.sequence_manager import SequenceManager
+from automation_menu.services.settings_manager import SettingsManager
+from automation_menu.ui.i18n.language_manager import LanguageManager
 from automation_menu.utils.localization import change_language
 from automation_menu.utils.logging_utils import JsonFileHandler
-from automation_menu.utils.script_manager import ScriptManager
 
 
 def setup_logger( level: str = 'DEBUG' ) -> Logger:
-    """ Create a logger with set logging level
-    Defaults to DEBUG
+    """ Create a logger with the specified logging level.
 
     Args:
-        level (str): Logging level to use for the setup
+        level (str): Logging level to use for the logger setup.
 
     Returns:
-        logger (logging.Logger): General purpose logging object
+        logger (Logger): General-purpose logging object.
     """
 
     logger: Logger = logging.getLogger( 'debug_logger' )
@@ -80,7 +74,7 @@ def setup_logger( level: str = 'DEBUG' ) -> Logger:
 
 
 def main() -> None:
-    """ Main entry point """
+    """ Run the application entry point."""
 
     from automation_menu.utils.localization import _ as _
 
@@ -88,18 +82,15 @@ def main() -> None:
     input_parser.add_argument( '--application_state',
                               action = 'store',
                               choices = [ 'dev', 'test', 'prod' ],
-                              default = 'prod'
-                              )
+                              default = 'prod' )
     input_parser.add_argument( '--loglevel',
                               action = 'store',
                               choices = [ 'debug', 'info', 'warning', 'error', 'critical' ],
-                              default = 'info'
-                              )
+                              default = 'info' )
 
     input_args = input_parser.parse_args()
 
     try:
-
         startup_arguments: StartupArguments = {
             'app_run_state': ApplicationRunState[ input_args.application_state.upper() ],
             'loglevel': input_args.loglevel
@@ -113,9 +104,9 @@ def main() -> None:
         current_user = User( get_user_adobject( ldap_search_base = secrets[ 'ldap_search_base' ], ldap_connection = ldap_connection ) )
 
         app_context = ApplicationContext( debug_logger = debug_logger, startup_arguments = startup_arguments )
-        app_context.SettingsManager = SettingsManager( app_context = app_context )
+        app_context.SettingsManager = SettingsManager( app_context = app_context, settings_file_path = secrets[ 'settings_file_path' ] )
 
-        settings = app_context.SettingsManager.read_saved_settings( settings_file_path = secrets[ 'settings_file_path' ] )
+        settings = app_context.SettingsManager.settings
 
         app_state = ApplicationState( current_user = current_user, secrets = secrets, settings = settings )
         debug_logger.debug( msg = f'sequence list loaded with "{ len( app_state.settings.saved_sequences ) }" sequences' )
@@ -129,7 +120,7 @@ def main() -> None:
         app_context.HistoryManager = HistoryManager( logger = app_context.debug_logger )
 
         # Launch the main application window
-        from automation_menu.ui.main_window import AutomationMenuWindow
+        from automation_menu.ui.windows.main_window import AutomationMenuWindow
 
         AutomationMenuWindow( app_state = app_state, app_context = app_context )
 
@@ -144,6 +135,7 @@ def main() -> None:
         sys.exit( 0 )
 
     except SystemExit:
+
         raise
 
     except Exception as e:

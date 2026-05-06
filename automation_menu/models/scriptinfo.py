@@ -4,8 +4,6 @@ Definition of ScriptInfo
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-10-31
 """
 
 from dataclasses import dataclass
@@ -18,7 +16,7 @@ from automation_menu.models.user import User
 
 @dataclass
 class ScriptInfo:
-    """ Class to hold information about a script """
+    """ Stores file, metadata, and runtime information for a script."""
 
     # File info
     filename: str
@@ -32,7 +30,11 @@ class ScriptInfo:
 
 
     def __repr__( self ) -> str:
-        """ Custom representation string """
+        """ Return the script path as the object representation.
+
+        Returns:
+            String representation of the script's full path.
+        """
 
         return str( self.fullpath )
 
@@ -49,10 +51,13 @@ class ScriptInfo:
 
 
     def get_attr( self, attr_name: str ) -> Any:
-        """ Get the value of an attribute if it exists, otherwise return None
+        """ Get an attribute value from the instance or its script metadata.
 
         Args:
-            attr_name (str): Name of attribute to retrieve
+            attr_name (str): Name of the attribute to retrieve.
+
+        Returns:
+            Any: Attribute value if found on this instance or `scriptmeta`, otherwise None.
         """
 
         if hasattr( self, attr_name ):
@@ -89,12 +94,12 @@ class ScriptInfo:
 
 
     def set_attr( self, attr_name: str, attr_val: Any, append: bool = False ) -> None:
-        """ Append a value to an existing attribute or create it if it doesn't exist
+        """ Set an attribute value, optionally appending to an existing value.
 
         Args:
-            attr_name (str): Name of attribute
-            attr_val (Any): Value of attribute to set
-            append (bool): Should the value be appended to existing value
+            attr_name (str): Name of the attribute to set.
+            attr_val (Any): Value to assign or append.
+            append (bool): If True, append to the existing attribute value instead of replacing it.
         """
 
         if ( not hasattr( self, attr_name ) ):

@@ -4,21 +4,19 @@ File handler to write execution history to file
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-10-31
 """
 
 import json
-from logging import Logger
 import os
 
 from datetime import datetime
+from logging import Logger
 from pathlib import Path, WindowsPath
 
 
 def write_exec_history( exec_items: list[ dict ], root_dir: WindowsPath, logger: Logger ) -> None:
     """ Write settings to JSON file
-    
+
     Args:
         exec_items (list[ dict ]): String representation of execution history
         root_dir (WindowsPath): Path to file to write
@@ -39,6 +37,7 @@ def write_exec_history( exec_items: list[ dict ], root_dir: WindowsPath, logger:
 
     if not file_path.exists():
         with open( file_path, 'w' ) as f:
+
             pass
 
     try:
@@ -59,7 +58,9 @@ def write_exec_history( exec_items: list[ dict ], root_dir: WindowsPath, logger:
                 f.write( '\n')
 
     except FileNotFoundError as e:
+
         raise FileNotFoundError( _( 'Writing execution history error; file not found: {file_path}' ).format( file_path = file_path ) ) from e
 
     except Exception as e:
+
         raise e

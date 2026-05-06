@@ -4,27 +4,25 @@ A worker module for starting execution of script
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0.0
-Created: 2025-09-25
 """
 
 from __future__ import annotations
-import os
-from pathlib import Path
-from typing import TYPE_CHECKING, Callable
-
-if TYPE_CHECKING:
-    from automation_menu.core.script_execution_manager import ScriptExecutionManager
 
 import asyncio
+import os
 import psutil
 import subprocess
 import sys
 import threading
 
+from pathlib import Path
 from queue import Queue
 from threading import Event
 from tkinter import Tk
+from typing import TYPE_CHECKING, Callable
+
+if TYPE_CHECKING:
+    from automation_menu.core.script_execution_manager import ScriptExecutionManager
 
 from automation_menu.api.script_api import MESSAGE_END, MESSAGE_START
 from automation_menu.models.application_state import ApplicationState
@@ -104,7 +102,11 @@ class ScriptRunner:
 
 
     def _create_process( self ) -> subprocess.Popen:
-        """ Create and start a process to execute script """
+        """ Create and start a process to execute script
+
+        Returns:
+            (subprocess.Popen): Newly created process
+        """
 
         from automation_menu.utils.localization import _
 
@@ -114,7 +116,9 @@ class ScriptRunner:
         self._set_run_state()
 
         if self._run_state == 'free':
+
             pass
+
         elif self._run_state == 'vscode':
             self._output_queue.put( {
                     'line': _( 'Running in: \'{a}\', application can not handle debugging.' ).format( a = self._run_state ),
@@ -174,6 +178,7 @@ class ScriptRunner:
         p: subprocess.Popen = self.current_process
 
         if not p:
+
             return
 
         return_code: int = p.wait()
@@ -292,7 +297,7 @@ class ScriptRunner:
 
     def _set_run_state( self ) -> None:
         """ Verify if application runs in VSCode debugger or not
-        
+
         This is needed for handling breakpoints in the scripts
         """
 
@@ -309,7 +314,11 @@ class ScriptRunner:
 
 
     def get_exec_item( self ) -> ExecHistory:
-        """ Return the execution history """
+        """ Return the execution history
+
+        Returns:
+            (ExecHistory): Current ExecHistory item
+        """
 
         return self._exec_item
 
@@ -325,7 +334,11 @@ class ScriptRunner:
 
 
     def get_run_state( self ) -> str:
-        """ Get the current runstate of application """
+        """ Get the current runstate of application
+
+        Returns:
+            (str): Current run state
+        """
 
         return self._run_state
 
@@ -395,10 +408,13 @@ class ScriptRunner:
 
 
     def send_api_response( self, response: str ) -> bool:
-        """ Send the API response the script stdin
+        """ Send the API response to the script stdin
 
         Args:
             response (str): String formated response to send
+
+        Returns:
+            (bool): True if API response was successful
         """
 
         if self.current_process is None or self.current_process.stdin is None:
@@ -414,6 +430,7 @@ class ScriptRunner:
             return True
 
         except:
+
             return False
 
 
@@ -465,6 +482,10 @@ class ScriptRunner:
 
 
     def was_terminated( self ) -> bool:
-        """ Was the process manually terminated """
+        """ Was the process manually terminated
+
+        Returns:
+            (bool): True if execution was successful
+        """
 
         return self._terminated

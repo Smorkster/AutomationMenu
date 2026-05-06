@@ -4,33 +4,31 @@ Localization support for the application.
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-09-25
 """
 
 import gettext
 import locale
 
-from gettext import GNUTranslations, NullTranslations
-from pathlib import Path, WindowsPath
+from gettext import NullTranslations
+from pathlib import Path
 from typing import Callable
 
 
 def change_language( language_code: str ) -> None:
-    """ Change the application language at runtime.
+    """Change the application language at runtime.
 
     Args:
-        language_code (str): Language code like 'sv_SE' or 'en_US'
+        language_code (str): Language code such as `'sv_SE'` or `'en_US'`.
     """
 
     setup_localization( language = language_code )
 
 
 def find_locales_directory() -> Path:
-    """ Find the locales directory relative to this file
+    """Find the locales directory relative to this file.
 
     Returns:
-        locale_dir (str): Path of the locale directory
+        locale_dir (Path): Path to the locales directory.
     """
 
     current_file: Path = Path( __file__ )
@@ -47,10 +45,10 @@ def find_locales_directory() -> Path:
 
 
 def get_available_languages() -> list[ str ]:
-    """ Get list of available translation languages
+    """ Get the list of available translation languages.
 
     Returns:
-        languages (list[ str ]): A list of available languages
+        languages (list[str]): Available language codes.
     """
 
     locale_dir: Path = find_locales_directory()
@@ -68,7 +66,11 @@ def get_available_languages() -> list[ str ]:
 
 
 def get_system_locale() -> str:
-    """ Get the system locale, with fallback to Swedish """
+    """ Get the system locale with fallback to Swedish.
+
+    Returns:
+        system_locale (str): Detected system locale, or the fallback locale.
+    """
 
     default_localization: str = 'sv_SE'
 
@@ -90,15 +92,14 @@ def get_system_locale() -> str:
 
 
 def setup_localization( domain: str = 'messages', language: str | None = None ) -> Callable:
-    """
-    Set up localization for the application.
+    """ Set up localization for the application.
 
     Args:
-        domain (str): The translation domain
-        language (str | None): Force a specific language, or None for auto-detect
+        domain (str): Translation domain to load.
+        language (str | None): Specific language to load, or None to auto-detect.
 
     Returns:
-        (Callable): Translation function to use as _()
+        _ (Callable): Translation function to use as `_()`.
     """
 
     global _
@@ -127,8 +128,26 @@ def setup_localization( domain: str = 'messages', language: str | None = None ) 
         print( 'Falling back to English' )
         _ = lambda text: text
 
-        # Return a function that just returns the original string
+    # Return a function that just returns the original string
     return _
+
+
+def translate( text: str ) -> str:
+    """ Translate a string.
+
+    Args:
+        text (str): Text to translate.
+
+    Returns:
+        tt (str): Translated string.
+    """
+
+    global _
+
+    t: str = '{}'.format( text )
+    tt: str = _( t )
+
+    return tt
 
 
 _ = lambda text: text

@@ -530,7 +530,7 @@ msgstr "Sequence stopped at step {i} due to individual step error"
 
 #: automation_menu/ui/sequence_manager.py:893
 msgid "Automation sequence"
-msgstr "Steps in sequence"
+msgstr "Sequences"
 
 #: automation_menu/ui/sequence_manager.py:910
 msgid "'Current sequence' was lost, can't remove sequence"

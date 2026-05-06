@@ -5,15 +5,10 @@ and potential breakpoints in the code
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-09-25
 """
 
-from __future__ import annotations
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from automation_menu.models.application_state import ApplicationState
+from __future__ import annotations
 
 import os
 import re
@@ -21,6 +16,10 @@ import re
 from operator import attrgetter
 from pathlib import Path
 from queue import Queue
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from automation_menu.models.application_state import ApplicationState
 
 from automation_menu.models import ScriptInfo, User
 from automation_menu.models.custom_exceptions import ScriptInfoError
@@ -138,7 +137,8 @@ def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: Appl
         app_run_state (ApplicationRunState): State the application is running in
 
     Returns:
-        (ScriptInfo, dict, int):
+        (ScriptInfo, dict, int): Collected script info, warnings of invalid parameters
+            and if script is approved for listing
     """
 
     from automation_menu.utils.localization import _
@@ -148,9 +148,11 @@ def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: Appl
             content = f.read()
 
     except FileNotFoundError as e:
+
         raise FileNotFoundError( _( 'File not found' ) )
 
     except Exception as e:
+
         raise Exception( _( 'Could not read file: {error}' ).format( error = str( e ) ) )
 
     metadata: dict
@@ -163,6 +165,7 @@ def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: Appl
             metadata, warnings = extract_script_metadata( script_fullpath = file.path )
 
         except Exception as e:
+
             raise ScriptInfoError( _( f'No valid ScriptInfo was found in the script: { e }' ) ) from e
 
     try:
@@ -170,6 +173,7 @@ def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: Appl
         script_info: ScriptInfo = ScriptInfo( filename = file.name, fullpath = file.path, scriptmeta = smd )
 
     except Exception as e:
+
         raise
 
     approved: int = _approve_listing( script_info = script_info, app_run_state = app_run_state, current_user = current_user, content = content )

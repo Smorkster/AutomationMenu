@@ -17,13 +17,21 @@ class Output:
     output: str
 
     def __repr__( self ) -> str:
-        """ Custom representation """
+        """ String representation
+
+        Returns:
+            (str): Custom string representation of this object
+        """
 
         return str( { 'time': str( self.out_time ), 'output': self.output } )
 
 
     def __str__( self ) -> str:
-        """ Custom string conversion """
+        """ Convert object to a string
+
+        Returns:
+            (str): Object converted to a string
+        """
 
         return f'{ self.out_time.strftime( '%H:%M:%S' ) }: { self.output }'
 

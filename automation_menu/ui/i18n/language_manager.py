@@ -4,28 +4,27 @@ Manager of language change and ui widget updating
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-09-25
 """
 
 from __future__ import annotations
 
+from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
 from tkinter import Toplevel
 from tkinter.ttk import Button, Checkbutton, Combobox, Frame, Label, Notebook, Treeview
 from typing import cast
 
-from alwaysontop_tooltip.alwaysontop_tooltip import AlwaysOnTopToolTip
-
 from automation_menu.models.enums import ScriptState
-from automation_menu.models.widget_for_translation import WidgetForTranslation
-from automation_menu.utils.localization import change_language
+from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
+from automation_menu.utils.localization import change_language, translate
 
 class LanguageManager:
+    """ Manage application language changes and translation updates for registered widgets."""
+
     def __init__( self, current_language: str = 'sv_SE' ) -> None:
-        """ Manage language change and GUI update
+        """ Initialize the language manager.
 
         Args:
-            current_language (str): Language currently used
+            current_language (str): Language currently in use.
         """
 
         from automation_menu.utils.localization import _
@@ -36,142 +35,125 @@ class LanguageManager:
         self._current_language: str = current_language
 
 
-    def translate( self, text: str ) -> str:
-        """ Translate string
-
-        Args:
-            text (str): Text to translate
-
-        Returns:
-            tt (str): The translated string
-        """
-
-        t: str = '{}'.format( text )
-        tt: str = self._( message = t )
-
-        return tt
-
-
     def _update_button( self, widget: Button, text: str ) -> None:
-        """ Update text for ttk.Button
+        """ Update translated text for a button widget.
 
         Args:
-            widget (Button): Button to update
-            text (str): Text to set in the button
+            widget (Button): Button to update.
+            text (str): Translation key for the button text.
         """
 
-        widget.config( text = self.translate( text = text ) )
+        widget.config( text = translate( text = text ) )
 
 
     def _update_checkbutton( self, widget: Checkbutton, text: str ) -> None:
-        """ Update text for ttk.Checkbutton
+        """ Update translated text for a checkbutton widget.
 
         Args:
-            widget (Checkbutton): Checkbutton to update
-            text (str): String, as translation key
+            widget (Checkbutton): Checkbutton to update.
+            text (str): Translation key for the checkbutton text.
         """
 
-        widget.config( text = self.translate( text = text ) )
+        widget.config( text = translate( text = text ) )
 
 
     def _update_combobox( self, widget: Combobox, texts: list[ str ] ) -> None:
-        """ Update combobox items
+        """ Update translated items for a combobox widget.
 
         Args:
-            widget (Combobox): Combobox to update
-            texts (list[ str ]): List of strings, as translation keys
+            widget (Combobox): Combobox to update.
+            texts (list[str]): Translation keys for the combobox items.
         """
 
         pass
 
 
     def _update_frame( self, widget: Frame, text: str ) -> None:
-        """ Update text for Frame
+        """ Update translated tab text for a frame inside a notebook.
 
         Args:
-            widget (Frame): Frame to update
-            text (str): String, as translation key
+            widget (Frame): Frame whose notebook tab text should be updated.
+            text (str): Translation key for the tab text.
         """
 
         idx: int = widget.master.winfo_children().index( widget )
-        cast( Notebook, widget.master ).tab( idx, text = self.translate( text = text ) )
+        cast( Notebook, widget.master ).tab( idx, text = translate( text = text ) )
         widget.update_idletasks()
 
 
     def _update_label( self, widget: Label, text: str ) -> None:
-        """ Update label text
+        """ Update translated text for a label widget.
 
         Args:
-            widget (Label): Tuple of label to update
-            text (str): String, as translation key
+            widget (Label): Label to update.
+            text (str): Translation key for the label text.
         """
 
-        widget.config( text = self.translate( text ) )
+        widget.config( text = translate( text ) )
 
 
     def _update_treeview( self, widget: Treeview, texts: dict[ str, list[ str | int ] ] ) -> None:
-        """ Update column headers for Treeview
+        """ Update translated column headers for a treeview widget.
 
         Args:
-            widget (Treeview): Holder for translation
-            texts (dict[ str, list[ str | int ] ]): Dict with column names and strings, as translation key
+            widget (Treeview): Treeview to update.
+            texts (dict[str, list[str | int]]): Mapping of column IDs to translated header definitions.
         """
 
         for i, s in texts.items():
-            widget.heading( i, text = self.translate( text = cast( str, s[ 0 ] ) ) )
+            widget.heading( i, text = translate( text = cast( str, s[ 0 ] ) ) )
 
 
     def _update_toplevel( self, widget: Toplevel, text: str ) -> None:
-        """ Update text for Toplevel
+        """ Update translated title text for a toplevel window.
 
         Args:
-            widget (Toplevel): Tuple of Toplevel to update and string, as translation key
-            text (str): String, as translation key
+            widget (Toplevel): Toplevel window to update.
+            text (str): Translation key for the window title.
         """
 
-        widget.title( self.translate( text ) )
+        widget.title( translate( text ) )
         widget.update_idletasks()
         pass
 
 
     def _update_tt( self, widget: AlwaysOnTopToolTip, text: str, script_state: ScriptState, include_application_test_info: bool ) -> None:
-        """ Update text for AlwaysOnTopTooltip
+        """ Update translated text for a tooltip.
 
         Args:
-            widget (AlwaysOnTopToolTip): Tooltip to update
-            text (str): String, as translation key
-            script_state (ScriptState): State for if development information should be added
-            include_application_test_info (bool): Should information about application test information be aded
+            widget (AlwaysOnTopToolTip): Tooltip to update.
+            text (str): Translation key for the tooltip text.
+            script_state (ScriptState): Script state used to determine whether development information should be added.
+            include_application_test_info (bool): Whether application test information should be added.
         """
 
-        new_text: str = self.translate( text )
+        new_text: str = translate( text )
         if script_state == ScriptState.DEV:
-            dev_text: str = self.translate( 'In development, and should only be run by its developer.' )
+            dev_text: str = translate( 'In development, and should only be run by its developer.' )
             new_text += f'\n\n{ dev_text }'
 
         elif include_application_test_info:
-            test_text: str = self.translate( 'Application test script, only used to test application functionality' )
+            test_text: str = translate( 'Application test script, only used to test application functionality' )
             new_text += f'\n\n{ test_text }'
 
         widget.config( new_text = new_text )
 
 
     def add_translatable_widget( self, widget: WidgetForTranslation ) -> None:
-        """ Add a widget to list for later translation
+        """ Register a widget for later translation updates.
 
         Args:
-            widget (WidgetForTranslation): Widget holder to be translatable
+            widget (WidgetForTranslation): Widget holder to register as translatable.
         """
 
         self._widgets_to_update.append( widget )
 
 
     def change_app_language( self, new_language: str ) -> None:
-        """ Change application language and reconfigure widgets
-        Loop all registered widgets that should be updated
+        """ Change the application language and update registered widgets.
 
         Args:
-            new_language (str): Language key to switch to
+            new_language (str): Language key to switch to.
         """
 
         self._current_language = new_language

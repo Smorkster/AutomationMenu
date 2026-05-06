@@ -4,12 +4,9 @@ Window/widget geometry model
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0
-Created: 2025-12-16
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 from dataclasses import dataclass
 
