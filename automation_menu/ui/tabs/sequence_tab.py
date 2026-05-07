@@ -6,13 +6,12 @@ GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
 """
 
-
 from functools import partial
 from tkinter import BooleanVar, Canvas, Event
 from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Notebook, Scrollbar, Treeview
 from typing import Callable
 
-from automation_menu.models.sequence import Sequence
+from automation_menu.types.sequence_callbacks import SequenceCallbacks
 from automation_menu.ui.types.sequence_ui import SequenceUi
 from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 
@@ -51,13 +50,13 @@ def on_steps_container_frame_config( canvas: Canvas, event: Event ) -> None:
     canvas.after_idle( lambda: canvas.configure( scrollregion = canvas.bbox( 'all' ) ) )
 
 
-def build_tab_content( ui: SequenceUi, add_translatable: Callable, op_callbacks: dict[ str, Callable ] ) -> SequenceUi:
+def build_tab_content( ui: SequenceUi, add_translatable: Callable, op_callbacks: SequenceCallbacks ) -> SequenceUi:
     """ Create the widgets used to display and edit sequence data.
 
     Args:
         ui (SequenceUi): Sequence UI widget collection to populate.
         add_translatable (Callable): Callback used to register translatable widgets.
-        op_callbacks (dict[str, Callable]): Callback functions used by the sequence UI.
+        op_callbacks (SequenceCallbacks): Callback functions used by the sequence UI.
 
     Returns:
         ui (SequenceUi): Populated sequence UI widget collection.
@@ -73,13 +72,13 @@ def build_tab_content( ui: SequenceUi, add_translatable: Callable, op_callbacks:
     return ui
 
 
-def create_sequence_editing_op_buttons( ui: SequenceUi, add_translatable: Callable, op_callbacks: dict[ str, Callable ] ) -> None:
+def create_sequence_editing_op_buttons( ui: SequenceUi, add_translatable: Callable, op_callbacks: SequenceCallbacks ) -> None:
     """ Create the buttons used while editing a sequence.
 
     Args:
         ui (SequenceUi): Sequence UI widget collection.
         add_translatable (Callable): Callback used to register translatable widgets.
-        op_callbacks (dict[str, Callable]): Callback functions used by the buttons.
+        op_callbacks (SequenceCallbacks): Callback functions used by the buttons.
     """
 
     from automation_menu.utils.localization import _
@@ -91,7 +90,7 @@ def create_sequence_editing_op_buttons( ui: SequenceUi, add_translatable: Callab
     col: int = 0
 
     sequence_ops.grid_columnconfigure( index = col, weight = 0 )
-    add_step_button: Button = Button( master = sequence_ops, text = _( 'Add step' ) , command = op_callbacks[ 'add_sequence_step' ] )
+    add_step_button: Button = Button( master = sequence_ops, text = _( 'Add step' ) , command = op_callbacks.add_sequence_step )
     add_step_button.grid( column = col, row = 0 )
     ui.add_step_btn = add_step_button
 
@@ -101,7 +100,7 @@ def create_sequence_editing_op_buttons( ui: SequenceUi, add_translatable: Callab
     col += 1
 
     sequence_ops.grid_columnconfigure( index = col, weight = 0 )
-    save_sequence: Button = Button( master = sequence_ops, text = _( 'Save sequence' ), command = op_callbacks[ 'save_sequence' ] )
+    save_sequence: Button = Button( master = sequence_ops, text = _( 'Save sequence' ), command = op_callbacks.save_sequence )
     save_sequence.grid( column = col, row = 0 )
     ui.save_sequence_btn = save_sequence
 
@@ -111,7 +110,7 @@ def create_sequence_editing_op_buttons( ui: SequenceUi, add_translatable: Callab
     col += 1
 
     sequence_ops.grid_columnconfigure( index = col, weight = 0 )
-    delete_sequence: Button = Button( master = sequence_ops, text = _( 'Delete sequence' ), command = op_callbacks[ 'delete_sequence' ] )
+    delete_sequence: Button = Button( master = sequence_ops, text = _( 'Delete sequence' ), command = op_callbacks.delete_sequence )
     delete_sequence.grid( column = col, row = 0, sticky = 'nw' )
     ui.delete_sequence_btn = delete_sequence
 
@@ -121,7 +120,7 @@ def create_sequence_editing_op_buttons( ui: SequenceUi, add_translatable: Callab
     col += 1
 
     sequence_ops.grid_columnconfigure( index = col, weight = 0 )
-    abort_sequence_edit: Button = Button( master = sequence_ops, text = _( 'Abort edit' ), command = op_callbacks[ 'abort_sequence_edit' ] )
+    abort_sequence_edit: Button = Button( master = sequence_ops, text = _( 'Abort edit' ), command = op_callbacks.abort_sequence_edit )
     abort_sequence_edit.grid( column = col, row = 0, sticky = 'nw' )
     ui.abort_sequence_edit_btn = abort_sequence_edit
 
@@ -191,18 +190,18 @@ def create_sequence_form( ui: SequenceUi, add_translatable: Callable ) -> None:
     ui.stop_sequence_on_error_field = stop_on_error_field
 
 
-def create_sequence_list( ui: SequenceUi, op_callbacks: dict[ str, Callable ] ) -> None:
+def create_sequence_list( ui: SequenceUi, op_callbacks: SequenceCallbacks ) -> None:
     """ Create the list used to display available sequences.
 
     Args:
         ui (SequenceUi): Sequence UI widget collection.
-        op_callbacks (dict[str, Callable]): Callback functions used by the sequence list.
+        op_callbacks (SequenceCallbacks): Callback functions used by the sequence list.
     """
 
     sequence_list: Treeview = Treeview( master = ui.main_frame, columns = ( 'name', 'id' ), displaycolumns = 'name', show = '', selectmode = 'browse' )
     sequence_list.column( 'name', anchor = 'w' )
     sequence_list.column( 'id', anchor = 'w' )
-    sequence_list.bind( '<ButtonRelease-1>', op_callbacks[ 'on_listbox_click' ] )
+    sequence_list.bind( '<ButtonRelease-1>', op_callbacks.on_listbox_click )
     sequence_list.grid( column = 0, row = 0, sticky = 'nswe' )
 
     list_scrollbar: Scrollbar = Scrollbar( master = ui.main_frame )
@@ -214,16 +213,16 @@ def create_sequence_list( ui: SequenceUi, op_callbacks: dict[ str, Callable ] ) 
 
     ui.sequence_list = sequence_list
 
-    op_callbacks[ 'list_sequences' ]( main_self = op_callbacks[ 'main_self' ])
+    op_callbacks.list_sequences()
 
 
-def create_sequence_list_op_buttons( ui: SequenceUi, add_translatable: Callable, op_callbacks: dict[ str, Callable ] ) -> None:
+def create_sequence_list_op_buttons( ui: SequenceUi, add_translatable: Callable, op_callbacks: SequenceCallbacks ) -> None:
     """ Create the buttons used for sequence list operations.
 
     Args:
         ui (SequenceUi): Sequence UI widget collection.
         add_translatable (Callable): Callback used to register translatable widgets.
-        op_callbacks (dict[str, Callable]): Callback functions used by the buttons.
+        op_callbacks (SequenceCallbacks): Callback functions used by the buttons.
     """
 
     from automation_menu.utils.localization import _
@@ -234,7 +233,7 @@ def create_sequence_list_op_buttons( ui: SequenceUi, add_translatable: Callable,
     col: int = 0
 
     sequence_op_frame.grid_columnconfigure( index = col, weight = 0 )
-    create_new_sequence: Button = Button( master = sequence_op_frame, text = _( 'Create new sequence' ), command = op_callbacks[ 'create_new_sequence' ] )
+    create_new_sequence: Button = Button( master = sequence_op_frame, text = _( 'Create new sequence' ), command = op_callbacks.create_new_sequence )
     create_new_sequence.grid( column = col, row = 0, sticky = 'nw' )
     ui.new_sequence_btn = create_new_sequence
 
@@ -244,7 +243,7 @@ def create_sequence_list_op_buttons( ui: SequenceUi, add_translatable: Callable,
     col += 1
 
     sequence_op_frame.grid_columnconfigure( index = col, weight = 0 )
-    edit_sequence: Button = Button( master = sequence_op_frame, text = _( 'Edit' ), command = op_callbacks[ 'edit_sequence' ], state = 'disable' )
+    edit_sequence: Button = Button( master = sequence_op_frame, text = _( 'Edit' ), command = op_callbacks.edit_sequence, state = 'disable' )
     edit_sequence.grid( column = col, row = 0, sticky = 'nw' )
     ui.edit_sequence_btn = edit_sequence
 
@@ -258,7 +257,7 @@ def create_sequence_list_op_buttons( ui: SequenceUi, add_translatable: Callable,
     col += 1
 
     sequence_op_frame.grid_columnconfigure( index = col, weight = 0 )
-    run_sequence: Button = Button( master = sequence_op_frame, text = _( 'Run selected' ), command = op_callbacks[ 'run_sequence' ], state = 'disable' )
+    run_sequence: Button = Button( master = sequence_op_frame, text = _( 'Run selected' ), command = op_callbacks.run_sequence, state = 'disable' )
     run_sequence.grid( column = col, row = 0, sticky = 'nw' )
     ui.run_sequence_btn = run_sequence
 
@@ -298,13 +297,13 @@ def create_sequence_tab( tabcontrol: Notebook, translate_callback: Callable ) ->
     return ui
 
 
-def create_steps_display( ui: SequenceUi, add_translatable: Callable, op_callbacks: dict[ str, Callable ] ) -> None:
+def create_steps_display( ui: SequenceUi, add_translatable: Callable, op_callbacks: SequenceCallbacks ) -> None:
     """ Create the display area used to show sequence steps.
 
     Args:
         ui (SequenceUi): Sequence UI widget collection.
         add_translatable (Callable): Callback used to register translatable widgets.
-        op_callbacks (dict[str, Callable]): Callback functions used by the step display.
+        op_callbacks (SequenceCallbacks): Callback functions used by the step display.
     """
 
     from automation_menu.utils.localization import _
@@ -354,13 +353,13 @@ def create_steps_display( ui: SequenceUi, add_translatable: Callable, op_callbac
     steps_container.bind( '<Configure>', partial( on_steps_container_frame_config, ui.steps_list_container_canvas ) )
 
 
-def create_step_form( ui: SequenceUi, add_translatable: Callable, op_callbacks: dict[ str, Callable ] ) -> None:
+def create_step_form( ui: SequenceUi, add_translatable: Callable, op_callbacks: SequenceCallbacks ) -> None:
     """ Create the form used to add or edit a sequence step.
 
     Args:
         ui (SequenceUi): Sequence UI widget collection.
         add_translatable (Callable): Callback used to register translatable widgets.
-        op_callbacks (dict[str, Callable]): Callback functions used by the step form.
+        op_callbacks (SequenceCallbacks): Callback functions used by the step form.
     """
 
     from automation_menu.utils.localization import _
@@ -380,9 +379,9 @@ def create_step_form( ui: SequenceUi, add_translatable: Callable, op_callbacks: 
     wft: WidgetForTranslation = WidgetForTranslation( widget = script_title, default_text = 'Script for this step' )
     add_translatable( wft )
 
-    script_names: list[ str ] = sorted( [ s.filename for s in op_callbacks[ 'get_script_list' ]() ] )
+    script_names: list[ str ] = sorted( [ s.filename for s in op_callbacks.get_script_list() ] )
     script_list: Combobox = Combobox( master = step_form, values = script_names, state = 'readonly' )
-    script_list.bind( '<<ComboboxSelected>>', op_callbacks[ '_on_step_script_selected' ] )
+    script_list.bind( '<<ComboboxSelected>>', op_callbacks.on_step_script_selected )
     script_list.grid( column = 1, row = row, padx = 5, sticky = 'nw' )
     ui.step_script_list = script_list
 
@@ -457,7 +456,7 @@ def create_step_form( ui: SequenceUi, add_translatable: Callable, op_callbacks: 
     col = 0
 
     step_op_buttons_frame.grid_columnconfigure( index = col, weight = 0 )
-    step_add: Button = Button( master = step_op_buttons_frame, text = _( 'Save step' ), command = op_callbacks[ '_save_edited_step' ] )
+    step_add: Button = Button( master = step_op_buttons_frame, text = _( 'Save step' ), command = op_callbacks.save_edited_step )
     step_add.grid( column = col, row = 0, sticky = 'e' )
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = step_add, default_text = 'Save step' )
@@ -466,7 +465,7 @@ def create_step_form( ui: SequenceUi, add_translatable: Callable, op_callbacks: 
     col += 1
 
     step_op_buttons_frame.grid_columnconfigure( index = col, weight = 0 )
-    step_remove: Button = Button( master = step_op_buttons_frame, text = _( 'Remove step' ), command = op_callbacks[ 'remove_sequence_step' ] )
+    step_remove: Button = Button( master = step_op_buttons_frame, text = _( 'Remove step' ), command = op_callbacks.remove_sequence_step )
     step_remove.grid( column = col, row = 0, sticky = 'e' )
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = step_remove, default_text = 'Remove step' )
@@ -475,7 +474,7 @@ def create_step_form( ui: SequenceUi, add_translatable: Callable, op_callbacks: 
     col += 1
 
     step_op_buttons_frame.grid_columnconfigure( index = col, weight = 0 )
-    step_abort: Button = Button( master = step_op_buttons_frame, text = _( 'Abort' ), command = op_callbacks[ 'abort_add_sequence_step' ] )
+    step_abort: Button = Button( master = step_op_buttons_frame, text = _( 'Abort' ), command = op_callbacks.abort_add_sequence_step )
     step_abort.grid( column = col, row = 0, sticky = 'e' )
 
     wft: WidgetForTranslation = WidgetForTranslation( widget = step_abort, default_text = 'Abort' )

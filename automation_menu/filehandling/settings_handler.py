@@ -13,9 +13,10 @@ import json
 from logging import Logger
 
 from automation_menu.models import Settings
+from automation_menu.types.rawsettings import RawSettings
 
 
-def read_settingsfile( settings_file_path: str, debug_logger: Logger ) -> dict:
+def read_settingsfile( settings_file_path: str, debug_logger: Logger ) -> RawSettings:
     """ Read settings from a JSON file.
 
     Args:
@@ -32,7 +33,14 @@ def read_settingsfile( settings_file_path: str, debug_logger: Logger ) -> dict:
     try:
         with open( settings_file_path, mode = 'r', encoding = 'utf-8' ) as f:
 
-            return json.load( f )
+            loaded_settings: RawSettings = json.load( f )
+
+            if isinstance( loaded_settings, dict ):
+
+                return loaded_settings
+
+            else:
+                return {}
 
     except Exception as e:
         debug_logger.error( msg = f'Error reading settings file:\n{ e }' )

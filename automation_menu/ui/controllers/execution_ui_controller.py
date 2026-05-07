@@ -45,7 +45,7 @@ class ExecutionUiController:
         """
 
         self.app_context = app_context
-        self._main_window = window
+        self.main_window = window
         self._app_state = app_state
 
         # Visual execution states
@@ -60,11 +60,11 @@ class ExecutionUiController:
 
             raise ValueError( 'Execution bindings cant be empty' )
 
-        self._pre_work_refs: ExecutionPreWorkRefs = exec_bindings[ 'ExecutionPreWorkRefs' ]
-        self._post_work_refs: ExecutionPostWorkRefs = exec_bindings[ 'ExecutionPostWorkRefs' ]
-        self._button_refs: ExecutionButtonRefs = exec_bindings[ 'ExecutionButtonRefs' ]
-        self._min_max_refs: ExecutionMinMaxRefs = exec_bindings[ 'ExecutionMinMaxRefs' ]
-        self._status_refs: ExecutionStatusRefs = exec_bindings[ 'ExecutionStatusRefs' ]
+        self._pre_work_refs: ExecutionPreWorkRefs = exec_bindings.ExecutionPreWorkRefs
+        self._post_work_refs: ExecutionPostWorkRefs = exec_bindings.ExecutionPostWorkRefs
+        self._button_refs: ExecutionButtonRefs = exec_bindings.ExecutionButtonRefs
+        self._min_max_refs: ExecutionMinMaxRefs = exec_bindings.ExecutionMinMaxRefs
+        self._status_refs: ExecutionStatusRefs = exec_bindings.ExecutionStatusRefs
 
 
     # region pre/post run
@@ -77,8 +77,8 @@ class ExecutionUiController:
             is_sequence (bool): Whether the caller is a sequence.
         """
 
-        self._main_window.disable_pause_script_button()
-        self._main_window.disable_stop_script_button()
+        self.main_window.disable_pause_script_button()
+        self.main_window.disable_stop_script_button()
 
         if self._app_state.settings.get( 'minimize_on_running' ) and not disable_minimize:
             self.min_max_on_running()
@@ -164,7 +164,7 @@ class ExecutionUiController:
 
         self._button_refs.root.after( 100, lambda: self._button_refs.btnPauseResumeScript.config( style = 'BlinkBg.TButton' if self._blink_state else 'TButton' ) )
 
-        self._blink_job = self._main_window.root.after( 600, self.pause_button_blinking )
+        self._blink_job = self.main_window.root.after( 600, self.pause_button_blinking )
 
 
     @ui_guard_method( when_message = 'Stopping script' )
@@ -234,7 +234,7 @@ class ExecutionUiController:
     def _minimize_show_controls( self ) -> None:
         """ Show previously hidden UI controls after execution finishes."""
 
-        self._min_max_refs.tab_control.config( style = self._main_window.tab_style )
+        self._min_max_refs.tab_control.config( style = self.main_window.tab_style )
         self._min_max_refs.status_ui.status_bar.grid()
         self._min_max_refs.status_ui.separator.grid()
         self._min_max_refs.status_ui.text_status.grid()

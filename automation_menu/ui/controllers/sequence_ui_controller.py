@@ -144,7 +144,7 @@ class SequenceUiController:
         return values[ 1 ]
 
 
-    def list_sequences( self, main_self: AutomationMenuWindow ) -> None:
+    def list_sequences( self ) -> None:
         """ Populate the UI list with available sequences.
 
         Args:
@@ -158,7 +158,7 @@ class SequenceUiController:
         for k in self._sequence_manager._sequences.items():
             tree.insert( '', 'end', values = ( k[ 1 ].name, k[ 0 ] ) )
 
-        main_self.op_buttons.sequence_menu.rebuild_menu( exec_list = self._sequence_manager._sequences )
+        self._execution_ui.main_window.op_buttons.sequence_menu.rebuild_menu( exec_list = self._sequence_manager._sequences )
 
 
     def on_listbox_click( self, event: Event ) -> None:

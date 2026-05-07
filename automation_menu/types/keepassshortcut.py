@@ -10,7 +10,7 @@ License: MIT
 from typing import TypedDict
 
 
-class KeePassDict( TypedDict ):
+class KeePassShortcut( TypedDict ):
     """ Typed dictionary describing a KeePass keyboard shortcut.
 
     Attributes:

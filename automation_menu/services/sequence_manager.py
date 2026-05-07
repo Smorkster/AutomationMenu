@@ -15,6 +15,8 @@ import uuid
 from tkinter.ttk import Frame, Notebook
 from typing import Callable, TYPE_CHECKING
 
+from automation_menu.types.sequence_callbacks import SequenceCallbacks
+
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.models.application_state import ApplicationState
@@ -68,7 +70,7 @@ class SequenceManager:
         self.current_step_for_edit: SequenceStep | None = None
         self._sequences: dict[ str, Sequence ] = {}
         self._sequence_widgets: SequenceUi
-        self.sequence_callbacks: dict = {}
+        self.sequence_callbacks: SequenceCallbacks
         self.sequence_ui_controller: SequenceUiController
 
         for s in sorted( normalized_sequences, key = lambda x: x.name.lower() ):
@@ -82,32 +84,28 @@ class SequenceManager:
         """ Register sequence-related callbacks used by the UI controller."""
 
         # In controller
-        self.sequence_callbacks[ '_clear_sequence_info' ] = self.sequence_ui_controller.clear_sequence_info
-        self.sequence_callbacks[ '_clear_sequence_steps' ] = self.sequence_ui_controller.clear_sequence_steps
-        self.sequence_callbacks[ '_get_selected_sequence_id' ] = self.sequence_ui_controller.get_selected_sequence_id
-        self.sequence_callbacks[ 'on_listbox_click' ] = self.sequence_ui_controller.on_listbox_click
-        self.sequence_callbacks[ '_on_step_click' ] = self.sequence_ui_controller.on_step_click
-        self.sequence_callbacks[ '_on_step_script_selected' ] = self.sequence_ui_controller.on_step_script_selected
-        self.sequence_callbacks[ '_populate_sequence_form' ] = self.sequence_ui_controller.populate_sequence_form
-        self.sequence_callbacks[ '_populate_sequence_steps' ] = self.sequence_ui_controller.populate_sequence_steps
-        self.sequence_callbacks[ 'create_new_sequence' ] = self.sequence_ui_controller.create_new_sequence
-        self.sequence_callbacks[ 'edit_sequence' ] = self.sequence_ui_controller.edit_sequence
-        self.sequence_callbacks[ 'run_sequence' ] = self.sequence_ui_controller.run_sequence
-        self.sequence_callbacks[ 'add_sequence_step' ] = self.sequence_ui_controller.add_sequence_step
-        self.sequence_callbacks[ 'save_sequence' ] = self.sequence_ui_controller.save_sequence
-        self.sequence_callbacks[ 'delete_sequence' ] = self.sequence_ui_controller.delete_sequence
-        self.sequence_callbacks[ 'abort_sequence_edit' ] = self.sequence_ui_controller.abort_sequence_edit
-        self.sequence_callbacks[ 'remove_sequence_step' ] = self.sequence_ui_controller.remove_sequence_step
-        self.sequence_callbacks[ 'abort_add_sequence_step' ] = self.sequence_ui_controller.abort_add_sequence_step
-
-        # Inhouse
-        self.sequence_callbacks[ 'list_sequences' ] = self.sequence_ui_controller.list_sequences
-        self.sequence_callbacks[ 'main_self' ] = self._app_context.main_window
-        self.sequence_callbacks[ '_show_step_form' ] = self.sequence_ui_controller.show_step_form
-        self.sequence_callbacks[ '_show_step_form_input' ] = self.sequence_ui_controller.show_step_form_input
-        self.sequence_callbacks[ '_save_edited_step' ] = self.sequence_ui_controller.save_current_step
-
-        self.sequence_callbacks[ 'get_script_list' ] = self._app_context.ScriptManager.get_script_list
+        self.sequence_callbacks = SequenceCallbacks( clear_sequence_info = self.sequence_ui_controller.clear_sequence_info,
+                                                    clear_sequence_steps = self.sequence_ui_controller.clear_sequence_steps,
+                                                    get_selected_sequence_id = self.sequence_ui_controller.get_selected_sequence_id,
+                                                    on_listbox_click = self.sequence_ui_controller.on_listbox_click,
+                                                    on_step_click = self.sequence_ui_controller.on_step_click,
+                                                    on_step_script_selected = self.sequence_ui_controller.on_step_script_selected,
+                                                    populate_sequence_form = self.sequence_ui_controller.populate_sequence_form,
+                                                    populate_sequence_steps = self.sequence_ui_controller.populate_sequence_steps,
+                                                    create_new_sequence = self.sequence_ui_controller.create_new_sequence,
+                                                    edit_sequence = self.sequence_ui_controller.edit_sequence,
+                                                    run_sequence = self.sequence_ui_controller.run_sequence,
+                                                    add_sequence_step = self.sequence_ui_controller.add_sequence_step,
+                                                    save_sequence = self.sequence_ui_controller.save_sequence,
+                                                    delete_sequence = self.sequence_ui_controller.delete_sequence,
+                                                    abort_sequence_edit = self.sequence_ui_controller.abort_sequence_edit,
+                                                    remove_sequence_step = self.sequence_ui_controller.remove_sequence_step,
+                                                    abort_add_sequence_step = self.sequence_ui_controller.abort_add_sequence_step,
+                                                    list_sequences = self.sequence_ui_controller.list_sequences,
+                                                    show_step_form = self.sequence_ui_controller.show_step_form,
+                                                    show_step_form_input = self.sequence_ui_controller.show_step_form_input,
+                                                    save_edited_step = self.sequence_ui_controller.save_current_step,
+                                                    get_script_list = self._app_context.ScriptManager.get_script_list )
 
 
     def _persist_sequences( self ) -> None:
@@ -247,7 +245,7 @@ class SequenceManager:
 
         self.abort_sequence_edit()
         self._persist_sequences()
-        self.sequence_ui_controller.list_sequences( main_self = self._app_context.main_window )
+        self.sequence_ui_controller.list_sequences()
 
 
     def edit_sequence( self ) -> None:
@@ -427,7 +425,7 @@ class SequenceManager:
 
         self._sequences[ self.current_sequence.id ] = self.current_sequence
         self._persist_sequences()
-        self.sequence_ui_controller.list_sequences( main_self = self._app_context.main_window )
+        self.sequence_ui_controller.list_sequences()
 
 
     def start_new_step_edit( self, step: SequenceStep ) -> None:

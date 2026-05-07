@@ -10,7 +10,6 @@ settings validation issues to the shared output queue.
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-
 """
 
 from __future__ import annotations
@@ -18,6 +17,8 @@ from __future__ import annotations
 from pathlib import Path
 from tkinter.ttk import Frame, Notebook
 from typing import TYPE_CHECKING
+
+from automation_menu.types.rawsettings import RawSettings
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
@@ -102,7 +103,7 @@ class SettingsManager:
             (Settings): The initialized settings object.
         """
 
-        saved = read_settingsfile( settings_file_path = settings_file_path,
+        saved: RawSettings = read_settingsfile( settings_file_path = settings_file_path,
                                   debug_logger = self._app_context.debug_logger )
         self.settings = Settings( settings_dict = saved,
                                  save_callback = self.save_settings )

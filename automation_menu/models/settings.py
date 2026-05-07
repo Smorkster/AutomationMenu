@@ -13,30 +13,30 @@ import json
 from pathlib import Path
 from typing import Callable
 
-from automation_menu.models.keepassdict import KeePassDict
-from automation_menu.models.sequence import Sequence
+from automation_menu.types.keepassshortcut import KeePassShortcut
+from automation_menu.types.rawsettings import RawSettings
 
 
 class Settings:
-    def __init__( self, save_callback: Callable, settings_dict: dict | None = None ) -> None:
+    def __init__( self, save_callback: Callable, settings_dict: RawSettings | None = None ) -> None:
         """ Initialize application settings.
 
         Args:
             save_callback (Callable): Callback function used to persist settings.
-            settings_dict (dict | None): Settings loaded from file.
+            settings_dict (RawSettings | None): Settings loaded from file.
         """
 
         from automation_menu.utils.localization import _
 
         default_script_folder = Path( __file__ ).resolve().parent.parent.parent / 'Script'
-        self._settings_errors = []
+        self._settings_errors: list[ str ] = []
         self._saved_script_folders: list[ str ] = []
         self._script_folders: list[ Path ] = []
 
         self._current_language: str
         self._force_focus_post_execution: bool
         self._include_ss_in_error_mail: bool
-        self._keepass_shortcut: KeePassDict
+        self._keepass_shortcut: KeePassShortcut
         self._minimize_on_running: bool
         self._on_top: bool
         self._send_mail_on_error: bool
@@ -46,7 +46,7 @@ class Settings:
             self._current_language = 'sv_SE'
             self._force_focus_post_execution  = False
             self._include_ss_in_error_mail = False
-            self._keepass_shortcut = KeePassDict( { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } )
+            self._keepass_shortcut = KeePassShortcut( { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } )
             self._minimize_on_running = False
             self._on_top = False
             self._send_mail_on_error = False
@@ -57,7 +57,7 @@ class Settings:
             self._current_language = settings_dict.get( 'current_language', 'sv_SE' )
             self._force_focus_post_execution = settings_dict.get( 'force_focus_post_execution', False )
             self._include_ss_in_error_mail = settings_dict.get( 'include_ss_in_error_mail', False )
-            self._keepass_shortcut = KeePassDict( **settings_dict.get( 'keepass_shortcut', { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } ) )
+            self._keepass_shortcut = KeePassShortcut( **settings_dict.get( 'keepass_shortcut', { 'ctrl': False, 'alt': False, 'shift': False, 'key': '' } ) )
             self._minimize_on_running = settings_dict.get( 'minimize_on_running', False )
             self._on_top = settings_dict.get( 'on_top', False )
             self._send_mail_on_error = settings_dict.get( 'send_mail_on_error', False )
@@ -164,25 +164,25 @@ class Settings:
 
 
     @property
-    def keepass_shortcut( self ) -> KeePassDict:
+    def keepass_shortcut( self ) -> KeePassShortcut:
         """ Get the KeePass shortcut configuration.
 
         Returns:
-            (KeePassDict): KeePass shortcut settings.
+            (KeePassShortcut): KeePass shortcut settings.
         """
 
         return self._keepass_shortcut
 
 
     @keepass_shortcut.setter
-    def keepass_shortcut( self, value: KeePassDict ) -> None:
+    def keepass_shortcut( self, value: KeePassShortcut ) -> None:
         """ Set the KeePass shortcut configuration.
 
         Args:
-            value (KeePassDict): Value to set.
+            value (KeePassShortcut): Value to set.
         """
 
-        self._keepass_shortcut: KeePassDict = value
+        self._keepass_shortcut: KeePassShortcut = value
 
         if self._save_callback:
             self._save_callback( self )
@@ -313,14 +313,14 @@ class Settings:
             self._save_callback( self )
 
 
-    def get( self, key: str ) -> bool | str | KeePassDict | list[ Sequence ] | list[ Path ]:
+    def get( self, key: str ) -> bool | str | KeePassShortcut | list[ dict ] | list[ Path ]:
         """ Get a setting value by key.
 
         Args:
             key (str): Name of the setting to retrieve.
 
         Returns:
-            (bool | str | KeePassDict | list[ Sequence ] | list[ Path ]): Requested setting value.
+            (bool | str | KeePassDict | list[ dict ] | list[ Path ]): Requested setting value.
         """
 
         return getattr( self, f'_{ key }' )
@@ -357,7 +357,7 @@ class Settings:
             (str): JSON-formatted string representation of the settings object.
         """
 
-        d: dict[ str, bool | KeePassDict | list | str ] = {
+        d: RawSettings = {
             'current_language': self._current_language,
             'force_focus_post_execution': self._force_focus_post_execution,
             'include_ss_in_error_mail': self._include_ss_in_error_mail,

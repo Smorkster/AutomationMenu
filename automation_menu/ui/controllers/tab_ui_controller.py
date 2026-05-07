@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
 
-from automation_menu.ui.types.exec_tab_ui_refs import ExecutionTabUiRefs
+from automation_menu.ui.types.exec_tab_refs import ExecutionTabUiRefs
 from automation_menu.utils.decorators import ui_guard_method
 from automation_menu.utils.localization import translate
 

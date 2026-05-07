@@ -6,7 +6,8 @@ GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
 """
 
-from typing import TypedDict
+
+from dataclasses import dataclass
 
 from automation_menu.ui.types.exec_min_max_refs import ExecutionMinMaxRefs
 from automation_menu.ui.types.exec_button_refs import ExecutionButtonRefs
@@ -15,7 +16,8 @@ from automation_menu.ui.types.exec_pre_work_refs import ExecutionPreWorkRefs
 from automation_menu.ui.types.exec_status_refs import ExecutionStatusRefs
 
 
-class ExecRefs( TypedDict ):
+@dataclass
+class ExecRefs:
     """Typed dictionary containing grouped execution-related UI reference objects.
 
     Attributes:

@@ -36,7 +36,7 @@ from automation_menu.ui.types.exec_post_work_refs import ExecutionPostWorkRefs
 from automation_menu.ui.types.exec_pre_work_refs import ExecutionPreWorkRefs
 from automation_menu.ui.types.exec_refs import ExecRefs
 from automation_menu.ui.types.exec_status_refs import ExecutionStatusRefs
-from automation_menu.ui.types.exec_tab_ui_refs import ExecutionTabUiRefs
+from automation_menu.ui.types.exec_tab_refs import ExecutionTabUiRefs
 from automation_menu.ui.types.op_buttons_ui import OpButtonsUi
 from automation_menu.ui.types.status_ui import StatusUi
 from automation_menu.utils.decorators import ui_guard_method
@@ -99,25 +99,25 @@ class AutomationMenuWindow:
     def _create_execution_refs( self ) -> None:
         """ Create grouped execution-related UI reference objects."""
 
-        self._exec_refs: ExecRefs = {
-            'ExecutionPreWorkRefs': ExecutionPreWorkRefs( op_buttons = self.op_buttons,
+        self._exec_refs: ExecRefs = ExecRefs(
+            ExecutionPreWorkRefs= ExecutionPreWorkRefs( op_buttons = self.op_buttons,
                                                          tab_control = self.tab_control,
                                                          status_widgets = self.status_widgets,
                                                          textbox_output = self.textbox_output,
                                                          root = self.root ),
-            'ExecutionPostWorkRefs': ExecutionPostWorkRefs( root = self.root ),
-            'ExecutionButtonRefs': ExecutionButtonRefs( btnPauseResumeScript = self.op_buttons.btn_pause_resume_script,
+            ExecutionPostWorkRefs = ExecutionPostWorkRefs( root = self.root ),
+            ExecutionButtonRefs =  ExecutionButtonRefs( btnPauseResumeScript = self.op_buttons.btn_pause_resume_script,
                                                        root = self.root ),
-            'ExecutionMinMaxRefs': ExecutionMinMaxRefs( tab_control = self.tab_control,
+            ExecutionMinMaxRefs = ExecutionMinMaxRefs( tab_control = self.tab_control,
                                                        op_buttons = self.op_buttons,
                                                        status_ui = self.status_widgets,
                                                        root = self.root ),
-            'ExecutionStatusRefs': ExecutionStatusRefs( progress_frame = self.status_widgets.status_bar,
+            ExecutionStatusRefs = ExecutionStatusRefs( progress_frame = self.status_widgets.status_bar,
                                                        text_status = self.status_widgets.text_status,
                                                        progressbar = self.status_widgets.progressbar,
                                                        separator = self.status_widgets.separator,
                                                        root = self.root )
-        }
+        )
 
 
     def _create_lifecycle_refs( self ) -> None:
@@ -339,7 +339,8 @@ class AutomationMenuWindow:
         """ Disable the stop script button."""
 
         self.op_buttons.btn_stop_script.state( [ 'disabled' ] )
-        self.execution_controller.pause_button_blinking()
+        self.execution_controller.stop_pause_button_blinking()
+
 
     @ui_guard_method( when_message = 'Pausing script' )
     def pause_resume_script( self ) -> None:
