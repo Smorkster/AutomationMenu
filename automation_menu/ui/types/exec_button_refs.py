@@ -14,6 +14,6 @@ from tkinter.ttk import Button
 class ExecutionButtonRefs:
     """ Store widget references used for execution button control."""
 
-    btnPauseResumeScript: Button
+    btn_pause_resume_script: Button
 
     root: Tk

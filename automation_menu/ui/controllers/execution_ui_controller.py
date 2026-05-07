@@ -137,7 +137,7 @@ class ExecutionUiController:
                 self.app_context.OutputQueue.put( { 'line': _( 'Process was resumed' ),
                                                     'tag': OutputStyleTags.SYSINFO
                                                     } )
-                self._button_refs.btnPauseResumeScript.config( text = _( 'Pause' ) )
+                self._button_refs.btn_pause_resume_script.config( text = _( 'Pause' ) )
 
                 self._blink_active = False
                 self.stop_pause_button_blinking()
@@ -147,7 +147,7 @@ class ExecutionUiController:
                 self.app_context.OutputQueue.put( { 'line': _( 'Process was paused' ),
                                                     'tag': OutputStyleTags.SYSINFO
                                                     } )
-                self._button_refs.btnPauseResumeScript.config( text = _( 'Resume' ) )
+                self._button_refs.btn_pause_resume_script.config( text = _( 'Resume' ) )
                 self._blink_active = True
                 self.pause_button_blinking()
 
@@ -162,7 +162,7 @@ class ExecutionUiController:
 
         self._blink_state = not self._blink_state
 
-        self._button_refs.root.after( 100, lambda: self._button_refs.btnPauseResumeScript.config( style = 'BlinkBg.TButton' if self._blink_state else 'TButton' ) )
+        self._button_refs.root.after( 100, lambda: self._button_refs.btn_pause_resume_script.config( style = 'BlinkBg.TButton' if self._blink_state else 'TButton' ) )
 
         self._blink_job = self.main_window.root.after( 600, self.pause_button_blinking )
 

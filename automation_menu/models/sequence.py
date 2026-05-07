@@ -72,16 +72,14 @@ class Sequence:
             A new sequence instance with copied step data.
         """
 
-        return cls(
-            description = seq.description,
-            id = seq.id,
-            name = seq.name,
-            steps = [
-                SequenceStep.from_step( step = step )
-                for step in seq.steps
-            ],
-            stop_on_error = seq.stop_on_error
-        )
+        return cls( description = seq.description,
+                   id = seq.id,
+                   name = seq.name,
+                   steps = [
+                       SequenceStep.from_step( step = step )
+                       for step in seq.steps
+                       ],
+                   stop_on_error = seq.stop_on_error )
 
 
     def to_dict( self ) -> dict:

@@ -106,7 +106,7 @@ class AutomationMenuWindow:
                                                          textbox_output = self.textbox_output,
                                                          root = self.root ),
             ExecutionPostWorkRefs = ExecutionPostWorkRefs( root = self.root ),
-            ExecutionButtonRefs =  ExecutionButtonRefs( btnPauseResumeScript = self.op_buttons.btn_pause_resume_script,
+            ExecutionButtonRefs =  ExecutionButtonRefs( btn_pause_resume_script = self.op_buttons.btn_pause_resume_script,
                                                        root = self.root ),
             ExecutionMinMaxRefs = ExecutionMinMaxRefs( tab_control = self.tab_control,
                                                        op_buttons = self.op_buttons,

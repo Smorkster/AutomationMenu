@@ -64,7 +64,7 @@ def build_tab_content( ui: SequenceUi, add_translatable: Callable, op_callbacks:
 
     create_sequence_list( ui = ui, op_callbacks = op_callbacks )
     create_sequence_list_op_buttons( ui = ui, add_translatable = add_translatable, op_callbacks = op_callbacks )
-    create_sequence_form( ui = ui, add_translatable = add_translatable )
+    create_sequence_form( ui = ui, add_translatable = add_translatable, op_callbacks = op_callbacks )
     create_steps_display( ui = ui, add_translatable = add_translatable, op_callbacks = op_callbacks )
     create_sequence_editing_op_buttons( ui = ui, add_translatable = add_translatable, op_callbacks = op_callbacks )
     create_step_form( ui = ui, add_translatable = add_translatable, op_callbacks = op_callbacks )
@@ -130,12 +130,13 @@ def create_sequence_editing_op_buttons( ui: SequenceUi, add_translatable: Callab
     sequence_ops.grid_remove()
 
 
-def create_sequence_form( ui: SequenceUi, add_translatable: Callable ) -> None:
+def create_sequence_form( ui: SequenceUi, add_translatable: Callable, op_callbacks: SequenceCallbacks ) -> None:
     """ Create the form used to display and edit sequence information.
 
     Args:
         ui (SequenceUi): Sequence UI widget collection.
         add_translatable (Callable): Callback used to register translatable widgets.
+        op_callbacks (SequenceCallbacks): Callback functions used by the buttons.
     """
 
     from automation_menu.utils.localization import _
@@ -162,6 +163,7 @@ def create_sequence_form( ui: SequenceUi, add_translatable: Callable ) -> None:
 
     name_field: Entry = Entry( master = sequence_form )
     name_field.grid( column = 1, columnspan = 2, row = row, sticky = 'we' )
+    name_field.bind( '<KeyRelease>', op_callbacks.on_info_entry_changed )
     ui.name_field = name_field
 
     row += 1
@@ -174,6 +176,7 @@ def create_sequence_form( ui: SequenceUi, add_translatable: Callable ) -> None:
 
     description_field: Entry = Entry( master = sequence_form )
     description_field.grid( column = 1, columnspan = 2, row = row, sticky = 'we' )
+    description_field.bind( '<KeyRelease>', op_callbacks.on_info_entry_changed )
     ui.description_field = description_field
 
     row += 1
@@ -185,7 +188,9 @@ def create_sequence_form( ui: SequenceUi, add_translatable: Callable ) -> None:
     add_translatable( wft )
 
     ui.stop_sequence_on_error_var = BooleanVar( master = sequence_form, value = False )
-    stop_on_error_field: Checkbutton = Checkbutton( master = sequence_form, variable = ui.stop_sequence_on_error_var )
+    stop_on_error_field: Checkbutton = Checkbutton( master = sequence_form,
+                                                   variable = ui.stop_sequence_on_error_var,
+                                                   command = lambda: op_callbacks.on_info_entry_changed() )
     stop_on_error_field.grid( column = 1, columnspan = 2, row = row, sticky = 'we' )
     ui.stop_sequence_on_error_field = stop_on_error_field
 

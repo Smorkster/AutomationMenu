@@ -84,27 +84,28 @@ class SequenceManager:
         """ Register sequence-related callbacks used by the UI controller."""
 
         # In controller
-        self.sequence_callbacks = SequenceCallbacks( clear_sequence_info = self.sequence_ui_controller.clear_sequence_info,
+        self.sequence_callbacks = SequenceCallbacks( abort_add_sequence_step = self.sequence_ui_controller.abort_add_sequence_step,
+                                                    abort_sequence_edit = self.sequence_ui_controller.abort_sequence_edit,
+                                                    add_sequence_step = self.sequence_ui_controller.add_sequence_step,
+                                                    clear_sequence_info = self.sequence_ui_controller.clear_sequence_info,
                                                     clear_sequence_steps = self.sequence_ui_controller.clear_sequence_steps,
+                                                    create_new_sequence = self.sequence_ui_controller.create_new_sequence,
+                                                    delete_sequence = self.sequence_ui_controller.delete_sequence,
+                                                    edit_sequence = self.sequence_ui_controller.edit_sequence,
                                                     get_selected_sequence_id = self.sequence_ui_controller.get_selected_sequence_id,
+                                                    list_sequences = self.sequence_ui_controller.list_sequences,
+                                                    on_info_entry_changed = self.sequence_ui_controller.on_info_entry_changed,
                                                     on_listbox_click = self.sequence_ui_controller.on_listbox_click,
                                                     on_step_click = self.sequence_ui_controller.on_step_click,
                                                     on_step_script_selected = self.sequence_ui_controller.on_step_script_selected,
                                                     populate_sequence_form = self.sequence_ui_controller.populate_sequence_form,
                                                     populate_sequence_steps = self.sequence_ui_controller.populate_sequence_steps,
-                                                    create_new_sequence = self.sequence_ui_controller.create_new_sequence,
-                                                    edit_sequence = self.sequence_ui_controller.edit_sequence,
-                                                    run_sequence = self.sequence_ui_controller.run_sequence,
-                                                    add_sequence_step = self.sequence_ui_controller.add_sequence_step,
-                                                    save_sequence = self.sequence_ui_controller.save_sequence,
-                                                    delete_sequence = self.sequence_ui_controller.delete_sequence,
-                                                    abort_sequence_edit = self.sequence_ui_controller.abort_sequence_edit,
                                                     remove_sequence_step = self.sequence_ui_controller.remove_sequence_step,
-                                                    abort_add_sequence_step = self.sequence_ui_controller.abort_add_sequence_step,
-                                                    list_sequences = self.sequence_ui_controller.list_sequences,
+                                                    run_sequence = self.sequence_ui_controller.run_sequence,
+                                                    save_sequence = self.sequence_ui_controller.save_sequence,
+                                                    save_edited_step = self.sequence_ui_controller.save_current_step,
                                                     show_step_form = self.sequence_ui_controller.show_step_form,
                                                     show_step_form_input = self.sequence_ui_controller.show_step_form_input,
-                                                    save_edited_step = self.sequence_ui_controller.save_current_step,
                                                     get_script_list = self._app_context.ScriptManager.get_script_list )
 
 
@@ -134,55 +135,6 @@ class SequenceManager:
             step[ 1 ].step_index = step[ 0 ]
 
 
-    def save_edited_step( self, selected_script_name: str, selected_stop_on_error: bool, step_input_frame: Frame | None ) -> None:
-        """ Save the currently edited sequence step.
-
-        Args:
-            selected_script_name (str): Name of the script selected for the step.
-            selected_stop_on_error (bool): Whether sequence execution should stop if this step fails.
-            step_input_frame (Frame | None): Frame containing preset input widgets for the step.
-        """
-
-        if self.current_sequence is None:
-
-            return
-
-        if not self.current_step_for_edit:
-            self.current_step_for_edit = SequenceStep()
-            self.current_sequence.steps.append( self.current_step_for_edit )
-            self.current_step_for_edit.step_index = self.current_sequence.steps.index( self.current_step_for_edit )
-
-        selected_script: ScriptInfo = self._app_context.ScriptManager.get_script_info_by_filename( filename = selected_script_name )
-        self.current_step_for_edit.script_file = selected_script.fullpath
-        self.current_step_for_edit.script_info = selected_script
-        self.current_step_for_edit.stop_on_error = selected_stop_on_error
-
-        index: int | None = next(
-            (
-                i for i, step in enumerate( self.current_sequence.steps )
-                if step.id == self.current_step_for_edit.id
-            ),
-            None
-        )
-
-        if index is None:
-            self.current_sequence.steps.append( self.current_step_for_edit )
-            index = len( self.current_sequence.steps ) - 1
-
-        else:
-            self.current_sequence.steps[ index ] = self.current_step_for_edit
-
-        self.current_step_for_edit.step_index = index
-
-        if step_input_frame and step_input_frame.winfo_exists():
-            step_input: list[ PreSetParam ] = collect_entered_input( frame_to_search = step_input_frame )
-            self.current_step_for_edit.pre_set_parameters = step_input
-
-        self.sequence_ui_controller.hide_step_form()
-        self.sequence_ui_controller.populate_sequence_steps( sequence = self.current_sequence )
-        self._persist_sequences()
-
-
     def abort_sequence_edit( self ) -> None:
         """ Clear sequence edit state and stop the current edit session."""
 
@@ -203,7 +155,6 @@ class SequenceManager:
 
         new_id: str = str( uuid.uuid4() )
         self.current_sequence = Sequence( id = new_id, description = '', name = '', stop_on_error = False, steps = [] )
-        self._sequences[ new_id ] = self.current_sequence
 
         self.sequence_ui_controller.populate_sequence_form( self.current_sequence )
 
@@ -406,6 +357,55 @@ class SequenceManager:
         threading.Thread( target = _mini_runner, daemon = True ).start()
 
 
+    def save_edited_step( self, selected_script_name: str, selected_stop_on_error: bool, step_input_frame: Frame | None ) -> None:
+        """ Save the currently edited sequence step.
+
+        Args:
+            selected_script_name (str): Name of the script selected for the step.
+            selected_stop_on_error (bool): Whether sequence execution should stop if this step fails.
+            step_input_frame (Frame | None): Frame containing preset input widgets for the step.
+        """
+
+        if self.current_sequence is None:
+
+            return
+
+        if not self.current_step_for_edit:
+            self.current_step_for_edit = SequenceStep()
+            self.current_sequence.steps.append( self.current_step_for_edit )
+            self.current_step_for_edit.step_index = self.current_sequence.steps.index( self.current_step_for_edit )
+
+        selected_script: ScriptInfo = self._app_context.ScriptManager.get_script_info_by_filename( filename = selected_script_name )
+        self.current_step_for_edit.script_file = selected_script.fullpath
+        self.current_step_for_edit.script_info = selected_script
+        self.current_step_for_edit.stop_on_error = selected_stop_on_error
+
+        index: int | None = next(
+            (
+                i for i, step in enumerate( self.current_sequence.steps )
+                if step.id == self.current_step_for_edit.id
+            ),
+            None
+        )
+
+        if index is None:
+            self.current_sequence.steps.append( self.current_step_for_edit )
+            index = len( self.current_sequence.steps ) - 1
+
+        else:
+            self.current_sequence.steps[ index ] = self.current_step_for_edit
+
+        self.current_step_for_edit.step_index = index
+
+        if step_input_frame and step_input_frame.winfo_exists():
+            step_input: list[ PreSetParam ] = collect_entered_input( frame_to_search = step_input_frame )
+            self.current_step_for_edit.pre_set_parameters = step_input
+
+        self.sequence_ui_controller.hide_step_form()
+        self.sequence_ui_controller.populate_sequence_steps( sequence = self.current_sequence )
+        self._persist_sequences()
+
+
     def save_sequence( self ) -> None:
         """ Save the current sequence data and persist it.
 
@@ -423,7 +423,7 @@ class SequenceManager:
         self.current_sequence.description = self._sequence_widgets.description_field.get()
         self.current_sequence.stop_on_error = self._sequence_widgets.stop_sequence_on_error_var.get()
 
-        self._sequences[ self.current_sequence.id ] = self.current_sequence
+        self._sequences[ self.current_sequence.id ] = self.current_sequence.from_sequence( seq = self.current_sequence )
         self._persist_sequences()
         self.sequence_ui_controller.list_sequences()
 

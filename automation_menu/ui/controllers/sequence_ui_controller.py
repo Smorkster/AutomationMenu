@@ -21,7 +21,6 @@ from typing import Any, Callable, Literal, Tuple, cast
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.services.sequence_manager import SequenceManager
-    from automation_menu.ui.windows.main_window import AutomationMenuWindow
 
 from automation_menu.models.presetparam import PreSetParam
 from automation_menu.models.scriptinfo import ScriptInfo
@@ -54,15 +53,35 @@ class SequenceUiController:
         self._get_script_callback: Callable = get_script_callback
         self._sequence_ui: SequenceUi
 
+        self._blink_job: str = ''
+        self._blink_state: bool = False
+        self._blink_active: bool = False
 
-    def bind_ui( self, sequence_ui: SequenceUi ) -> None:
-        """ Bind sequence UI widget references to the controller.
 
-        Args:
-            sequence_ui (SequenceUi): Sequence UI widget collection.
-        """
+    def _start_blinking( self ) -> None:
+        """ Start or continue blinking the save-sequence button."""
 
-        self._sequence_ui = sequence_ui
+        if self._blink_active:
+
+            return
+
+        self._blink_active = True
+        self._blink_state = not self._blink_state
+
+        self._sequence_ui.save_sequence_btn.after( 100, lambda: self._sequence_ui.save_sequence_btn.config( style = 'BlinkBg.TButton' if self._blink_state else 'TButton' ) )
+
+        self._blink_job = self._sequence_ui.save_sequence_btn.after( 600, self._start_blinking )
+
+
+    def _stop_blinking( self ) -> None:
+        """ Stop save-sequence button blinking and restore its default style."""
+
+        self._blink_active = False
+
+        if self._blink_job:
+            self._sequence_ui.save_sequence_btn.after_cancel( self._blink_job )
+            self._blink_job = ''
+            self._sequence_ui.save_sequence_btn.config( style = 'TButton' )
 
 
     @ui_guard_method( when_message = 'Call for aborting sequence editing' )
@@ -90,6 +109,8 @@ class SequenceUiController:
         self._sequence_ui.description_field.config( state = 'disable' )
         self._sequence_ui.stop_sequence_on_error_field.config( state = 'disable' )
 
+        self._stop_blinking()
+
 
     @ui_guard_method( when_message = 'Call for aborting step editing' )
     def abort_add_sequence_step( self, *args: Tuple ) -> None:
@@ -101,6 +122,7 @@ class SequenceUiController:
 
         self.hide_step_form()
 
+        self._stop_blinking()
 
     @ui_guard_method( when_message = 'Call for displaying step form' )
     def add_sequence_step( self, *args: Tuple ) -> None:
@@ -111,6 +133,16 @@ class SequenceUiController:
         """
 
         self._sequence_manager.toggle_step_form()
+
+
+    def bind_ui( self, sequence_ui: SequenceUi ) -> None:
+        """ Bind sequence UI widget references to the controller.
+
+        Args:
+            sequence_ui (SequenceUi): Sequence UI widget collection.
+        """
+
+        self._sequence_ui = sequence_ui
 
 
     def clear_sequence_info( self ) -> None:
@@ -128,6 +160,41 @@ class SequenceUiController:
             c.destroy()
 
 
+    @ui_guard_method( when_message = 'Call for creating new sequence' )
+    def create_new_sequence( self, *args: Tuple ) -> None:
+        """ Create a new sequence for editing.
+
+        Args:
+            args (Tuple): Unused positional arguments accepted by the callback.
+        """
+
+        self._sequence_manager.create_new_sequence()
+
+
+    @ui_guard_method( when_message = 'Call for deleting sequence' )
+    def delete_sequence( self, *args: Tuple ) -> None:
+        """ Delete the currently selected sequence.
+
+        Args:
+            args (Tuple): Unused positional arguments accepted by the callback.
+        """
+
+        self._sequence_manager.delete_sequence()
+
+        self._stop_blinking()
+
+
+    @ui_guard_method( when_message = 'Call for start editing sequence' )
+    def edit_sequence( self, *args: Tuple ) -> None:
+        """ Load the selected sequence for editing.
+
+        Args:
+            args (Tuple): Unused positional arguments accepted by the callback.
+        """
+
+        self._sequence_manager.edit_sequence()
+
+
     def get_selected_sequence_id( self ) -> str | None:
         """ Get the ID of the sequence selected in the UI list.
 
@@ -142,6 +209,20 @@ class SequenceUiController:
             return None
 
         return values[ 1 ]
+
+
+    def hide_step_form( self ) -> None:
+        """ Hide the sequence step editing form and clear its state."""
+
+        self._sequence_ui.step_script_list.set( '' )
+        self._sequence_ui.stop_step_on_error_var.set( False )
+
+        step_form: Frame = self._sequence_ui.step_form
+
+        if step_form is not None and step_form.winfo_exists():
+            step_form.grid_remove()
+
+        self._sequence_manager.current_step_for_edit = None
 
 
     def list_sequences( self ) -> None:
@@ -188,6 +269,16 @@ class SequenceUiController:
             self._sequence_ui.run_sequence_btn.config( state = 'normal' )
 
         return
+
+
+    def on_info_entry_changed( self, event: Event ) -> None:
+        """ Mark the current sequence as having unsaved changes.
+
+        Args:
+            event (Event): UI event triggered by editing a sequence field.
+        """
+
+        self._start_blinking()
 
 
     def on_step_click( self, step: SequenceStep ) -> None:
@@ -300,53 +391,6 @@ class SequenceUiController:
             alwaysontop_tooltip.alwaysontop_tooltip.AlwaysOnTopToolTip( widget = step_label, msg = tooltip_text )
 
 
-    def hide_step_form( self ) -> None:
-        """ Hide the sequence step editing form and clear its state."""
-
-        self._sequence_ui.step_script_list.set( '' )
-        self._sequence_ui.stop_step_on_error_var.set( False )
-
-        step_form: Frame = self._sequence_ui.step_form
-
-        if step_form is not None and step_form.winfo_exists():
-            step_form.grid_remove()
-
-        self._sequence_manager.current_step_for_edit = None
-
-
-    @ui_guard_method( when_message = 'Call for creating new sequence' )
-    def create_new_sequence( self, *args: Tuple ) -> None:
-        """ Create a new sequence for editing.
-
-        Args:
-            args (Tuple): Unused positional arguments accepted by the callback.
-        """
-
-        self._sequence_manager.create_new_sequence()
-
-
-    @ui_guard_method( when_message = 'Call for deleting sequence' )
-    def delete_sequence( self, *args: Tuple ) -> None:
-        """ Delete the currently selected sequence.
-
-        Args:
-            args (Tuple): Unused positional arguments accepted by the callback.
-        """
-
-        self._sequence_manager.delete_sequence()
-
-
-    @ui_guard_method( when_message = 'Call for start editing sequence' )
-    def edit_sequence( self, *args: Tuple ) -> None:
-        """ Load the selected sequence for editing.
-
-        Args:
-            args (Tuple): Unused positional arguments accepted by the callback.
-        """
-
-        self._sequence_manager.edit_sequence()
-
-
     @ui_guard_method( when_message = 'Call for deleting sequence step' )
     def remove_sequence_step( self, *args: Tuple ) -> None:
         """ Remove the currently edited step from the sequence.
@@ -356,6 +400,8 @@ class SequenceUiController:
         """
 
         self._sequence_manager.remove_sequence_step()
+
+        self._start_blinking()
 
 
     @ui_guard_method( when_message = 'Call for running sequence' )
@@ -387,6 +433,7 @@ class SequenceUiController:
                                                 selected_stop_on_error = self._sequence_ui.stop_step_on_error_var.get(),
                                                 step_input_frame = self._sequence_ui.input_params_frame )
 
+        self._start_blinking()
 
     @ui_guard_method( when_message = 'Call for saving sequence' )
     def save_sequence( self, *args: Tuple ) -> None:
@@ -397,6 +444,7 @@ class SequenceUiController:
         """
 
         self._sequence_manager.save_sequence()
+        self._stop_blinking()
 
 
     def show_step_form( self ) -> None:
