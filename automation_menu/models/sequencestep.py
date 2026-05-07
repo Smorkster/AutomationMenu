@@ -7,9 +7,11 @@ License: MIT
 """
 
 from __future__ import annotations
+
+import uuid
+
 from dataclasses import dataclass, field
 from pathlib import Path
-import uuid
 
 from automation_menu.models.presetparam import PreSetParam
 from automation_menu.models.scriptinfo import ScriptInfo

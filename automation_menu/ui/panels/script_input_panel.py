@@ -12,7 +12,7 @@ from tkinter.ttk import Button, Frame, Label, Labelframe, Scrollbar
 from typing import Callable
 
 from automation_menu.ui.types.input_ui import InputUi
-from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
+from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 
 
 def on_canvas_config( ui: InputUi, event: Event ) -> None:

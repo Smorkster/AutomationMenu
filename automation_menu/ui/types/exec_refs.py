@@ -26,8 +26,8 @@ class ExecRefs( TypedDict ):
         ExecutionStatusRefs: References used for execution status updates.
     """
 
-    ExecutionMinMaxRefs: ExecutionMinMaxRefs
-    ExecutionPreWorkRefs: ExecutionPreWorkRefs
-    ExecutionPostWorkRefs: ExecutionPostWorkRefs
     ExecutionButtonRefs: ExecutionButtonRefs
+    ExecutionMinMaxRefs: ExecutionMinMaxRefs
+    ExecutionPostWorkRefs: ExecutionPostWorkRefs
+    ExecutionPreWorkRefs: ExecutionPreWorkRefs
     ExecutionStatusRefs: ExecutionStatusRefs

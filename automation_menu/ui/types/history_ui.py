@@ -19,8 +19,8 @@ class HistoryUi():
 
         pass
 
-    tabHistory: Frame
     history_item_display: Frame
+    tabHistory: Frame
 
     duration: Text
     item_end: Text

@@ -28,12 +28,12 @@ class InputUi():
 
     container_canvas: Canvas
 
+    input_container: Frame
     param_list_frame: Frame
     title_frame: Frame
-    input_container: Frame
 
-    frame_title: Label
     frame_scriptname: Label
+    frame_title: Label
 
     root_input_frame: Labelframe
 

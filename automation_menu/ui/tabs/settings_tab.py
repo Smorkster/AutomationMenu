@@ -17,7 +17,7 @@ from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Labe
 from automation_menu.models import Settings
 from automation_menu.ui.controllers.settings_ui_controller import SettingsUiController
 from automation_menu.ui.types.settings_ui import SettingsUi
-from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
+from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 
 
 def build_settings( tab: Frame, settings: Settings, settings_ui_controller: SettingsUiController, add_translatable: Callable ) -> SettingsUi:

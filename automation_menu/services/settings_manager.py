@@ -59,7 +59,9 @@ class SettingsManager:
             (SettingsUi): Created settings UI widget collection.
         """
 
-        self.settings_ui_controller = SettingsUiController( settings = self.settings, root_window = self._app_context.main_window.root, change_app_language = self._app_context.LanguageManager.change_app_language )
+        self.settings_ui_controller = SettingsUiController( settings = self.settings,
+                                                           root_window = self._app_context.main_window.root,
+                                                           change_app_language = self._app_context.LanguageManager.change_app_language )
         self.settings_ui = build_settings( tab = self._tab,
                                           settings = self.settings,
                                           settings_ui_controller = self.settings_ui_controller,
@@ -79,7 +81,8 @@ class SettingsManager:
             (Frame): Created settings tab frame.
         """
 
-        self._tab = create_settings_tab( tab_control = parent_tab, translate_store_callback = self._app_context.LanguageManager.add_translatable_widget )
+        self._tab = create_settings_tab( tab_control = parent_tab,
+                                        translate_store_callback = self._app_context.LanguageManager.add_translatable_widget )
 
         return self._tab
 
@@ -99,8 +102,10 @@ class SettingsManager:
             (Settings): The initialized settings object.
         """
 
-        saved = read_settingsfile( settings_file_path = settings_file_path, debug_logger = self._app_context.debug_logger )
-        self.settings = Settings( settings_dict = saved, save_callback = self.save_settings )
+        saved = read_settingsfile( settings_file_path = settings_file_path,
+                                  debug_logger = self._app_context.debug_logger )
+        self.settings = Settings( settings_dict = saved,
+                                 save_callback = self.save_settings )
         self._settings_file_path = Path( settings_file_path )
 
         setting_errors = self.settings.get_setting_errors()
@@ -123,4 +128,5 @@ class SettingsManager:
             obj (Settings): Settings object to write to the configured file.
         """
 
-        write_settingsfile( settings = obj, settings_file_path = str( self._settings_file_path ) )
+        write_settingsfile( settings = obj,
+                           settings_file_path = str( self._settings_file_path ) )

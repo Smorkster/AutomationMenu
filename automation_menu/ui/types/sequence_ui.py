@@ -25,34 +25,34 @@ class SequenceUi():
     step_input_window_id: int | None = None
     steps_list_input_window_id: int | None = None
 
-    new_sequence_btn: Button
-    edit_sequence_btn: Button
-    run_sequence_btn: Button
-    add_step_btn: Button
-    save_sequence_btn: Button
-    delete_sequence_btn: Button
     abort_sequence_edit_btn: Button
+    add_step_btn: Button
+    delete_sequence_btn: Button
+    edit_sequence_btn: Button
+    new_sequence_btn: Button
+    run_sequence_btn: Button
+    save_sequence_btn: Button
 
-    steps_list_container_canvas: Canvas
     step_form_container_canvas: Canvas
+    steps_list_container_canvas: Canvas
 
     stop_sequence_on_error_field: Checkbutton
 
     step_script_list: Combobox
 
-    name_field: Entry
     description_field: Entry
+    name_field: Entry
 
-    sequence_ops: Frame
-    sequence_form: Frame
-    steps_display_frame: Frame
     display_container: Frame
-    steps_container: Frame
+    input_params_frame: Frame | None = None
+    main_frame: Frame
+    sequence_form: Frame
+    sequence_ops: Frame
     step_form: Frame
     step_input_container: Frame
     step_input_frame: Frame
-    main_frame: Frame
-    input_params_frame: Frame | None = None
+    steps_display_frame: Frame
+    steps_container: Frame
 
     step_input_title: Label
 

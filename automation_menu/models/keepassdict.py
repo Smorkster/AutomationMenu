@@ -1,3 +1,12 @@
+"""
+Define the typed dictionary used for KeePass shortcut configuration.
+
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+"""
+
+
 from typing import TypedDict
 
 

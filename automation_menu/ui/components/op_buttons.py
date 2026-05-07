@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 from automation_menu.ui.components.custom_menu import CustomMenu
 from automation_menu.ui.types.op_buttons_ui import OpButtonsUi
-from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
+from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 
 
 def get_op_buttons( main_root: Tk, main_self: AutomationMenuWindow ) -> OpButtonsUi:

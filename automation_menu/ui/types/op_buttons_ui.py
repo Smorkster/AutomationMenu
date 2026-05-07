@@ -21,11 +21,11 @@ class OpButtonsUi():
         pass
 
     btn_continue_breakpoint: Button
-    btn_stop_script: Button
     btn_pause_resume_script: Button
+    btn_stop_script: Button
 
     script_menu: CustomMenu
     sequence_menu: CustomMenu
 
-    op_buttons_frame: Frame
     menu_frame: Frame
+    op_buttons_frame: Frame

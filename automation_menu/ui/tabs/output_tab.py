@@ -10,7 +10,7 @@ from tkinter import Text
 from tkinter.ttk import Frame, Notebook, Scrollbar
 from typing import Callable
 
-from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
+from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 
 
 def get_output_tab( tabcontrol: Notebook, translate_callback: Callable ) -> tuple[ Frame, Text ]:

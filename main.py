@@ -117,7 +117,7 @@ def main() -> None:
         app_context.ErrorManager = ErrorManager( app_state = app_state, ldap_connection = ldap_connection )
         app_context.ExecutionManager = ScriptExecutionManager( output_queue = app_context.OutputQueue, app_state = app_state, error_manager = app_context.ErrorManager )
         app_context.SequenceManager = SequenceManager( app_context = app_context, app_state = app_state, saved_sequences = app_state.settings.saved_sequences )
-        app_context.HistoryManager = HistoryManager( logger = app_context.debug_logger )
+        app_context.HistoryManager = HistoryManager( app_context = app_context )
 
         # Launch the main application window
         from automation_menu.ui.windows.main_window import AutomationMenuWindow

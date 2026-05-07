@@ -13,6 +13,7 @@ from tkinter import Event, Tk
 from tkinter.ttk import Notebook, Style
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.models.application_state import ApplicationState

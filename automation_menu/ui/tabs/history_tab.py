@@ -11,13 +11,14 @@ from tkinter.ttk import Frame, Label, Notebook, Treeview
 from typing import Callable, cast
 
 from automation_menu.ui.types.history_ui import HistoryUi
-from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
+from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 
 
-def build_tab_content( tab_control: Frame, translate_store_callback: Callable, translate_callback: Callable ) -> HistoryUi:
+def build_tab_content( tab_control: Frame, op_callbacks: dict, translate_store_callback: Callable, translate_callback: Callable ) -> HistoryUi:
     """ Create widgets for displaying execution history content.
 
     Args:
+        op_callbacks (dict): Collection of UI callbacks
         tab_control (Frame): Frame to build the history tab content inside.
         translate_store_callback (Callable): Callback used to register widgets for later translation.
         translate_callback (Callable): Callback used to translate displayed text.
@@ -33,6 +34,8 @@ def build_tab_content( tab_control: Frame, translate_store_callback: Callable, t
 
     columns: dict[ str, list[ str | int ] ] = { '#0': [ 'Started', 105 ], 'name': [ 'Name', 160 ] }
     ui.history_tree = Treeview( tab_control, columns = [ *columns.keys() ][ 1: ], )
+    ui.history_tree.bind( '<<TreeviewSelect>>', op_callbacks[ 'history_item_selected' ] )
+
 
     for i, s in columns.items():
         ui.history_tree.column( i, minwidth = cast( int, s[ 1 ] ), width = cast( int, s[ 1 ] ) )
@@ -105,16 +108,16 @@ def create_history_tab( tab_control: Notebook, translate_store_callback: Callabl
 
     from automation_menu.utils.localization import _
 
-    tabHistory: Frame = Frame( master = tab_control, name = 'history' )
-    tabHistory.grid( column = 0, row = 0, sticky = 'nswe' )
-    tabHistory.columnconfigure( index = 0, weight = 0 )
-    tabHistory.columnconfigure( index = 1, weight = 1 )
-    tabHistory.rowconfigure( index = 0, weight = 1 )
+    tab_history: Frame = Frame( master = tab_control, name = 'history' )
+    tab_history.grid( column = 0, row = 0, sticky = 'nswe' )
+    tab_history.columnconfigure( index = 0, weight = 0 )
+    tab_history.columnconfigure( index = 1, weight = 1 )
+    tab_history.rowconfigure( index = 0, weight = 1 )
 
-    tab_control.add( child = tabHistory, text = _( 'Execution history' ) )
+    tab_control.add( child = tab_history, text = _( 'Execution history' ) )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = tabHistory, default_text = 'Execution history' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tab_history, default_text = 'Execution history' )
     translate_store_callback( wft )
 
-    return tabHistory
+    return tab_history
 

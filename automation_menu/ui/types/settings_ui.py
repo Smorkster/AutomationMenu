@@ -20,8 +20,8 @@ class SettingsUi():
         pass
 
 
-    keepass_shortcut_ctrl_val: BooleanVar | None
     keepass_shortcut_alt_val: BooleanVar | None
+    keepass_shortcut_ctrl_val: BooleanVar | None
     keepass_shortcut_shift_val: BooleanVar | None
 
     cmb_current_language_val: StringVar | None
@@ -29,14 +29,14 @@ class SettingsUi():
     script_folder_btn_add: Button | None
     script_folder_btn_remove: Button | None
 
-    chb_top_most: Checkbutton | None
-    chb_minimize_on_running: Checkbutton | None
     chb_force_focus_post_execution: Checkbutton | None
+    chb_include_ss_in_error_mail: Checkbutton | None
+    chb_minimize_on_running: Checkbutton | None
+    chb_send_mail_on_error: Checkbutton | None
+    chb_top_most: Checkbutton | None
     keepass_shortcut_ctrl: Checkbutton | None
     keepass_shortcut_alt: Checkbutton | None
     keepass_shortcut_shift: Checkbutton | None
-    chb_send_mail_on_error: Checkbutton | None
-    chb_include_ss_in_error_mail: Checkbutton | None
 
     cmb_current_language: Combobox | None
 

@@ -14,7 +14,7 @@ from typing import Callable
 
 from automation_menu.models.sequence import Sequence
 from automation_menu.ui.types.sequence_ui import SequenceUi
-from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
+from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 
 
 def on_canvas_config( canvas: Canvas, window_id: int | None, event: Event ) -> None:

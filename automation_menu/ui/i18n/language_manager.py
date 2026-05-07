@@ -14,7 +14,7 @@ from tkinter.ttk import Button, Checkbutton, Combobox, Frame, Label, Notebook, T
 from typing import cast
 
 from automation_menu.models.enums import ScriptState
-from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
+from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 from automation_menu.utils.localization import change_language, translate
 
 class LanguageManager:

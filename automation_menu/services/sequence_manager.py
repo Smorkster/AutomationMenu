@@ -5,14 +5,11 @@ run sequences
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
-Version: 1.0.0
-Created: 2025-11-20
 """
 
 from __future__ import annotations
 
 import threading
-
 import uuid
 
 from tkinter.ttk import Frame, Notebook

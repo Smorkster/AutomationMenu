@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Callable
 if TYPE_CHECKING:
     from automation_menu.ui.windows.main_window import AutomationMenuWindow
 
-from automation_menu.ui.types.widget_for_translation import WidgetForTranslation
+from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 from automation_menu.models import ScriptInfo
 from automation_menu.models.enums import ScriptState
 
