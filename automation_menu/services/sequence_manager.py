@@ -95,6 +95,7 @@ class SequenceManager:
                                                     get_selected_sequence_id = self.sequence_ui_controller.get_selected_sequence_id,
                                                     list_sequences = self.sequence_ui_controller.list_sequences,
                                                     on_info_entry_changed = self.sequence_ui_controller.on_info_entry_changed,
+                                                    on_info_checkbutton_changed = self.sequence_ui_controller.on_info_checkbutton_changed,
                                                     on_listbox_click = self.sequence_ui_controller.on_listbox_click,
                                                     on_step_click = self.sequence_ui_controller.on_step_click,
                                                     on_step_script_selected = self.sequence_ui_controller.on_step_script_selected,
@@ -230,6 +231,26 @@ class SequenceManager:
             raise ValueError( _( 'No sequence is selected' ) )
 
         return self.current_sequence
+
+
+    def get_sequence( self, list_id: str ) -> Sequence:
+        """ Return sequence with id
+
+        Args:
+            list_id (str): Item id from Treeview
+        """
+
+        item = self._sequences[ list_id ]
+
+        if not item:
+
+            from automation_menu.utils.localization import _
+
+            self._app_context.debug_logger.warning( _( 'No history item for {i}' ).format( i = list_id ) )
+
+            raise ValueError( _( 'Couldn\'t find history item from list id \'{ id }\'' ).format( id = list_id ) )
+
+        return item
 
 
     def get_sequence_list( self ) -> dict[ str, Sequence ]:

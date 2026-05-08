@@ -190,9 +190,10 @@ def create_sequence_form( ui: SequenceUi, add_translatable: Callable, op_callbac
     ui.stop_sequence_on_error_var = BooleanVar( master = sequence_form, value = False )
     stop_on_error_field: Checkbutton = Checkbutton( master = sequence_form,
                                                    variable = ui.stop_sequence_on_error_var,
-                                                   command = lambda: op_callbacks.on_info_entry_changed() )
+                                                   command = op_callbacks.on_info_checkbutton_changed )
     stop_on_error_field.grid( column = 1, columnspan = 2, row = row, sticky = 'we' )
     ui.stop_sequence_on_error_field = stop_on_error_field
+    #ui.stop_sequence_on_error_var.trace_add( mode = 'write', callback = op_callbacks.on_info_entry_changed )
 
 
 def create_sequence_list( ui: SequenceUi, op_callbacks: SequenceCallbacks ) -> None:

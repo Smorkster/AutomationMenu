@@ -27,6 +27,7 @@ class SequenceCallbacks:
     get_selected_sequence_id: Callable
     on_listbox_click: Callable
     on_info_entry_changed: Callable
+    on_info_checkbutton_changed: Callable
     on_step_click: Callable
     on_step_script_selected: Callable
     populate_sequence_form: Callable

@@ -13,7 +13,7 @@ import alwaysontop_tooltip
 
 from typing import TYPE_CHECKING
 from logging import Logger
-from tkinter import Event
+from tkinter import Entry, Event
 from tkinter.ttk import Combobox, Frame, Label, Treeview
 from types import FunctionType
 from typing import Any, Callable, Literal, Tuple, cast
@@ -57,13 +57,35 @@ class SequenceUiController:
         self._blink_state: bool = False
         self._blink_active: bool = False
 
+        self._in_edit_mode: bool = False
+
+
+    def _on_mouseover_frame_step_enter( self, event: Event ) -> None:
+        """ Eventhandler for mouse hover over step frame
+
+        Args:
+            event (Event): Event triggering this handler
+        """
+
+        if self._in_edit_mode:
+            cast( Frame, event.widget ).configure( style = 'StepHoverInEdit.TFrame' )
+
+        else:
+            cast( Frame, event.widget ).configure( style = 'StepHover.TFrame' )
+
+
+    def _on_mouseover_frame_step_leave( self, event: Event ) -> None:
+        """ Eventhandler for mouse hover leaving step frame
+
+        Args:
+            event (Event): Event triggering this handler
+        """
+
+        cast( Frame, event.widget ).configure( style = 'Step.TFrame' )
+
 
     def _start_blinking( self ) -> None:
         """ Start or continue blinking the save-sequence button."""
-
-        if self._blink_active:
-
-            return
 
         self._blink_active = True
         self._blink_state = not self._blink_state
@@ -110,6 +132,7 @@ class SequenceUiController:
         self._sequence_ui.stop_sequence_on_error_field.config( state = 'disable' )
 
         self._stop_blinking()
+        self._in_edit_mode = False
 
 
     @ui_guard_method( when_message = 'Call for aborting step editing' )
@@ -192,6 +215,7 @@ class SequenceUiController:
             args (Tuple): Unused positional arguments accepted by the callback.
         """
 
+        self._in_edit_mode = True
         self._sequence_manager.edit_sequence()
 
 
@@ -255,7 +279,13 @@ class SequenceUiController:
 
         sequence_listbox: Treeview = event.widget
 
-        if item_focused := sequence_listbox.focus():
+        if event.widget.identify_element( event.x, event.y ) == '':
+
+            event.widget.selection_remove( *event.widget.selection() )
+            self._sequence_ui.edit_sequence_btn.config( state = 'disabled' )
+            self._sequence_ui.run_sequence_btn.config( state = 'disabled' )
+
+        elif item_focused := sequence_listbox.focus():
             values: list[ Any ] | Literal[ '' ] = sequence_listbox.item( item_focused ).get( 'values', [] )
 
             if len( values ) < 2:
@@ -268,7 +298,21 @@ class SequenceUiController:
             self._sequence_ui.edit_sequence_btn.config( state = 'normal' )
             self._sequence_ui.run_sequence_btn.config( state = 'normal' )
 
+            if not self._in_edit_mode:
+                self.populate_sequence_steps( sequence = self._sequence_manager.get_sequence( list_id = values[ 1 ] ) )
+
         return
+
+
+    def on_info_checkbutton_changed( self ) -> None:
+        """ Mark the current sequence as having unsaved changes.
+
+        Args:
+            event (Event): UI event triggered by editing a sequence field.
+        """
+
+        if not self._blink_active:
+            self._start_blinking()
 
 
     def on_info_entry_changed( self, event: Event ) -> None:
@@ -278,7 +322,8 @@ class SequenceUiController:
             event (Event): UI event triggered by editing a sequence field.
         """
 
-        self._start_blinking()
+        if not self._blink_active:
+            self._start_blinking()
 
 
     def on_step_click( self, step: SequenceStep ) -> None:
@@ -287,6 +332,10 @@ class SequenceUiController:
         Args:
             step (SequenceStep): Sequence step that was clicked.
         """
+
+        if not self._in_edit_mode:
+
+            return
 
         if not self._sequence_manager.get_current_sequence() or not step:
             from automation_menu.utils.localization import _
@@ -372,17 +421,31 @@ class SequenceUiController:
             lambda_bind: FunctionType = lambda e, i = step: self.on_step_click( step = i )
 
             self._sequence_ui.steps_container.grid_rowconfigure( index = step.step_index, weight = 0 )
-            step_frame: Frame = Frame( master = self._sequence_ui.steps_container, borderwidth = 2, relief = 'solid', padding = 5 )
-            step_frame.grid( column = 0, row = step.step_index, sticky = 'we' )
+            step_frame: Frame = Frame( master = self._sequence_ui.steps_container,
+                                      borderwidth = 2,
+                                      relief = 'solid',
+                                      padding = ( 10, 2 ),
+                                      style = 'Step.TFrame' )
+            step_frame.grid( column = 0,
+                            row = step.step_index,
+                            sticky = 'we' )
+            step_frame.grid_columnconfigure( index = 0, weight = 1 )
             step_frame.bind( '<Button-1>', lambda_bind )
 
-            step_label: Label = Label( master = step_frame, text = f'{ step.step_index } :: { step.script_file }' )
+            step_label: Label = Label( master = step_frame,
+                                      padding = ( 3, 2 ),
+                                      style = 'Step.TLabel',
+                                      text = f'{ step.step_index } :: { step.script_file }' )
             step_label.grid( sticky = 'we' )
             step_label.bind( '<Button-1>', lambda_bind )
+
+            step_frame.bind( '<Enter>', self._on_mouseover_frame_step_enter )
+            step_frame.bind( '<Leave>', self._on_mouseover_frame_step_leave )
 
             tooltip_text: str = ""
 
             if step.pre_set_parameters:
+                tooltip_text = _( 'Predefined input:\n' )
                 tooltip_text = '\n'.join( [ f'--{ p.name } { p.set }' for p in step.pre_set_parameters ] )
 
             else:
@@ -401,7 +464,8 @@ class SequenceUiController:
 
         self._sequence_manager.remove_sequence_step()
 
-        self._start_blinking()
+        if not self._blink_active:
+            self._start_blinking()
 
 
     @ui_guard_method( when_message = 'Call for running sequence' )
@@ -433,7 +497,8 @@ class SequenceUiController:
                                                 selected_stop_on_error = self._sequence_ui.stop_step_on_error_var.get(),
                                                 step_input_frame = self._sequence_ui.input_params_frame )
 
-        self._start_blinking()
+        if not self._blink_active:
+            self._start_blinking()
 
     @ui_guard_method( when_message = 'Call for saving sequence' )
     def save_sequence( self, *args: Tuple ) -> None:

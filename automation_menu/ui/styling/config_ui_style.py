@@ -96,7 +96,14 @@ def set_ui_style( style: Style ) -> None:
     style.configure( 'SequenceStep.TFrame',
                     highlightcolor = '#FFFFFF',
                     highlightthickness = '2'
-     )
+    )
+    style.configure( 'StepHover.TFrame',
+                    background = '#dfefff'
+    )
+    style.configure( 'StepHoverInEdit.TFrame',
+                    background = 'lightgreen'
+    )
+    style.configure( 'Step.TFrame' )
     # endregion
 
     ###############
