@@ -9,6 +9,7 @@ License: MIT
 
 
 from __future__ import annotations
+from logging import Logger
 from typing import TYPE_CHECKING, Any, Callable, Generator
 
 from automation_menu.services.error_manager import ErrorManager
@@ -31,21 +32,23 @@ from automation_menu.ui.windows.main_window import AutomationMenuWindow
 
 
 class ScriptExecutionManager:
-    def __init__( self, output_queue: Queue, app_state: ApplicationState, error_manager: ErrorManager ) -> None:
+    def __init__( self, output_queue: Queue, app_state: ApplicationState, error_manager: ErrorManager, logger: Logger ) -> None:
         """ Provides a contextmanager for running a script
 
         Args:
             output_queue (Queue): The queue gathering script output
             app_state (ApplicationState): General state of application
             error_manager (ErrorManager): Manager for handling errors
+            logger (Logger): Logger with specified logging level
         """
 
         self.current_runner: ScriptRunner | None = None
-        self._output_queue: Queue = output_queue
         self.app_state: ApplicationState = app_state
         self._error_manager: ErrorManager = error_manager
         self._lock: Lock = threading.Lock()
+        self._output_queue: Queue = output_queue
         self._paused: bool = False
+        self._logger: Logger = logger
 
     @contextmanager
     def create_runner( self ) -> Generator[ Any, Any, Any ]:
@@ -63,7 +66,7 @@ class ScriptExecutionManager:
 
         except Exception as e:
             self._output_queue.put( {
-                'line': 'Exception ❗: {error}'.format( error = str( e ) ),
+                'line': 'Exception: {error}'.format( error = str( e ) ),
                 'tag': OutputStyleTags.SYSERROR,
                 'finished': True,
                 'exec_item': runner._exec_item
@@ -113,21 +116,21 @@ class ScriptExecutionManager:
             pid: int = self.current_runner.current_process.pid
             process: Process = psutil.Process( pid )
 
-            print( f'DEBUG: Process status before: { process.status() }')
+            self._logger.debug( f'DEBUG: Process status before: { process.status() }')
 
             process.suspend()
 
-            print( f'DEBUG: Process status after: { process.status() }')
+            self._logger.debug( f'DEBUG: Process status after: { process.status() }')
 
             # Check for children
             children: list[ Process ] = process.children( recursive = True )
-            print( f'DEBUG: Child processes: { len( children ) }')
+            self._logger.debug( f'DEBUG: Child processes: { len( children ) }')
 
             # Suspend children too
             for child in children:
-                print( f'  - Child PID { child.pid }: { child.name() } - { child.status() }' )
+                self._logger.debug( f'DEBUG: - Child PID { child.pid }: { child.name() } - { child.status() }' )
                 child.suspend()
-                print( f'  - { child.status() }' )
+                self._logger.debug( f'DEBUG - { child.status() }' )
 
             self._paused = True
 
@@ -155,22 +158,22 @@ class ScriptExecutionManager:
             pid: int = self.current_runner.current_process.pid
             process: Process = psutil.Process( pid )
 
-            print( f'DEBUG: Process status before: { process.status() }')
+            self._logger.debug( f'DEBUG: Process status before: { process.status() }')
 
             process.resume()
 
-            print( f'DEBUG: Process status after: { process.status() }')
+            self._logger.debug( f'DEBUG: Process status after: { process.status() }')
 
             # Check for children
             children: list[ Process ] = process.children( recursive = True )
-            print( f'DEBUG: Child processes: { len( children ) }')
+            self._logger.debug( f'DEBUG: Child processes: { len( children ) }')
 
             for child in children:
-                print( f'  - Child PID { child.pid }: { child.name() } - { child.status() }' )
+                self._logger.debug( f'DEBUG - Child PID { child.pid }: { child.name() } - { child.status() }' )
                 child.resume()  # Resume children too!
-                print( f'  - { child.status() }' )
+                self._logger.debug( f'DEBUG - { child.status() }' )
 
-            self._paused = True
+            self._paused = False
 
             return True
 

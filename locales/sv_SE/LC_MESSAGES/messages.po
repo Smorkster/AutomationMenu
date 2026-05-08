@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-08 08:58+0200\n"
+"POT-Creation-Date: 2026-05-08 10:24+0200\n"
 "PO-Revision-Date: 2025-09-19 09:46+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv_SE\n"
@@ -441,25 +441,25 @@ msgstr "Processen pausades"
 msgid "Resume"
 msgstr "Återuppta"
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:286
+#: automation_menu/ui/controllers/sequence_ui_controller.py:294
 #, python-brace-format
 msgid "Sequence list item missing id: {item}"
 msgstr "Sekvens list objekt saknar id: {item}"
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:335
+#: automation_menu/ui/controllers/sequence_ui_controller.py:343
 #, python-brace-format
 msgid "Invalid step at index {i}"
 msgstr "Ogiltigt steg vid index {s}"
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:366
+#: automation_menu/ui/controllers/sequence_ui_controller.py:374
 msgid "'Current step' was lost, can't load step"
 msgstr "'Current step' saknas, kan inte ladda steg"
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:440
+#: automation_menu/ui/controllers/sequence_ui_controller.py:448
 msgid "Predefined input:\n"
 msgstr "Förinställt input:\n"
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:444
+#: automation_menu/ui/controllers/sequence_ui_controller.py:452
 msgid "Input not specified"
 msgstr "Indata ej specificerad"
 

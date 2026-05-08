@@ -112,7 +112,7 @@ class ExecutionWindowLifecycleController:
 
         self.lifecycle_bindings.root.destroy()
 
-        if hasattr( self, 'output_controller' ):
+        if hasattr( self.lifecycle_bindings, 'output_controller' ):
             try:
                 self.lifecycle_bindings.output_controller.closedown()
 

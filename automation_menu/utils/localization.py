@@ -15,7 +15,7 @@ from typing import Callable
 
 
 def change_language( language_code: str ) -> None:
-    """Change the application language at runtime.
+    """ Change the application language at runtime.
 
     Args:
         language_code (str): Language code such as `'sv_SE'` or `'en_US'`.
@@ -25,7 +25,7 @@ def change_language( language_code: str ) -> None:
 
 
 def find_locales_directory() -> Path:
-    """Find the locales directory relative to this file.
+    """ Find the locales directory relative to this file.
 
     Returns:
         locale_dir (Path): Path to the locales directory.
@@ -88,6 +88,7 @@ def get_system_locale() -> str:
         return system_locale
 
     except ( ValueError, TypeError ):
+
         return default_localization
 
 
