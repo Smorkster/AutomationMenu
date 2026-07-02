@@ -11,8 +11,8 @@ from typing import Callable
 
 import os
 
-from dynamicinputbox import ResultDict, ResultTuple, dynamic_inputbox as inputbox
-from ldap3 import ALL, Connection, Entry, Server
+from dynamicinputbox import dynamic_inputbox as inputbox
+from ldap3 import ALL, KERBEROS, SASL, Connection, Entry, Server
 from ldap3.core.exceptions import LDAPSocketOpenError
 
 
@@ -33,59 +33,31 @@ def connect_to_AD( ldap_server: str, domain_name: str ) -> Connection:
 
     from automation_menu.utils.localization import _
 
-    AD_loginattempts: int = 0
-    con: Connection
-    main_input_text: str = _( 'Enter password for AD-domain\nP.S.\nThe password will not be stored' )
+    try:
+        server = Server( ldap_server, get_info = ALL )
 
-    while ( AD_loginattempts < 3 ):
-        try:
-            if AD_loginattempts == 0:
-                inputbox_label_text: str = main_input_text
+        conn = Connection(
+            server,
+            authentication = SASL,
+            sasl_mechanism = KERBEROS,
+            auto_bind = True,
+        )
 
-            else:
-                inputbox_label_text: str = _( 'Wrong password. Try again\n{main_label_text}' ).format( main_label_text = main_input_text )
+        return conn
 
-            abort_string: str = _( 'Abort' )
-            ok_string: str = _( 'Ok' )
-            ipb = inputbox( message = inputbox_label_text, title = _( 'AD password' ), input = True, input_show = '*', buttons = [ ok_string, abort_string ] ).show()
-            password: ResultDict | ResultTuple = ipb.get( dictionary = True )
+    except SystemExit:
+        raise
 
-            if isinstance( password, dict ):
-                if password.get( 'button' ) == abort_string or password.get( 'button' ) == 'Cancel':
-                    inputbox( message = _( 'No password was entered. Exiting.' ) ).show()
+    except LDAPSocketOpenError as e:
 
-                    break
+        msg = _( 'Could not connect to AD\n{error}\nExiting' ).format( error = str( e ) )
+        inputbox( title = _( 'Error' ), message = msg ).show()
 
-                inputs: dict = password.get( 'inputs', {} )
-                pwd = ''
+        raise ConnectionError( msg )
 
-                if inputs is not None:
-                    pwd = inputs.get( 'Input', b'' ).decode()
+    except Exception:
 
-                if pwd == '':
-
-                    break
-
-                server: Server = Server( host = ldap_server, get_info = ALL )
-                con = Connection( server,
-                                user = f'{ domain_name }\\{ os.getenv( key = 'USERNAME', default = 'DefaultUser' ) }',
-                                password = pwd,
-                                auto_bind = True
-                                )
-
-                return con
-
-        except SystemExit:
-            raise
-
-        except LDAPSocketOpenError as e:
-            inputbox( title = _( 'Error' ), message = _( 'Could not connect to AD\n{error}\nExiting' ).format( error = str( e ) ) ).show()
-            break
-
-        except Exception:
-            AD_loginattempts = AD_loginattempts + 1
-
-    raise ConnectionError( _( 'Could not connect to AD after {n} attempts' ).format( n = AD_loginattempts ) )
+        raise ConnectionError( _( 'Could not connect to AD' ) )
 
 
 def get_user_adobject( ldap_search_base: str, ldap_connection: Connection, id: str | None = None, connected: Callable | None = None ) -> Entry:
@@ -113,6 +85,7 @@ def get_user_adobject( ldap_search_base: str, ldap_connection: Connection, id: s
         user: str = id
 
     if connected and not connected():
+
         raise ConnectionError( _( 'Not connected to LDAP' ) )
 
     ldap_connection.search(
