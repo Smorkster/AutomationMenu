@@ -126,17 +126,13 @@ class SequenceStep:
 
             raise TypeError( _( 'Expected dict, got {t}').format( t = type( data ) ) )
 
-        return cls(
-            _script_file = data.get( 'script_file' ),
-            _pre_set_parameters = [
-                PreSetParam.from_dict( psp )
-                for psp in data.get( 'pre_set_parameters', [] )
-            ],
-            _script_info = None,
-            step_index = data.get( 'step_index', 0 ),
-            stop_on_error = data.get( 'stop_on_error', False ),
-            id = data.get( 'id', str( uuid.uuid4() ) )
-        )
+        return cls( _script_file = Path( data.get( 'script_file', '' ) ),
+                   _pre_set_parameters = [ PreSetParam.from_dict( psp )
+                                          for psp in data.get( 'pre_set_parameters', [] ) ],
+                   _script_info = None,
+                   step_index = data.get( 'step_index', 0 ),
+                   stop_on_error = data.get( 'stop_on_error', False ),
+                   id = data.get( 'id', str( uuid.uuid4() ) ) )
 
 
     @classmethod
@@ -151,14 +147,13 @@ class SequenceStep:
             SequenceStep: New sequence step with copied values.
         """
 
-        return cls(
-            _script_info = step.script_info,
-            _script_file = step.script_file,
-            _pre_set_parameters = [ PreSetParam().from_psp( psp ) for psp in step.pre_set_parameters ],
-            step_index = step.step_index,
-            stop_on_error = step.stop_on_error,
-            id = step.id
-        )
+        return cls( _script_info = step.script_info,
+                   _script_file = step.script_file,
+                   _pre_set_parameters = [ PreSetParam().from_psp( psp )
+                                          for psp in step.pre_set_parameters ],
+                   step_index = step.step_index,
+                   stop_on_error = step.stop_on_error,
+                   id = step.id )
 
 
     def to_dict( self ) -> dict:
@@ -178,16 +173,12 @@ class SequenceStep:
 
                     raise ValueError( _( 'Invalid pre_set_parameters for step {f}: {p}' ).format( f = self.script_file, p = param ) )
 
-                new_param: dict[ str, str ] = {
-                    'name': param.name,
-                    'set': param.set
-                }
+                new_param: dict[ str, str ] = { 'name': param.name,
+                                               'set': param.set }
                 parameters.append( new_param )
 
-        return {
-            'script_file': self.script_file,
-            'stop_on_error': self.stop_on_error,
-            'step_index': self.step_index,
-            'pre_set_parameters': parameters,
-            'id': self.id
-        }
+        return { 'script_file': self.script_file,
+                'stop_on_error': self.stop_on_error,
+                'step_index': self.step_index,
+                'pre_set_parameters': parameters,
+                'id': self.id }

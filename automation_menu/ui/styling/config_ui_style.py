@@ -144,8 +144,22 @@ def set_ui_style( style: Style ) -> None:
     style.configure( 'LabelFrameTitle.TLabel',
                     font = ( 'Calibri', 13, 'bold' )
     )
+    style.configure( 'InputArgRequired.TLabel',
+                    font = ( 'Calibri', 13, 'bold' ),
+    )
+    style.configure( 'LabelArgNotRequired.TLabel',
+                    font = ( 'Calibri', 0, 'bold' )
+    )
     style.configure( 'LabelFrameTitleDescription.TLabel',
                     font = ( 'Calibri', 10, 'normal' )
+    )
+    style.configure( 'StepNotLoaded.TLabel',
+                    font = ( 'Calibri', 12, 'italic' ),
+                    padding = ( 2, 2 )
+    )
+    style.configure( 'Step.TLabel',
+                    font = ( 'Calibri', 12, 'normal' ),
+                    padding = ( 2, 2 )
     )
     style.configure( 'TLabel',
                     font = ( 'Calibri', 10, 'normal' ),

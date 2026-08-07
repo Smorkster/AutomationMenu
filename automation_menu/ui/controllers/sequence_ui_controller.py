@@ -18,6 +18,8 @@ from tkinter.ttk import Combobox, Frame, Label, Treeview
 from types import FunctionType
 from typing import Any, Callable, Literal, Tuple, cast
 
+from automation_menu.models.scriptinfo_not_loaded import ScriptInfoNotLoaded
+
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.services.sequence_manager import SequenceManager
@@ -90,7 +92,8 @@ class SequenceUiController:
         self._blink_active = True
         self._blink_state = not self._blink_state
 
-        self._sequence_ui.save_sequence_btn.after( 100, lambda: self._sequence_ui.save_sequence_btn.config( style = 'BlinkBg.TButton' if self._blink_state else 'TButton' ) )
+        blinking_style: str = 'BlinkBg.TButton' if self._blink_state else 'TButton'
+        self._sequence_ui.save_sequence_btn.after( 100, lambda: self._sequence_ui.save_sequence_btn.config( style = blinking_style ) )
 
         self._blink_job = self._sequence_ui.save_sequence_btn.after( 600, self._start_blinking )
 
@@ -146,6 +149,7 @@ class SequenceUiController:
         self.hide_step_form()
 
         self._stop_blinking()
+
 
     @ui_guard_method( when_message = 'Call for displaying step form' )
     def add_sequence_step( self, *args: Tuple ) -> None:
@@ -418,38 +422,44 @@ class SequenceUiController:
         self.clear_sequence_steps()
 
         for step in sequence.steps:
-            lambda_bind: FunctionType = lambda e, i = step: self.on_step_click( step = i )
-
             self._sequence_ui.steps_container.grid_rowconfigure( index = step.step_index, weight = 0 )
             step_frame: Frame = Frame( master = self._sequence_ui.steps_container,
                                       borderwidth = 2,
                                       relief = 'solid',
-                                      padding = ( 10, 2 ),
-                                      style = 'Step.TFrame' )
+                                      style = 'Step.TFrame',
+                                      padding = ( 10, 2 ) )
             step_frame.grid( column = 0,
                             row = step.step_index,
                             sticky = 'we' )
             step_frame.grid_columnconfigure( index = 0, weight = 1 )
-            step_frame.bind( '<Button-1>', lambda_bind )
 
             step_label: Label = Label( master = step_frame,
                                       padding = ( 3, 2 ),
-                                      style = 'Step.TLabel',
                                       text = f'{ step.step_index } :: { step.script_file }' )
             step_label.grid( sticky = 'we' )
-            step_label.bind( '<Button-1>', lambda_bind )
 
-            step_frame.bind( '<Enter>', self._on_mouseover_frame_step_enter )
-            step_frame.bind( '<Leave>', self._on_mouseover_frame_step_leave )
+            tooltip_text: str = ''
 
-            tooltip_text: str = ""
-
-            if step.pre_set_parameters:
-                tooltip_text = _( 'Predefined input:\n' )
-                tooltip_text = '\n'.join( [ f'--{ p.name } { p.set }' for p in step.pre_set_parameters ] )
+            if isinstance( step.script_info, ScriptInfoNotLoaded ):
+                step_label.config( style = 'StepNotLoaded.TLabel',
+                                  foreground = "#868686" )
+                tooltip_text = step.script_info.scriptmeta.description
 
             else:
-                tooltip_text = _( 'Input not specified' )
+                lambda_bind: FunctionType = lambda e, i = step: self.on_step_click( step = i )
+                step_label.config( style = 'Step.TLabel' )
+
+                step_frame.bind( '<Button-1>', lambda_bind )
+                step_label.bind( '<Button-1>', lambda_bind )
+                step_frame.bind( '<Enter>', self._on_mouseover_frame_step_enter )
+                step_frame.bind( '<Leave>', self._on_mouseover_frame_step_leave )
+
+                if step.pre_set_parameters:
+                    tooltip_text = _( 'Predefined input:\n' )
+                    tooltip_text += '\n'.join( [ f'--{ p.name } { p.set }' for p in step.pre_set_parameters ] )
+
+                else:
+                    tooltip_text = _( 'Input not specified' )
 
             alwaysontop_tooltip.alwaysontop_tooltip.AlwaysOnTopToolTip( widget = step_label, msg = tooltip_text )
 
@@ -479,10 +489,10 @@ class SequenceUiController:
 
         self._execution_ui.execution_pre_work( disable_minimize = False, is_sequence = True )
 
+        on_finished_lambda: FunctionType = lambda: self._execution_ui.execution_post_work( disable_minimize = False,
+                                                                            is_sequence = True )
         self._sequence_manager.run_sequence( sequence_id = sequence_id,
-                                            on_finished = lambda: self._execution_ui.execution_post_work(
-                                                disable_minimize = False,
-                                                is_sequence = True ) )
+                                            on_finished = on_finished_lambda )
 
 
     @ui_guard_method( when_message = 'Call for saving sequence' )
@@ -499,6 +509,7 @@ class SequenceUiController:
 
         if not self._blink_active:
             self._start_blinking()
+
 
     @ui_guard_method( when_message = 'Call for saving sequence' )
     def save_sequence( self, *args: Tuple ) -> None:
@@ -529,7 +540,8 @@ class SequenceUiController:
             self._sequence_ui.stop_step_on_error_var.set( self._sequence_manager.current_step_for_edit.stop_on_error )
 
             if len( script_info.scriptmeta.script_input_parameters ) > 0:
-                self.show_step_form_input( input = script_info.scriptmeta.script_input_parameters, pre_set = self._sequence_manager.current_step_for_edit.pre_set_parameters )
+                self.show_step_form_input( input = script_info.scriptmeta.script_input_parameters,
+                                          pre_set = self._sequence_manager.current_step_for_edit.pre_set_parameters )
 
             else:
                 self.show_step_form_input( show = False )
@@ -561,12 +573,10 @@ class SequenceUiController:
                 ipf.grid()
 
             if input:
-                input_params_frame = self.app_context.InputManager.show_for_step(
-                    parameters = input,
-                    container = self._sequence_ui.step_input_frame,
-                    pre_set_parameters = pre_set,
-                    canvas = self._sequence_ui.step_form_container_canvas
-                )
+                input_params_frame = self.app_context.InputManager.show_for_step( parameters = input,
+                                                                                 container = self._sequence_ui.step_input_frame,
+                                                                                 pre_set_parameters = pre_set,
+                                                                                 canvas = self._sequence_ui.step_form_container_canvas )
                 input_params_frame.grid()
                 self._sequence_ui.input_params_frame = input_params_frame
 

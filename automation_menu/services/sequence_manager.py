@@ -15,6 +15,9 @@ import uuid
 from tkinter.ttk import Frame, Notebook
 from typing import Callable, TYPE_CHECKING
 
+from automation_menu.models.script_input_argument import InputArgument
+from automation_menu.models.scriptinfo_not_loaded import ScriptInfoNotLoaded
+from automation_menu.models.scriptmetadata import ScriptMetadata
 from automation_menu.types.sequence_callbacks import SequenceCallbacks
 
 if TYPE_CHECKING:
@@ -60,11 +63,9 @@ class SequenceManager:
                 normalized_sequences.append( Sequence().from_dict( data = item ) )
 
             else:
-                app_context.OutputQueue.put( {
-                            "line": _( 'Unsupported saved sequence format, type: {t}' ).format( t = type( item ) ),
-                            "tag": OutputStyleTags.SYSINFO,
-                            "exec_item": None
-                        } )
+                app_context.OutputQueue.put( { 'line': _( 'Unsupported saved sequence format, type: {t}' ).format( t = type( item ) ),
+                                              'tag': OutputStyleTags.SYSINFO,
+                                              'exec_item': None } )
 
         self.current_sequence: Sequence | None = None
         self.current_step_for_edit: SequenceStep | None = None
@@ -75,7 +76,11 @@ class SequenceManager:
 
         for s in sorted( normalized_sequences, key = lambda x: x.name.lower() ):
             for step in s.steps:
-                step.script_info = self._app_context.ScriptManager.get_script_info_by_path( path = step.script_file )
+                try:
+                    step.script_info = self._app_context.ScriptManager.get_script_info_by_path( path = step.script_file )
+
+                except Exception as e:
+                    step.script_info = ScriptInfoNotLoaded( fullpath = step.script_file )
 
             self._sequences[ s.id ] = s
 
@@ -148,14 +153,20 @@ class SequenceManager:
     def build_tab_content( self ) -> None:
         """ Create the widgets used to display sequence tab content."""
 
-        build_tab_content( ui = self._sequence_widgets, add_translatable = self._app_context.LanguageManager.add_translatable_widget, op_callbacks = self.sequence_callbacks )
+        build_tab_content( ui = self._sequence_widgets,
+                          add_translatable = self._app_context.LanguageManager.add_translatable_widget,
+                          op_callbacks = self.sequence_callbacks )
 
 
     def create_new_sequence( self ) -> None:
         """ Create and load a new empty sequence for editing."""
 
         new_id: str = str( uuid.uuid4() )
-        self.current_sequence = Sequence( id = new_id, description = '', name = '', stop_on_error = False, steps = [] )
+        self.current_sequence = Sequence( id = new_id,
+                                         description = '',
+                                         name = '',
+                                         stop_on_error = False,
+                                         steps = [] )
 
         self.sequence_ui_controller.populate_sequence_form( self.current_sequence )
 
@@ -289,10 +300,8 @@ class SequenceManager:
 
             return
 
-        step: SequenceStep | None = next(
-            ( s for s in self.current_sequence.steps if s.id == step_id ),
-            None
-        )
+        step: SequenceStep | None = next( ( s for s in self.current_sequence.steps if s.id == step_id ),
+                                         None )
         self.current_step_for_edit = step
 
 
@@ -313,7 +322,8 @@ class SequenceManager:
 
             raise ValueError( _( '\'Current step\' was lost, can\'t remove step' ) )
 
-        to_remove_index: int | None = next( ( i for i, step in enumerate( self.current_sequence.steps ) if step.id == self.current_step_for_edit.id ), None )
+        to_remove_index: int | None = next( ( i for i, step in enumerate( self.current_sequence.steps ) if step.id == self.current_step_for_edit.id ),
+                                           None )
 
         if to_remove_index is not None:
             to_remove: SequenceStep = self.current_sequence.steps[ to_remove_index ]
@@ -352,11 +362,9 @@ class SequenceManager:
         finished_callback = on_finished or ( lambda: None )
 
         self._app_context.OutputQueue.put( SysInstructions.CLEAROUTPUT )
-        self._app_context.OutputQueue.put( {
-            'line': _( 'Starting sequence ''{name}'', with {step_count} steps' ).format( name = seq.name, step_count = len( seq.steps ) ),
-            'tag': OutputStyleTags.SYSINFO,
-            'exec_item': None
-        } )
+        self._app_context.OutputQueue.put( { 'line': _( 'Starting sequence ''{name}'', with {step_count} steps' ).format( name = seq.name, step_count = len( seq.steps ) ),
+                                            'tag': OutputStyleTags.SYSINFO,
+                                            'exec_item': None } )
 
         def _mini_runner() -> None:
             """ Run the selected sequence in a background worker thread."""
@@ -369,8 +377,7 @@ class SequenceManager:
                                 api_callbacks = self._app_context.main_window.api_callbacks,
                                 enable_stop = self._app_context.main_window.enable_stop_script_button,
                                 enable_pause = self._app_context.main_window.enable_pause_script_button,
-                                stop_pause = self._app_context.main_window.execution_controller.stop_pause_button_blinking
-                                )
+                                stop_pause = self._app_context.main_window.execution_controller.stop_pause_button_blinking )
 
             finally:
                 main_window.root.after( 0, finished_callback )
@@ -401,13 +408,9 @@ class SequenceManager:
         self.current_step_for_edit.script_info = selected_script
         self.current_step_for_edit.stop_on_error = selected_stop_on_error
 
-        index: int | None = next(
-            (
-                i for i, step in enumerate( self.current_sequence.steps )
-                if step.id == self.current_step_for_edit.id
-            ),
-            None
-        )
+        index: int | None = next( ( i for i, step in enumerate( self.current_sequence.steps )
+                                   if step.id == self.current_step_for_edit.id ),
+                                   None )
 
         if index is None:
             self.current_sequence.steps.append( self.current_step_for_edit )
@@ -419,8 +422,8 @@ class SequenceManager:
         self.current_step_for_edit.step_index = index
 
         if step_input_frame and step_input_frame.winfo_exists():
-            step_input: list[ PreSetParam ] = collect_entered_input( frame_to_search = step_input_frame )
-            self.current_step_for_edit.pre_set_parameters = step_input
+            step_input: list[ InputArgument ] = collect_entered_input( frame_to_search = step_input_frame )
+            self.current_step_for_edit.pre_set_parameters = [ PreSetParam( name = n.name, set = n.value ) for n in step_input ]
 
         self.sequence_ui_controller.hide_step_form()
         self.sequence_ui_controller.populate_sequence_steps( sequence = self.current_sequence )
@@ -469,7 +472,9 @@ class SequenceManager:
             step_form: Frame | None = self._sequence_widgets.step_form
 
             if step_form is None or not step_form.winfo_exists():
-                create_step_form( ui = self._sequence_widgets, add_translatable = self._app_context.LanguageManager.add_translatable_widget, op_callbacks = self.sequence_callbacks )
+                create_step_form( ui = self._sequence_widgets,
+                                 add_translatable = self._app_context.LanguageManager.add_translatable_widget,
+                                 op_callbacks = self.sequence_callbacks )
                 step_form = self._sequence_widgets.step_form
 
             self.sequence_ui_controller.show_step_form()

@@ -47,7 +47,9 @@ class ScriptManager:
             app_run_state (ApplicationRunState): Current application run state.
         """
 
-        self._script_list = get_scripts( output_queue = output_queue, app_state = app_state, app_run_state = app_run_state )
+        self._script_list = get_scripts( output_queue = output_queue,
+                                        app_state = app_state,
+                                        app_run_state = app_run_state )
 
 
     def get_script_info_by_filename( self, filename: str ) -> ScriptInfo:
@@ -70,7 +72,7 @@ class ScriptManager:
 
         from automation_menu.utils.localization import _
 
-        raise ValueError( _( 'No ScriptInfo was found' ) )
+        raise ValueError( _( 'No ScriptInfo with file name {f} was found' ).format( f = filename ) )
 
 
     def get_script_info_by_path( self, path: Path | str | None ) -> ScriptInfo:
@@ -87,13 +89,13 @@ class ScriptManager:
         """
 
         for si in self._script_list:
-            if si.fullpath == path:
+            if si.fullpath == str( path ):
 
                 return si
 
         from automation_menu.utils.localization import _
 
-        raise ValueError( _( 'No ScriptInfo was found' ) )
+        raise ValueError( _( 'No ScriptInfo at path {p} was found' ).format( p =  path ) )
 
 
     def get_script_list( self ) -> list[ ScriptInfo ]:
