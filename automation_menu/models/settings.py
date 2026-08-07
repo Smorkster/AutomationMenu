@@ -15,6 +15,7 @@ from typing import Callable
 
 from automation_menu.types.keepassshortcut import KeePassShortcut
 from automation_menu.types.rawsettings import RawSettings
+from automation_menu.utils.app_path_resolver import app_path
 
 
 class Settings:
@@ -28,7 +29,7 @@ class Settings:
 
         from automation_menu.utils.localization import _
 
-        default_script_folder = Path( __file__ ).resolve().parent.parent.parent / 'Script'
+        default_script_folder = app_path() / 'Script'
         self._settings_errors: list[ str ] = []
         self._saved_script_folders: list[ str ] = []
         self._script_folders: list[ Path ] = []
@@ -357,16 +358,14 @@ class Settings:
             (str): JSON-formatted string representation of the settings object.
         """
 
-        d: RawSettings = {
-            'current_language': self._current_language,
-            'force_focus_post_execution': self._force_focus_post_execution,
-            'include_ss_in_error_mail': self._include_ss_in_error_mail,
-            'minimize_on_running': self._minimize_on_running,
-            'on_top': self._on_top,
-            'send_mail_on_error': self._send_mail_on_error,
-            'keepass_shortcut': self._keepass_shortcut,
-            'script_folders': [ str( f ) for f in self._script_folders ],
-            'saved_sequences': self._saved_sequences,
-        }
+        d: RawSettings = { 'current_language': self._current_language,
+                          'force_focus_post_execution': self._force_focus_post_execution,
+                          'include_ss_in_error_mail': self._include_ss_in_error_mail,
+                          'minimize_on_running': self._minimize_on_running,
+                          'on_top': self._on_top,
+                          'send_mail_on_error': self._send_mail_on_error,
+                          'keepass_shortcut': self._keepass_shortcut,
+                          'script_folders': [ str( f ) for f in self._script_folders ],
+                          'saved_sequences': self._saved_sequences, }
 
         return json.dumps( d, indent = 2 )

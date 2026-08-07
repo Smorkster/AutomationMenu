@@ -17,8 +17,11 @@ import sys
 from logging import Formatter, Logger, StreamHandler
 from pathlib import Path, WindowsPath
 
+from automation_menu.models.application_input_arguments import ApplicationInputArguments
+from automation_menu.utils.app_path_resolver import app_path
+
 # Add the project root to Python path if needed
-project_root = Path( __file__ ).parent.parent
+project_root = Path( __file__ ).parent
 sys.path.insert( 0, str( project_root ) )
 
 from automation_menu.core.app_context import ApplicationContext
@@ -58,15 +61,13 @@ def setup_logger( level: str = 'DEBUG' ) -> Logger:
         # General purpose logging to terminal
         handler: StreamHandler = StreamHandler()
 
-        formater: Formatter = Formatter(
-            "[%(levelname)s] %(filename)s:%(lineno)d - %(message)s"
-        )
+        formater: Formatter = Formatter( '[%(levelname)s] %(filename)s:%(lineno)d - %(message)s' )
 
         handler.setFormatter( formater )
         logger.addHandler( handler )
 
         # Logging errors to file
-        project_root: Path = Path( __file__ ).resolve().parent
+        project_root: Path = Path( app_path() )
         json_handler: JsonFileHandler = JsonFileHandler( project_root )
         logger.addHandler( json_handler )
 
@@ -88,16 +89,14 @@ def main() -> None:
                               choices = [ 'debug', 'info', 'warning', 'error', 'critical' ],
                               default = 'info' )
 
-    input_args = input_parser.parse_args()
+    input_args: ApplicationInputArguments = input_parser.parse_args( namespace = ApplicationInputArguments() )
 
     try:
-        startup_arguments: StartupArguments = {
-            'app_run_state': ApplicationRunState[ input_args.application_state.upper() ],
-            'loglevel': input_args.loglevel
-        }
+        startup_arguments: StartupArguments = { 'app_run_state': ApplicationRunState[ input_args.application_state.upper() ],
+                                               'loglevel': input_args.loglevel }
 
         debug_logger = setup_logger( level = startup_arguments[ 'loglevel' ] )
-        secrets = Secrets( read_secrets_file( file_path = str( Path( __file__ ).resolve().parent / 'secrets.json' ) ) )
+        secrets = Secrets( read_secrets_file( file_path = str( Path( app_path() ) / 'secrets.json' ) ) )
 
         from automation_menu.core.auth import connect_to_AD, get_user_adobject
         ldap_connection = connect_to_AD( ldap_server = secrets[ 'ldap_server' ], domain_name = secrets[ 'domain_name' ] )
@@ -124,11 +123,9 @@ def main() -> None:
 
         AutomationMenuWindow( app_state = app_state, app_context = app_context )
 
-        write_exec_history(
-            exec_items = app_context.HistoryManager.get_history_list(),
-            root_dir = WindowsPath( Path( __file__ ).resolve().parent ),
-            logger = app_context.debug_logger
-        )
+        write_exec_history( exec_items = app_context.HistoryManager.get_history_list(),
+                           root_dir = WindowsPath( Path( app_path() ) ),
+                           logger = app_context.debug_logger )
 
     except KeyboardInterrupt:
         print( _( 'Application interrupted by user' ) )
@@ -143,11 +140,9 @@ def main() -> None:
 
         # Handle any unexpected/unhandled errors
         message = _( 'An unexpected error occurred:\n\n{error}\n\nThe application will now exit.' ).format( error = str( e ) )
-        inputbox(
-            title = _( 'Application Error' ),
-            message = message,
-            buttons = [ 'OK' ]
-        ).show()
+        inputbox( title = _( 'Application Error' ),
+                 message = message,
+                 buttons = [ 'OK' ] ).show()
         logging.error( str( e ) )
         sys.exit( 1 )
 

@@ -21,6 +21,8 @@ from threading import Event
 from tkinter import Tk
 from typing import TYPE_CHECKING, Callable
 
+from automation_menu.utils.python_path_resolver import find_python_exe
+
 if TYPE_CHECKING:
     from automation_menu.core.script_execution_manager import ScriptExecutionManager
 
@@ -58,6 +60,9 @@ class ScriptRunner:
         self._process_started: Event = threading.Event()
         self._run_state: str = ''
 
+        if self.app_state.python_exe_path == '':
+            self.app_state.python_exe_path = find_python_exe()
+
 
     def _collect_error_info( self, error: str ) -> None:
         """ Gather error info to send to script developer
@@ -66,12 +71,10 @@ class ScriptRunner:
             error (str): Error message
         """
 
-        self._output_queue.put( {
-            'line': error,
-            'tag': OutputStyleTags.SYSERROR,
-            'finished': True,
-            'exec_item': self._exec_item
-        } )
+        self._output_queue.put( { 'line': error,
+                                 'tag': OutputStyleTags.SYSERROR,
+                                 'finished': True,
+                                 'exec_item': self._exec_item } )
         ss_path: Path = Path()
 
         if self.app_state.settings.send_mail_on_error:
@@ -87,18 +90,14 @@ class ScriptRunner:
             try:
                 self._error_reporter( app_state = self.app_state, error_msg = error, script_info = self._script_info, screenshot = ss_path )
 
-                self._output_queue.put( {
-                    'line': _( 'Mail sent' ),
-                    'tag': OutputStyleTags.SYSINFO,
-                    'exec_item': self._exec_item
-                } )
+                self._output_queue.put( { 'line': _( 'Mail sent' ),
+                                         'tag': OutputStyleTags.SYSINFO,
+                                         'exec_item': self._exec_item } )
 
             except Exception as e:
-                self._output_queue.put( {
-                    'line': _( 'Could not send error message to developer {e}' ).format( e = str( e ) ),
-                    'tag': OutputStyleTags.SYSERROR,
-                    'exec_item': self._exec_item
-                } )
+                self._output_queue.put( { 'line': _( 'Could not send error message to developer {e}' ).format( e = str( e ) ),
+                                         'tag': OutputStyleTags.SYSERROR,
+                                         'exec_item': self._exec_item } )
 
 
     def _create_process( self ) -> subprocess.Popen:
@@ -120,14 +119,12 @@ class ScriptRunner:
             pass
 
         elif self._run_state == 'vscode':
-            self._output_queue.put( {
-                    'line': _( 'Running in: \'{a}\', application can not handle debugging.' ).format( a = self._run_state ),
-                    'tag': OutputStyleTags.SYSINFO,
-                    'exec_item': self._exec_item
-                } )
+            self._output_queue.put( { 'line': _( 'Running in: \'{a}\', application can not handle debugging.' ).format( a = self._run_state ),
+                                     'tag': OutputStyleTags.SYSINFO,
+                                     'exec_item': self._exec_item } )
 
         if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
-            exec_string = sys.executable
+            exec_string = self.app_state.python_exe_path
             current_env[ 'PYTHONBREAKPOINT' ] = 'pdb.set_trace'
             current_env[ 'PYTHONUNBUFFERED' ] = '1'
 
@@ -137,16 +134,14 @@ class ScriptRunner:
         args = [ exec_string, str( self._script_info.get_attr( 'fullpath' ) ) ]
         args.extend( self.run_input )
 
-        return subprocess.Popen(
-            args = args,
-            stdout = asyncio.subprocess.PIPE,
-            stderr = asyncio.subprocess.PIPE,
-            stdin = asyncio.subprocess.PIPE,
-            text = True,
-            encoding = 'utf-8',
-            errors = 'replace',
-            env = current_env
-        )
+        return subprocess.Popen( args = args,
+                                stdout = asyncio.subprocess.PIPE,
+                                stderr = asyncio.subprocess.PIPE,
+                                stdin = asyncio.subprocess.PIPE,
+                                text = True,
+                                encoding = 'utf-8',
+                                errors = 'replace',
+                                env = current_env )
 
 
     def _is_breakpoint_line( self, line: str ) -> int:
@@ -186,28 +181,22 @@ class ScriptRunner:
 
         if self._terminated:
             self._exec_item.set_terminated()
-            self._output_queue.put( {
-                'line': _( 'Script terminated' ),
-                'tag': OutputStyleTags.SYSINFO,
-                'finished': True,
-                'exec_item': self._exec_item
-            } )
+            self._output_queue.put( { 'line': _( 'Script terminated' ),
+                                     'tag': OutputStyleTags.SYSINFO,
+                                     'finished': True,
+                                     'exec_item': self._exec_item } )
 
         elif return_code == 0:
-            self._output_queue.put( {
-                'line': _( 'Script completed successfully' ),
-                'tag': OutputStyleTags.SUCCESS,
-                'finished': True,
-                'exec_item': self._exec_item
-            } )
+            self._output_queue.put( { 'line': _( 'Script completed successfully' ),
+                                     'tag': OutputStyleTags.SUCCESS,
+                                     'finished': True,
+                                     'exec_item': self._exec_item } )
 
         else:
-            self._output_queue.put( {
-                    'line':_( 'Script failed with exit code {err}' ).format( err = return_code ),
-                    'tag': OutputStyleTags.SYSERROR,
-                    'finished': True,
-                    'exec_item': self._exec_item
-            } )
+            self._output_queue.put( { 'line':_( 'Script failed with exit code {err}' ).format( err = return_code ),
+                                     'tag': OutputStyleTags.SYSERROR,
+                                     'finished': True,
+                                     'exec_item': self._exec_item } )
 
         self.api_callbacks[ 'update_progress' ]( 0 )
         self.api_callbacks[ 'hide_progress' ]()
@@ -231,9 +220,11 @@ class ScriptRunner:
                 line: str = self.current_process.stderr.readline()
 
             except:
+
                 break
 
             if not line:
+
                 break
 
             line_str: str = line.decode() if isinstance( line, bytes ) else line
@@ -241,18 +232,14 @@ class ScriptRunner:
 
             if line_nr > 0:
                 _in_breakpoint = self._run_state != 'vscode' or True
-                self._output_queue.put( {
-                    'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr - 1 ),
-                    'tag': OutputStyleTags.SYSINFO,
-                    'breakpoint': _in_breakpoint,
-                    'exec_item': self._exec_item
-                } )
+                self._output_queue.put( { 'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr - 1 ),
+                                         'tag': OutputStyleTags.SYSINFO,
+                                         'breakpoint': _in_breakpoint,
+                                         'exec_item': self._exec_item } )
             else:
-                self._output_queue.put( {
-                    'line': line_str.rstrip(),
-                    'tag': OutputStyleTags.ERROR,
-                    'exec_item': self._exec_item
-                } )
+                self._output_queue.put( { 'line': line_str.rstrip(),
+                                         'tag': OutputStyleTags.ERROR,
+                                         'exec_item': self._exec_item } )
 
 
     def _read_stdout( self ) -> None:
@@ -271,9 +258,11 @@ class ScriptRunner:
                 line: str = self.current_process.stdout.readline()
 
             except:
+
                 break
 
             if not line:
+
                 break
 
             line_str: str = line.decode() if isinstance( line, bytes ) else line
@@ -281,18 +270,14 @@ class ScriptRunner:
 
             if line_nr > 0:
                 _in_breakpoint = self._run_state != 'vscode' or True
-                self._output_queue.put( {
-                    'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr =  line_nr - 1 ),
-                    'tag': OutputStyleTags.SYSINFO,
-                    'breakpoint': _in_breakpoint,
-                    'exec_item': self._exec_item
-                } )
+                self._output_queue.put( { 'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr =  line_nr - 1 ),
+                                         'tag': OutputStyleTags.SYSINFO,
+                                         'breakpoint': _in_breakpoint,
+                                         'exec_item': self._exec_item } )
             else:
-                self._output_queue.put( {
-                    'line': line_str.rstrip(),
-                    'tag': OutputStyleTags.INFO,
-                    'exec_item': self._exec_item
-                } )
+                self._output_queue.put( { 'line': line_str.rstrip(),
+                                         'tag': OutputStyleTags.INFO,
+                                         'exec_item': self._exec_item } )
 
 
     def _set_run_state( self ) -> None:
@@ -350,8 +335,7 @@ class ScriptRunner:
                     enable_stop_button_callback: Callable,
                     enable_pause_button_callback: Callable,
                     stop_pause_button_blinking_callback: Callable,
-                    run_input: list[ str ]
-                  ) -> None:
+                    run_input: list[ str ] ) -> None:
         """ Start process to run selected script
 
         Args:
@@ -376,18 +360,22 @@ class ScriptRunner:
         try:
             self._exec_item = ExecHistory( script_info = self._script_info )
             line: str = _( 'Starting \'{file}\'' ).format( file = self._script_info.get_attr( 'synopsis' ) )
-            self._output_queue.put( {
-                'line': line,
-                'tag': OutputStyleTags.SYSINFO,
-                'exec_item': self._exec_item
-            } )
+            self._output_queue.put( { 'line': line,
+                                     'tag': OutputStyleTags.SYSINFO,
+                                     'exec_item': self._exec_item } )
 
             enable_stop_button_callback()
             enable_pause_button_callback()
 
-            threading.Thread( target = self._read_stdout, daemon = True, name = f'{ self._script_info.filename }_stdout' ).start()
-            threading.Thread( target = self._read_stderr, daemon = True, name = f'{ self._script_info.filename }_stderr' ).start()
-            threading.Thread( target = self._read_monitor_completion, daemon = True, name = f'{ self._script_info.filename }_stdmonitor' ).start()
+            threading.Thread( target = self._read_stdout,
+                             daemon = True,
+                             name = f'{ self._script_info.filename }_stdout' ).start()
+            threading.Thread( target = self._read_stderr,
+                             daemon = True,
+                             name = f'{ self._script_info.filename }_stderr' ).start()
+            threading.Thread( target = self._read_monitor_completion,
+                             daemon = True,
+                             name = f'{ self._script_info.filename }_stdmonitor' ).start()
 
             self.current_process = self._create_process()
             self._process_started.set()
@@ -474,11 +462,9 @@ class ScriptRunner:
                 _process_reaper( self.current_process )
 
             if len( line ) > 0:
-                self._output_queue.put( {
-                    'line': line,
-                    'tag': OutputStyleTags.SYSERROR,
-                    'exec_item': self._exec_item
-                } )
+                self._output_queue.put( { 'line': line,
+                                         'tag': OutputStyleTags.SYSERROR,
+                                         'exec_item': self._exec_item } )
 
 
     def was_terminated( self ) -> bool:

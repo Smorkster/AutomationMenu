@@ -13,6 +13,8 @@ from gettext import NullTranslations
 from pathlib import Path
 from typing import Callable
 
+from automation_menu.utils.app_path_resolver import app_path
+
 
 def change_language( language_code: str ) -> None:
     """ Change the application language at runtime.
@@ -34,7 +36,7 @@ def find_locales_directory() -> Path:
     current_file: Path = Path( __file__ )
 
     # Go up two levels to reach root directory
-    project_root: Path = current_file.parent.parent.parent
+    project_root: Path = app_path()
     locale_dir: Path = project_root / 'locales'
 
     if not locale_dir.exists():
@@ -114,12 +116,10 @@ def setup_localization( domain: str = 'messages', language: str | None = None ) 
 
     try:
         # Try to load the translation
-        translation: NullTranslations = gettext.translation(
-            domain,
-            localedir = str( locale_dir ),
-            languages = [ language ],
-            fallback = True
-        )
+        translation: NullTranslations = gettext.translation( domain,
+                                                            localedir = str( locale_dir ),
+                                                            languages = [ language ],
+                                                            fallback = True )
 
         print( f'Loaded localization: { language } from { locale_dir }' )
         _ = translation.gettext
