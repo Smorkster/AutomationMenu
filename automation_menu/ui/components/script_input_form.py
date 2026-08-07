@@ -8,10 +8,11 @@ License: MIT
 
 
 from tkinter import Canvas, Event
-from tkinter.ttk import Combobox, Entry, Frame, Label
+from tkinter.ttk import Checkbutton, Combobox, Entry, Frame, Label
 from typing import cast
 
 from automation_menu.models.presetparam import PreSetParam
+from automation_menu.models.script_input_argument import InputArgument
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 
 
@@ -64,7 +65,7 @@ def on_keyboard_focus( widget: Entry, canvas: Canvas ) -> None:
     canvas.yview_moveto( scroll_fraction )
 
 
-def on_key_press( event: Event ) -> str | None:
+def on_input_key_press_no_new_line( event: Event ) -> str | None:
     """ Prevent newline characters from being entered.
 
     Args:
@@ -81,7 +82,65 @@ def on_key_press( event: Event ) -> str | None:
     return
 
 
-def collect_entered_input( frame_to_search: Frame ) -> list[ PreSetParam ]:
+def on_input_key_press_type_float( event: Event ) -> str | None:
+    """ Prevent anything but numbers to be entered.
+    Used when input type is int or float
+
+    Args:
+        event (Event): Event that triggered the handler.
+
+    Returns:
+        (str | None): Tkinter break instruction for the Return key, otherwise None.
+    """
+
+    if event.keysym not in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'period', 'BackSpace', 'Tab' ]:
+
+        return 'break'
+
+    if event.keysym == 'period' and cast( Entry, event.widget ).get().count( '.' ) >= 1:
+
+        return 'break'
+
+    return
+
+
+def on_input_entry_entered( event: Event, required: bool, required_label: Label ) -> None:
+    """ If input is required, verify that input is entered
+    
+    Args:
+        event (Event): Event triggering the handler
+        required (bool): True if input is required
+        required_label (Label): Label widget to notified valid input
+    """
+
+    fg: str = "#70AC6E"
+
+    if required:
+        if len( cast( Entry, event.widget ).get() ) == 0:
+            fg = '#FF0000'
+
+    required_label.config( foreground = fg )
+
+
+def on_input_key_press_type_int( event: Event ) -> str | None:
+    """ Prevent anything but numbers to be entered.
+    Used when input type is int or float
+
+    Args:
+        event (Event): Event that triggered the handler.
+
+    Returns:
+        (str | None): Tkinter break instruction for the Return key, otherwise None.
+    """
+
+    if event.keysym not in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'BackSpace', 'Tab' ]:
+
+        return 'break'
+
+    return
+
+
+def collect_entered_input( frame_to_search: Frame ) -> list[ InputArgument ]:
     """ Collect entered parameter values from the input form.
 
     Args:
@@ -91,31 +150,44 @@ def collect_entered_input( frame_to_search: Frame ) -> list[ PreSetParam ]:
         entered_input (list[PreSetParam]): Entered input values as preset parameters.
     """
 
-    entered_input: list[ PreSetParam ] = []
+    entered_input: list[ InputArgument ] = []
+    missing_required_input: list[ str ] = []
 
     for widget in frame_to_search.winfo_children():
         children = widget.winfo_children()
 
-        if len( children ) < 2:
+        if len( children ) < 3:
 
             continue
 
-        candidate = children[ 1 ]
+        candidate = children[ 2 ]
 
-        if not isinstance( candidate, ( Combobox, Entry ) ):
-
-            continue
-
-        param_text = str( candidate.get() ).strip()
-
-        if not param_text:
+        if not isinstance( candidate, ( Checkbutton, Combobox, Entry ) ):
 
             continue
+
+        if isinstance( candidate, Checkbutton ):
+
+            param_text = 'True' if 'selected' in candidate.state() else 'False'
+
+        else:
+            if children[ 1 ].cget( 'foreground' ) and children[ 1 ].cget( 'foreground' ).string == '#FF0000':
+                missing_required_input.append( children[ 0 ].cget( 'text' ) )
+
+                continue
+
+            param_text = str( candidate.get() ).strip()
+
+            if not param_text:
+
+                continue
 
         param_name = widget.children[ '!label' ].cget( 'text' )
-        entered_input.append( PreSetParam( name = param_name, set = param_text ) )
+        entered_input.append( InputArgument( name = param_name, value = param_text ) )
 
-        #input.delete( 0, 'end' )
+    if len( missing_required_input ) > 0:
+
+        raise ValueError( ', '.join( missing_required_input ) )
 
     return entered_input
 
@@ -140,6 +212,11 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
     input_container: Frame
     number_of_columns: int = 2
     row: int = 0
+    preset_by_name: dict[ str, PreSetParam ] = { p.name: p for p in pre_set_parameters or [] }
+    tt_description: str = ''
+    required_style: str = ''
+    require_fg: str = ''
+    require_text: str = ''
 
     target_canvas: Canvas = canvas
 
@@ -154,46 +231,110 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
         input_container.grid_columnconfigure( index = i, weight = 1, uniform = 'params' )
 
     for param in parameters:
+        tt_description = param.description
+        current_pre_set_param: PreSetParam | None = preset_by_name.get( param.name )
+        use_pre_set_param_value: bool = current_pre_set_param is not None
+
+        if use_pre_set_param_value:
+            param_value = current_pre_set_param.set
+
+        else:
+            param_value = param.default
+
+        if param_value != '':
+            tt_description += '\n' + _( 'Default value: {d}' ).format( d = param_value )
+
         parameter_frame: Frame = Frame( master = input_container )
         parameter_frame.grid( column = column_count, row = row, sticky = 'nswe', padx = 2, pady = 2 )
         parameter_frame.grid_columnconfigure( index = 0, weight = 0, uniform = 'name' )
-        parameter_frame.grid_columnconfigure( index = 1, weight = 1 )
+        parameter_frame.grid_columnconfigure( index = 1, weight = 0, uniform = 'required' )
+        parameter_frame.grid_columnconfigure( index = 2, weight = 1 )
 
-        param_name: Label = Label( master = parameter_frame, text = param.name, style = 'LabelFrameTitle.TLabel', width = 15 )
-        param_name.grid( column = 0, row = 0, sticky = 'nw' )
+        param_name: Label = Label( master = parameter_frame,
+                                  text = param.name,
+                                  style = 'LabelFrameTitle.TLabel',
+                                  width = 15 )
+        param_name.grid( column = 0,
+                        row = 0,
+                        sticky = 'nw' )
 
-        param_input: Combobox | Entry
-        # Create input widget
-        if param.alternatives and len( param.alternatives ) > 0:
-            param_input = Combobox(
-                master = parameter_frame,
-                style = 'Input.TCombobox',
-                values = param.alternatives,
-                state = 'readonly'
-            )
-
-            if pre_set_parameters and param.name in [ k.name for k in pre_set_parameters ]:
-                param_input.set( next( k for k in pre_set_parameters if k.name == param.name ).set )
+        if param.required:
+            required_style = 'InputArgRequired.TLabel'
+            require_fg = '#FF0000'
+            require_text = '*'
 
         else:
-            param_input = Entry(
-                master = parameter_frame,
-                style = 'Input.TEntry'
-            )
+            required_style ='LabelArgNotRequired.TLabel'
+            require_fg = ''
+            require_text = ' '
 
-            if pre_set_parameters and param.name in [ k.name for k in pre_set_parameters ]:
+        param_required_label: Label = Label( master = parameter_frame,
+                                            text = require_text,
+                                            style = required_style,
+                                            foreground = require_fg,
+                                            width = 1 )
+        param_required_label.grid( column = 1,
+                                  row = 0,
+                                  sticky = 'nw' )
+
+        # Create input widget
+        param_input: Checkbutton | Combobox | Entry
+
+        if param.type == 'bool':
+            param_input = Checkbutton( master = parameter_frame )
+
+            if param_value == 'True':
+                param_input.state( [ 'selected' ] )
+
+            else:
+                param_input.state( [ '!selected' ] )
+
+        else:
+            if param.alternatives and len( param.alternatives ) > 0:
+                param_input = Combobox( master = parameter_frame,
+                                       style = 'Input.TCombobox',
+                                       values = param.alternatives,
+                                       state = 'readonly' )
+
+                if use_pre_set_param_value:
+                    param_input.set( param_value )
+
+            else:
+                param_input = Entry( master = parameter_frame,
+                                    style = 'Input.TEntry' )
+
+                if param.required:
+                    param_input.bind( '<KeyRelease>',
+                                     lambda e, r = param.required, rl = param_required_label: on_input_entry_entered( e, r, rl ),
+                                     add = '+' )
+
                 param_input.delete( 0, 'end' )
-                param_input.insert( 'end', next( k for k in pre_set_parameters if k.name == param.name ).set )
+                param_input.insert( 'end', param_value )
 
-        param_input.bind(
-            '<FocusIn>',
-            lambda e, c = target_canvas:
-                on_keyboard_focus( e.widget, c )
-        )
-        param_input.bind( '<Key>', on_key_press )
-        param_input.grid( column = 1, row = 0, padx = 5, pady = 5, sticky = 'nswe' )
+            if param.type == 'int':
+                param_input.bind( '<Key>', on_input_key_press_type_int )
+                tt_description += '\n' + _( 'Only whole numbers are allowed' )
 
-        AlwaysOnTopToolTip( widget = param_name, msg = param.description )
+            elif param.type == 'float':
+                param_input.bind( '<Key>', on_input_key_press_type_float )
+                tt_description += '\n' + _( 'Only numbers are allowed' )
+
+            else:
+                param_input.bind( '<Key>', on_input_key_press_no_new_line )
+
+        param_input.bind( '<FocusIn>',
+                         lambda e, c = target_canvas:
+                         on_keyboard_focus( e.widget, c ) )
+        param_input.grid( column = 2,
+                         row = 0,
+                         padx = 5,
+                         pady = 5,
+                         sticky = 'nswe' )
+
+        AlwaysOnTopToolTip( widget = parameter_frame, msg = tt_description )
+        AlwaysOnTopToolTip( widget = param_name, msg = tt_description )
+        AlwaysOnTopToolTip( widget = param_required_label, msg = tt_description )
+        AlwaysOnTopToolTip( widget = param_input, msg = tt_description )
 
         column_count += 1
         if column_count == number_of_columns:

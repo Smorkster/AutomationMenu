@@ -17,5 +17,5 @@ class ScriptInputParameter:
     default: str = ''
     description: str = ''
     name: str = ''
-    required: bool = True
-    type: str | int | bool = ''
+    required: bool = False
+    type: str = ''

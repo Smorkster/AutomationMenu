@@ -14,6 +14,7 @@ from tkinter.ttk import Frame
 from typing import Callable
 
 from automation_menu.models.presetparam import PreSetParam
+from automation_menu.models.script_input_argument import InputArgument
 from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 from automation_menu.ui.components.script_input_form import clear_previous_values, collect_entered_input, create_input_widgets
@@ -78,18 +79,17 @@ class InputManager:
         return create_input_widgets( parameters = script_info.scriptmeta.script_input_parameters,
                                     container = self._input_widgets.input_container,
                                     pre_set_parameters = None,
-                                    canvas = self._input_widgets.container_canvas
-                                    )
+                                    canvas = self._input_widgets.container_canvas )
 
 
-    def collect_entered_input( self, frame_to_search: Frame | None = None ) -> list[ PreSetParam ]:
+    def collect_entered_input( self, frame_to_search: Frame | None = None ) -> list[ InputArgument ]:
         """ Collect entered input values from a frame.
 
         Args:
             frame_to_search (Frame | None): Specific frame to search for input values. If not provided, the current visible input frame is used.
 
         Returns:
-            list[PreSetParam]: Entered input values as preset parameters.
+            list[ InputArgument ]: Entered input values as preset parameters.
         """
 
         if frame_to_search is not None:
@@ -144,8 +144,7 @@ class InputManager:
         return create_input_widgets( parameters = parameters,
                                     container = container,
                                     pre_set_parameters = pre_set_parameters,
-                                    canvas = canvas
-                                    )
+                                    canvas = canvas )
 
 
     def show_for_script( self, script_info: ScriptInfo, submit_input_callback: Callable ) -> None:
@@ -157,4 +156,6 @@ class InputManager:
         """
 
         param_frame: Frame = self._get_or_create_input_frame( script_info = script_info )
-        self._display_frame( param_frame = param_frame, script_info = script_info, submit_input_callback = submit_input_callback )
+        self._display_frame( param_frame = param_frame,
+                            script_info = script_info,
+                            submit_input_callback = submit_input_callback )

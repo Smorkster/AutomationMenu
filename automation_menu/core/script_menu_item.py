@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 import threading
 
+from dynamicinputbox.dynamicinputbox import dynamic_inputbox
 from psutil import Process
 from tkinter import Event
 from tkinter.ttk import Frame, Label
@@ -71,7 +72,10 @@ class ScriptMenuItem:
             self._style_normal = 'DevNormal.TLabel'
             self._style_hover = 'DevHover.TLabel'
 
-        self.menu_button: Label = Label( self.script_menu, text = self.label_text, style = self._style_normal, borderwidth = 1 )
+        self.menu_button: Label = Label( self.script_menu,
+                                        text = self.label_text,
+                                        style = self._style_normal,
+                                        borderwidth = 1 )
         self.menu_button.bind( '<Button-1>' , lambda e: self._check_input_params() )
 
         # Add tooltip to this button
@@ -90,8 +94,13 @@ class ScriptMenuItem:
                 desc += f'\n\n{ _( 'Application test script, only used to test application functionality' ) }'
                 app_test = True
 
-            tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = self.menu_button, msg = desc, delay = 200 )
-            wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = self.script_info.get_attr( 'description' ), script_state = self.script_info.get_attr( 'state' ), include_application_test_info = app_test )
+            tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = self.menu_button,
+                                                        msg = desc,
+                                                        delay = 200 )
+            wft: WidgetForTranslation = WidgetForTranslation( widget = tt,
+                                                             default_text = self.script_info.get_attr( 'description' ),
+                                                             script_state = self.script_info.get_attr( 'state' ),
+                                                             include_application_test_info = app_test )
             self.master_self.app_context.LanguageManager.add_translatable_widget( wft )
 
 
@@ -134,6 +143,7 @@ class ScriptMenuItem:
         """
 
         if not isinstance( event.widget, Label ):
+
             return
 
         event.widget.configure( style = self._style_hover )
@@ -147,6 +157,7 @@ class ScriptMenuItem:
         """
 
         if not isinstance( event.widget, Label ):
+
             return
 
         event.widget.configure( style = self._style_normal )
@@ -167,18 +178,21 @@ class ScriptMenuItem:
                                   enable_stop_button_callback = self.master_self.enable_stop_script_button,
                                   enable_pause_button_callback = self.master_self.enable_pause_script_button,
                                   stop_pause_button_blinking_callback = self.master_self.execution_controller.stop_pause_button_blinking,
-                                  run_input = entered_inputs
-                                  )
+                                  run_input = entered_inputs )
 
             self.master_self.execution_controller.execution_post_work( disable_minimize = disable_minimize )
 
         entered_inputs: list[ str ] = []
 
-        for entered in self.master_self.app_context.InputManager.collect_entered_input():
-            entered_inputs.extend( [ f'--{ entered.name }', f'{ entered.set }' ] )
+        try:
+            for entered in self.master_self.app_context.InputManager.collect_entered_input():
+                entered_inputs.extend( [ f'--{ entered.name }', f'{ entered.value }' ] )
 
-        disable_minimize = self.script_info.scriptmeta.disable_minimize_on_running
+            disable_minimize = self.script_info.scriptmeta.disable_minimize_on_running
 
-        self.master_self.execution_controller.execution_pre_work( disable_minimize = disable_minimize )
+            self.master_self.execution_controller.execution_pre_work( disable_minimize = disable_minimize )
 
-        threading.Thread( target = script_process_wrapper, daemon = True ).start()
+            threading.Thread( target = script_process_wrapper, daemon = True ).start()
+
+        except ValueError as e:
+            dynamic_inputbox( title = _( 'Missing required input' ), message = _( 'These arguments are required by the script:\n{r}' ).format( r = str( e ) ) ).show()
