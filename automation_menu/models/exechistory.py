@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from automation_menu.models import ScriptInfo
 
-from automation_menu.models.output import Output
+from automation_menu.models.script_output import ScriptOutput
 
 
 class ExecHistory:
@@ -28,7 +28,7 @@ class ExecHistory:
         """
 
         self.script_info: ScriptInfo = script_info
-        self.output: list[ Output ] = []
+        self.output: list[ ScriptOutput ] = []
         self.start: datetime = datetime.now()
         self.end: datetime
         self.exit_code: int
@@ -81,11 +81,11 @@ class ExecHistory:
         self.end = time
 
 
-    def append_output( self, item: Output ) -> None:
+    def append_output( self, item: ScriptOutput ) -> None:
         """ Add new item to output
 
         Args:
-            item (Output): Output item from script output
+            item (ScriptOutput): Output item from script output
         """
 
         self.output.append( item )

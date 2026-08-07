@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-05-08 10:24+0200\n"
+"POT-Creation-Date: 2026-08-07 10:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: main.py:134
+#: main.py:131
 msgid "Application interrupted by user"
 msgstr ""
 
-#: main.py:145
+#: main.py:142
 #, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
@@ -31,47 +31,11 @@ msgid ""
 "The application will now exit."
 msgstr ""
 
-#: main.py:147
+#: main.py:143
 msgid "Application Error"
 msgstr ""
 
-#: automation_menu/core/auth.py:38
-msgid ""
-"Enter password for AD-domain\n"
-"P.S.\n"
-"The password will not be stored"
-msgstr ""
-
-#: automation_menu/core/auth.py:46
-#, python-brace-format
-msgid ""
-"Wrong password. Try again\n"
-"{main_label_text}"
-msgstr ""
-
-#: automation_menu/core/auth.py:48
-#: automation_menu/ui/panels/script_input_panel.py:99
-#: automation_menu/ui/tabs/sequence_tab.py:483
-msgid "Abort"
-msgstr ""
-
-#: automation_menu/core/auth.py:49
-msgid "Ok"
-msgstr ""
-
-#: automation_menu/core/auth.py:50
-msgid "AD password"
-msgstr ""
-
-#: automation_menu/core/auth.py:55
-msgid "No password was entered. Exiting."
-msgstr ""
-
-#: automation_menu/core/auth.py:82
-msgid "Error"
-msgstr ""
-
-#: automation_menu/core/auth.py:82
+#: automation_menu/core/auth.py:53
 #, python-brace-format
 msgid ""
 "Could not connect to AD\n"
@@ -79,28 +43,42 @@ msgid ""
 "Exiting"
 msgstr ""
 
-#: automation_menu/core/auth.py:88
-#, python-brace-format
-msgid "Could not connect to AD after {n} attempts"
+#: automation_menu/core/auth.py:54
+msgid "Error"
 msgstr ""
 
-#: automation_menu/core/auth.py:116
+#: automation_menu/core/auth.py:60
+msgid "Could not connect to AD"
+msgstr ""
+
+#: automation_menu/core/auth.py:89
 msgid "Not connected to LDAP"
 msgstr ""
 
-#: automation_menu/core/script_menu_item.py:70
+#: automation_menu/core/script_menu_item.py:71
 msgid " (Dev)"
 msgstr ""
 
-#: automation_menu/core/script_menu_item.py:86
+#: automation_menu/core/script_menu_item.py:90
 msgid "In development, and should only be run by its developer."
 msgstr ""
 
-#: automation_menu/core/script_menu_item.py:90
+#: automation_menu/core/script_menu_item.py:94
 msgid "Application test script, only used to test application functionality"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:91
+#: automation_menu/core/script_menu_item.py:198
+msgid "Missing required input"
+msgstr ""
+
+#: automation_menu/core/script_menu_item.py:198
+#, python-brace-format
+msgid ""
+"These arguments are required by the script:\n"
+"{r}"
+msgstr ""
+
+#: automation_menu/core/script_runner.py:93
 msgid "Mail sent"
 msgstr ""
 
@@ -109,58 +87,58 @@ msgstr ""
 msgid "Could not send error message to developer {e}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:124
+#: automation_menu/core/script_runner.py:122
 #, python-brace-format
 msgid "Running in: '{a}', application can not handle debugging."
 msgstr ""
 
-#: automation_menu/core/script_runner.py:190
+#: automation_menu/core/script_runner.py:184
 msgid "Script terminated"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:198
+#: automation_menu/core/script_runner.py:190
 msgid "Script completed successfully"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:206
+#: automation_menu/core/script_runner.py:196
 #, python-brace-format
 msgid "Script failed with exit code {err}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:245
-#: automation_menu/core/script_runner.py:285
+#: automation_menu/core/script_runner.py:235
+#: automation_menu/core/script_runner.py:273
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
 "reactivate script."
 msgstr ""
 
-#: automation_menu/core/script_runner.py:378
+#: automation_menu/core/script_runner.py:362
 #, python-brace-format
 msgid "Starting '{file}'"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:398
+#: automation_menu/core/script_runner.py:386
 #, python-brace-format
 msgid "Subprocess error {error}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:401
+#: automation_menu/core/script_runner.py:389
 #, python-brace-format
 msgid "Unexpected error {error}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:465
+#: automation_menu/core/script_runner.py:453
 #, python-brace-format
 msgid "Termination - CalledProcessError: {e}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:469
+#: automation_menu/core/script_runner.py:457
 #, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:473
+#: automation_menu/core/script_runner.py:461
 #, python-brace-format
 msgid "Termination - Exception: {e}"
 msgstr ""
@@ -175,43 +153,43 @@ msgstr ""
 msgid "Writing execution history error; file not found: {file_path}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:152
+#: automation_menu/filehandling/script_discovery.py:150
 msgid "File not found"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:156
+#: automation_menu/filehandling/script_discovery.py:154
 #, python-brace-format
 msgid "Could not read file: {error}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:228
+#: automation_menu/filehandling/script_discovery.py:231
 #, python-brace-format
 msgid "'parse_warnings' missing key {key}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:231
+#: automation_menu/filehandling/script_discovery.py:235
 #, python-brace-format
 msgid "ScriptInfo contained fields that are not valid, or are misspelled: {names}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:234
+#: automation_menu/filehandling/script_discovery.py:239
 #, python-brace-format
 msgid "ScriptInfo contained values that are not valid, or are misspelled: {names}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:237
+#: automation_menu/filehandling/script_discovery.py:243
 #, python-brace-format
 msgid "Parsing ScriptInfo generated error for these fields: {names}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:253
-#: automation_menu/filehandling/script_discovery.py:259
-#: automation_menu/filehandling/script_discovery.py:265
+#: automation_menu/filehandling/script_discovery.py:260
+#: automation_menu/filehandling/script_discovery.py:264
+#: automation_menu/filehandling/script_discovery.py:268
 #, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:273
+#: automation_menu/filehandling/script_discovery.py:274
 msgid ""
 "Some scripts have at least one active breakpoint in the code. Handling "
 "this has not been fully tested yet:"
@@ -222,11 +200,20 @@ msgstr ""
 msgid "Writing settings error; file not found: {file_path}"
 msgstr ""
 
-#: automation_menu/models/sequence.py:52
+#: automation_menu/models/scriptinfo_not_loaded.py:22
+#: automation_menu/services/sequence_runner.py:42
+msgid "Script not loaded"
+msgstr ""
+
+#: automation_menu/models/scriptinfo_not_loaded.py:23
+msgid "Placeholder for a script referenced, but not currently loaded"
+msgstr ""
+
+#: automation_menu/models/sequence.py:51
 msgid "<Description not set>"
 msgstr ""
 
-#: automation_menu/models/sequence.py:54
+#: automation_menu/models/sequence.py:53
 msgid "Unnamed sequence"
 msgstr ""
 
@@ -235,12 +222,12 @@ msgstr ""
 msgid "Expected dict, got {t}"
 msgstr ""
 
-#: automation_menu/models/sequencestep.py:179
+#: automation_menu/models/sequencestep.py:174
 #, python-brace-format
 msgid "Invalid pre_set_parameters for step {f}: {p}"
 msgstr ""
 
-#: automation_menu/models/settings.py:86
+#: automation_menu/models/settings.py:87
 #, python-brace-format
 msgid "Script folder '{d}' is not a valid path"
 msgstr ""
@@ -270,63 +257,68 @@ msgid "{s} s"
 msgstr ""
 
 #: automation_menu/services/history_manager.py:168
-#: automation_menu/services/sequence_manager.py:249
+#: automation_menu/services/sequence_manager.py:260
 #, python-brace-format
 msgid "No history item for {i}"
 msgstr ""
 
 #: automation_menu/services/history_manager.py:170
-#: automation_menu/services/sequence_manager.py:251
+#: automation_menu/services/sequence_manager.py:262
 #, python-brace-format
 msgid "Couldn't find history item from list id '{ id }'"
 msgstr ""
 
-#: automation_menu/services/script_manager.py:73
-#: automation_menu/services/script_manager.py:96
-msgid "No ScriptInfo was found"
+#: automation_menu/services/script_manager.py:75
+#, python-brace-format
+msgid "No ScriptInfo with file name {f} was found"
 msgstr ""
 
-#: automation_menu/services/sequence_manager.py:64
+#: automation_menu/services/script_manager.py:98
+#, python-brace-format
+msgid "No ScriptInfo at path {p} was found"
+msgstr ""
+
+#: automation_menu/services/sequence_manager.py:66
 #, python-brace-format
 msgid "Unsupported saved sequence format, type: {t}"
 msgstr ""
 
-#: automation_menu/services/sequence_manager.py:192
+#: automation_menu/services/sequence_manager.py:203
 msgid "'Current sequence' was lost, can't remove sequence"
 msgstr ""
 
-#: automation_menu/services/sequence_manager.py:231
+#: automation_menu/services/sequence_manager.py:242
 msgid "No sequence is selected"
 msgstr ""
 
-#: automation_menu/services/sequence_manager.py:310
+#: automation_menu/services/sequence_manager.py:319
 msgid "'Current sequence' was lost, can't remove step"
 msgstr ""
 
-#: automation_menu/services/sequence_manager.py:314
+#: automation_menu/services/sequence_manager.py:323
 msgid "'Current step' was lost, can't remove step"
 msgstr ""
 
-#: automation_menu/services/sequence_manager.py:356
+#: automation_menu/services/sequence_manager.py:365
 #, python-brace-format
 msgid "Starting sequence {name}, with {step_count} steps"
 msgstr ""
 
-#: automation_menu/services/sequence_manager.py:441
+#: automation_menu/services/sequence_manager.py:444
 msgid "'Current sequence' was lost, can't save data"
 msgstr ""
 
-#: automation_menu/services/sequence_runner.py:41
+#: automation_menu/services/sequence_runner.py:47
 #, python-brace-format
 msgid "Couldn't initiate a runner for sequence {s}"
 msgstr ""
 
-#: automation_menu/services/sequence_runner.py:60
+#: automation_menu/services/sequence_runner.py:64
 #, python-brace-format
 msgid "Aborted by user at step {i}"
 msgstr ""
 
-#: automation_menu/services/sequence_runner.py:71
+#: automation_menu/services/sequence_runner.py:73
 #, python-brace-format
 msgid "Stopped on error at step {i} (exit code: {e})"
 msgstr ""
@@ -336,12 +328,12 @@ msgstr ""
 msgid "Step {i} failed (exit code {e})"
 msgstr ""
 
-#: automation_menu/services/sequence_runner.py:90
+#: automation_menu/services/sequence_runner.py:95
 #, python-brace-format
 msgid "Error in script '{f}', step {s} of {c}"
 msgstr ""
 
-#: automation_menu/services/sequence_runner.py:102
+#: automation_menu/services/sequence_runner.py:107
 msgid "Sequence stopped due to individual step error"
 msgstr ""
 
@@ -365,29 +357,42 @@ msgstr ""
 msgid "Pause script"
 msgstr ""
 
+#: automation_menu/ui/components/script_input_form.py:240
+#, python-brace-format
+msgid "Default value: {d}"
+msgstr ""
+
+#: automation_menu/ui/components/script_input_form.py:311
+msgid "Only whole numbers are allowed"
+msgstr ""
+
+#: automation_menu/ui/components/script_input_form.py:315
+msgid "Only numbers are allowed"
+msgstr ""
+
 #: automation_menu/ui/components/statusbar.py:41
 msgid "Execution status can be updated from running script"
 msgstr ""
 
-#: automation_menu/ui/controllers/async_output_controller.py:156
-#: automation_menu/ui/controllers/async_output_controller.py:159
+#: automation_menu/ui/controllers/async_output_controller.py:154
+#: automation_menu/ui/controllers/async_output_controller.py:157
 #, python-brace-format
 msgid "Unknown API handler {h}"
 msgstr ""
 
-#: automation_menu/ui/controllers/async_output_controller.py:168
+#: automation_menu/ui/controllers/async_output_controller.py:166
 #, python-brace-format
 msgid "Queue item missing 'line': {q}"
 msgstr ""
 
-#: automation_menu/ui/controllers/async_output_controller.py:285
+#: automation_menu/ui/controllers/async_output_controller.py:277
 #, python-brace-format
 msgid ""
 "Couldn't decode API JSON:\n"
 "{e}"
 msgstr ""
 
-#: automation_menu/ui/controllers/async_output_controller.py:302
+#: automation_menu/ui/controllers/async_output_controller.py:294
 #, python-format
 msgid "Error in async loop: %s"
 msgstr ""
@@ -415,25 +420,25 @@ msgstr ""
 msgid "Resume"
 msgstr ""
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:294
+#: automation_menu/ui/controllers/sequence_ui_controller.py:298
 #, python-brace-format
 msgid "Sequence list item missing id: {item}"
 msgstr ""
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:343
+#: automation_menu/ui/controllers/sequence_ui_controller.py:347
 #, python-brace-format
 msgid "Invalid step at index {i}"
 msgstr ""
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:374
+#: automation_menu/ui/controllers/sequence_ui_controller.py:378
 msgid "'Current step' was lost, can't load step"
 msgstr ""
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:448
+#: automation_menu/ui/controllers/sequence_ui_controller.py:458
 msgid "Predefined input:\n"
 msgstr ""
 
-#: automation_menu/ui/controllers/sequence_ui_controller.py:452
+#: automation_menu/ui/controllers/sequence_ui_controller.py:462
 msgid "Input not specified"
 msgstr ""
 
@@ -473,6 +478,11 @@ msgstr ""
 msgid "Input parameters for "
 msgstr ""
 
+#: automation_menu/ui/panels/script_input_panel.py:99
+#: automation_menu/ui/tabs/sequence_tab.py:613
+msgid "Abort"
+msgstr ""
+
 #: automation_menu/ui/panels/script_input_panel.py:102
 msgid "Send to script"
 msgstr ""
@@ -501,68 +511,68 @@ msgstr ""
 msgid "Script output"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:93
+#: automation_menu/ui/tabs/sequence_tab.py:107
 msgid "Add step"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:103
+#: automation_menu/ui/tabs/sequence_tab.py:119
 msgid "Save sequence"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:113
+#: automation_menu/ui/tabs/sequence_tab.py:131
 msgid "Delete sequence"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:123
+#: automation_menu/ui/tabs/sequence_tab.py:145
 msgid "Abort edit"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:158
+#: automation_menu/ui/tabs/sequence_tab.py:187
 msgid "Name"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:171
+#: automation_menu/ui/tabs/sequence_tab.py:207
 msgid "Description"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:184
-#: automation_menu/ui/tabs/sequence_tab.py:397
+#: automation_menu/ui/tabs/sequence_tab.py:227
+#: automation_menu/ui/tabs/sequence_tab.py:498
 msgid "Stop on error"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:242
+#: automation_menu/ui/tabs/sequence_tab.py:301
 msgid "Create new sequence"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:252
+#: automation_menu/ui/tabs/sequence_tab.py:315
 msgid "Edit"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:266
+#: automation_menu/ui/tabs/sequence_tab.py:334
 msgid "Run selected"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:298
+#: automation_menu/ui/tabs/sequence_tab.py:370
 msgid "Automation sequence"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:326
+#: automation_menu/ui/tabs/sequence_tab.py:402
 msgid "Steps in sequence"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:382
+#: automation_menu/ui/tabs/sequence_tab.py:474
 msgid "Script for this step"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:410
+#: automation_menu/ui/tabs/sequence_tab.py:517
 msgid "Script input parameters"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:465
+#: automation_menu/ui/tabs/sequence_tab.py:587
 msgid "Save step"
 msgstr ""
 
-#: automation_menu/ui/tabs/sequence_tab.py:474
+#: automation_menu/ui/tabs/sequence_tab.py:600
 msgid "Remove step"
 msgstr ""
 
@@ -665,11 +675,26 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: automation_menu/utils/docstring_parser.py:200
+#: automation_menu/utils/docstring_parser.py:59
+#, python-brace-format
+msgid "{n} has invalid boolean default value: {v}"
+msgstr ""
+
+#: automation_menu/utils/docstring_parser.py:67
+#, python-brace-format
+msgid "{n} has invalid integer default value: {v}"
+msgstr ""
+
+#: automation_menu/utils/docstring_parser.py:75
+#, python-brace-format
+msgid "{n} has invalid float default value: {v}"
+msgstr ""
+
+#: automation_menu/utils/docstring_parser.py:312
 msgid "File must have docstring at beginning of file"
 msgstr ""
 
-#: automation_menu/utils/docstring_parser.py:204
+#: automation_menu/utils/docstring_parser.py:316
 #, python-brace-format
 msgid ""
 "Cannot parse {file}:\n"

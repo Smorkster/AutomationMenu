@@ -10,21 +10,21 @@ License: MIT
 from automation_menu.models.presetparam import PreSetParam
 
 
-def build_run_args( params: list[ PreSetParam ] ) -> list[ str ]:
+def build_run_args( pre_set_params: list[ PreSetParam ] ) -> list[ str ]:
     """ Convert a list of parameters to a list of strings
 
     Args:
-        params (list[PreSetParam]): Parameters to turn into strings
+        pre_set_params (list[ PreSetParam ]): Parameters to turn into strings
     """
 
     args: list[ str ] = []
 
-    if not params:
+    if not pre_set_params:
 
         return args
 
-    for p in params:
-        args.append( f'--{ p.name }' )
-        args.append( p.set.strip() )
+    for param in pre_set_params:
+        args.append( f'--{ param.name }' )
+        args.append( str( param.set ).strip() )
 
     return args

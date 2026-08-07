@@ -15,10 +15,11 @@ Created: 2025-09-25
 
 import subprocess
 import sys
+
 from pathlib import Path
 
 
-def get_project_root() -> str:
+def get_project_root() -> Path:
     """ Get the project root directory (AutomationMenu folder)
     
     Returns:
@@ -28,32 +29,41 @@ def get_project_root() -> str:
     return Path( __file__ ).parent.parent
 
 
-def run_command( cmd: str, cwd: str = None ) -> None:
+def run_command( cmd: list[ str ], cwd: str = '' ) -> bool:
     """ Run a command and handle errors
 
     Args:
-        cmd (str): Command to run
+        cmd (list[ str ]): Command to run
         cwd (str): Directory to set as working directory
     """
 
-    if cwd is None:
-        cwd = get_project_root()
+    if cwd == '':
+        cwd = str( get_project_root() )
 
     print( f'Running: { ' '.join( cmd ) } (in { cwd })' )
+
     try:
-        result = subprocess.run( cmd, check = True, capture_output = True, text = True, cwd = cwd )
+        result = subprocess.run( cmd,
+                                check = True,
+                                capture_output = True,
+                                text = True,
+                                cwd = str( cwd ) )
+
         if result.stdout:
             print( result.stdout )
+
         return True
 
     except subprocess.CalledProcessError as e:
         print( f'Error: { e }' )
+
         if e.stderr:
             print( f'Error output: { e.stderr }' )
+
         return False
 
 
-def extract_strings() -> list[ str ]:
+def extract_strings() -> bool:
     """ Extract translatable strings from source code
 
     Returns:
@@ -62,18 +72,16 @@ def extract_strings() -> list[ str ]:
 
     project_root = get_project_root()
 
-    cmd = [
-        'pybabel', 'extract',
-        '-F', 'babel.cfg',
-        '-k', '_',
-        '-o', 'locales/messages.pot',
-        '.'
-    ]
+    cmd: list[ str ] = [ 'pybabel', 'extract',
+                        '-F', 'babel.cfg',
+                        '-k', '_',
+                        '-o', 'locales/messages.pot',
+                        '.' ]
 
-    return run_command( cmd, cwd = project_root )
+    return run_command( cmd, cwd = str( project_root ) )
 
 
-def init_language( language ) -> str:
+def init_language( language: str ) -> bool:
     """ Initialize a new language
 
     Args:
@@ -85,18 +93,16 @@ def init_language( language ) -> str:
 
     project_root = get_project_root()
 
-    cmd = [
-        'pybabel', 'init',
-        '-i', 'locales/messages.pot',
-        '-d', 'locales',
-        '-l', language
-    ]
+    cmd = [ 'pybabel', 'init',
+           '-i', 'locales/messages.pot',
+           '-d', 'locales',
+           '-l', language ]
 
-    return run_command( cmd, cwd = project_root )
+    return run_command( cmd, cwd = str( project_root ) )
 
 
-def update_translations() -> list[ str ]:
-    """Update existing translations with new strings
+def update_translations() -> bool:
+    """ Update existing translations with new strings
 
     Returns:
         (list[ str ]): Info what catalogs got updated
@@ -104,15 +110,13 @@ def update_translations() -> list[ str ]:
 
     project_root = get_project_root()
 
-    cmd = [
-        'pybabel', 'update',
-        '-i', 'locales/messages.pot',
-        '-d', 'locales'
-    ]
+    cmd = [ 'pybabel', 'update',
+           '-i', 'locales/messages.pot',
+           '-d', 'locales' ]
 
     import os
 
-    vsc_path = os.path.join( os.getenv( 'LOCALAPPDATA' ), 'Programs\\Microsoft VS Code\\Code.exe' )
+    vsc_path: str = os.path.join( str( os.getenv( 'LOCALAPPDATA' ) ), 'Programs\\Microsoft VS Code\\Code.exe' )
 
     for root, dirs, files in os.walk( os.path.join( project_root , 'locales' ) ):
 
@@ -122,22 +126,20 @@ def update_translations() -> list[ str ]:
                 p = os.path.join( root, file )
                 subprocess.run( [ vsc_path, p ] )
 
-    return run_command( cmd, cwd = project_root )
+    return run_command( cmd, cwd = str( project_root ) )
 
 
-def compile_translations():
+def compile_translations() -> bool:
     """ Compile .po files to .mo files
 
     Returns:
         (list[ str ]): Info which catalogs got compiled
     """
 
-    project_root = get_project_root()
+    project_root: str = str( get_project_root() )
 
-    cmd = [
-        'pybabel', 'compile',
-        '-d', 'locales'
-    ]
+    cmd: list[ str ] = [ 'pybabel', 'compile',
+                        '-d', 'locales' ]
 
     return run_command( cmd, cwd = project_root )
 
@@ -149,25 +151,27 @@ def check_structure() -> None:
 
     # Check for babel.cfg
     babel_cfg = project_root / 'babel.cfg'
+
     if not babel_cfg.exists():
         print( f'Warning: babel.cfg not found at { babel_cfg }' )
         print( 'You may need to create it in the AutomationMenu folder' )
 
     # Check for locales directory
     locales_dir = project_root / 'locales'
+
     if not locales_dir.exists():
         print( f'Warning: locales directory not found at { locales_dir }' )
         print( 'Creating locales directory...' )
         locales_dir.mkdir( exist_ok = True )
-
 
     print( f'Project root: { project_root }' )
     print( f'Babel config: { babel_cfg } ({ 'exists' if babel_cfg.exists() else 'missing' })' )
     print( f'Locales dir: { locales_dir } ({ 'exists' if locales_dir.exists() else 'missing' })' )
 
 
-def main():
+def main() -> None:
     """ Main entry point """
+
     if len( sys.argv ) < 2:
         print( 'Usage:' )
         print( '  extract     - Extract strings from source code' )
@@ -182,33 +186,46 @@ def main():
 
     if command == 'check':
         check_structure()
+
     elif command == 'extract':
         if extract_strings():
             print( '✅ Strings extracted successfully' )
+
         else:
             print( '❌ Failed to extract strings' )
+
     elif command == 'init':
         if len( sys.argv ) < 3:
             print( 'Please specify language code (e.g., ''en_EN'')' )
+
             sys.exit( 1 )
+
         if init_language( sys.argv[ 2 ] ):
             print( f'✅ Language { sys.argv[ 2 ] } initialized successfully' )
+
         else:
             print( f'❌ Failed to initialize language { sys.argv[ 2 ] }' )
+
     elif command == 'update':
         if update_translations():
             print( '✅ Translations updated successfully' )
+
         else:
             print( '❌ Failed to update translations' )
+
     elif command == 'compile':
         if compile_translations():
             print( '✅ Translations compiled successfully' )
+
         else:
             print( '❌ Failed to compile translations' )
+
     elif command == 'workflow':
         print( 'check\nextract / update\ninit\nEdit po-files\ncompile' )
+
     else:
         print( f'Unknown command: { command }' )
+
         sys.exit( 1 )
 
 if __name__ == "__main__":

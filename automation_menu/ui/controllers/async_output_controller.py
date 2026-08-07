@@ -21,7 +21,7 @@ from typing import Callable
 
 from automation_menu.models import SysInstructions
 from automation_menu.models.enums import OutputStyleTags
-from automation_menu.models.exechistory import ExecHistory, Output
+from automation_menu.models.exechistory import ExecHistory, ScriptOutput
 from automation_menu.services.history_manager import HistoryManager
 
 
@@ -68,10 +68,8 @@ class AsyncOutputController:
 
         while self._running:
             try:
-                queue_item = await self.loop.run_in_executor(
-                    None,
-                    self._get_queue_item
-                )
+                queue_item = await self.loop.run_in_executor( None,
+                                                             self._get_queue_item )
 
                 if queue_item is None:
                     break
@@ -179,7 +177,7 @@ class AsyncOutputController:
 
         if not tag_obj.name.startswith( 'SYS' ):
             if isinstance( exec_item_obj, ExecHistory ):
-                o = Output( out_time = datetime.now(), output = line_obj )
+                o = ScriptOutput( out_time = datetime.now(), output = line_obj )
                 exec_item_obj.append_output( o )
 
         if queue_item.get( 'breakpoint'):
@@ -202,10 +200,8 @@ class AsyncOutputController:
         """
 
         if isinstance( queue_item, str ):
-            return {
-                'line': queue_item.rstrip(),
-                'tag': OutputStyleTags.INFO,
-            }
+            return { 'line': queue_item.rstrip(),
+                    'tag': OutputStyleTags.INFO, }
 
         if isinstance( queue_item, SysInstructions ):
 
@@ -218,19 +214,15 @@ class AsyncOutputController:
                 parsed = self._parse_api_message( api_message = line_obj )
 
                 if isinstance( parsed, str ):
-                    return {
-                        'line': parsed.rstrip(),
-                        'tag': OutputStyleTags.INFO,
-                    }
+                    return { 'line': parsed.rstrip(),
+                            'tag': OutputStyleTags.INFO, }
 
                 return parsed
 
             return queue_item
 
-        return {
-            'line': str( queue_item ),
-            'tag': OutputStyleTags.INFO,
-        }
+        return { 'line': str( queue_item ),
+                'tag': OutputStyleTags.INFO, }
 
 
     def _parse_api_message( self, api_message: str ) -> dict[ str, object ] | str:

@@ -12,7 +12,7 @@ from datetime import datetime
 
 
 @dataclass
-class Output:
+class ScriptOutput:
     out_time: datetime
     output: str
 
@@ -34,5 +34,3 @@ class Output:
         """
 
         return f'{ self.out_time.strftime( '%H:%M:%S' ) }: { self.output }'
-
-
