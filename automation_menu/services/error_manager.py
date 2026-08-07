@@ -47,10 +47,8 @@ class ErrorManager:
 
             raise ConnectionError( _( 'No connection to LDAP server established' ) )
 
-        return send_error_mail(
-            app_state = self._app_state,
-            ldap_connection = self._ldap_connection,
-            script_info = script_info,
-            error_msg = error_msg,
-            screenshot = screenshot,
-        )
+        return send_error_mail( app_state = self._app_state,
+                               ldap_connection = self._ldap_connection,
+                               script_info = script_info,
+                               error_msg = error_msg,
+                               screenshot = screenshot, )

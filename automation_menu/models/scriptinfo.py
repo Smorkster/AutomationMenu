@@ -16,7 +16,7 @@ from automation_menu.models.user import User
 
 @dataclass
 class ScriptInfo:
-    """ Stores file, metadata, and runtime information for a script."""
+    """ Stores file, metadata, and runtime information for a script. """
 
     # File info
     filename: str
@@ -86,10 +86,8 @@ class ScriptInfo:
 
         author_name: str = self.get_attr( 'author' )
 
-        return (
-            bool( author_name )
-            and user.AdObject.name.value == author_name.replace( ' (', '(' )
-        )
+        return ( bool( author_name )
+                and user.AdObject.name.value == author_name.replace( ' (', '(' ) )
 
 
 

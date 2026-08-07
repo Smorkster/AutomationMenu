@@ -17,7 +17,7 @@ from automation_menu.models.sequencestep import SequenceStep
 
 @dataclass
 class Sequence:
-    """ Represents a predefined automatic run sequence."""
+    """ Represents a predefined automatic run sequence. """
 
     description: str = ''
     id: str = ''
@@ -28,7 +28,7 @@ class Sequence:
 
     @classmethod
     def from_dict( cls: type[ Sequence ], data: dict ) -> Sequence:
-        """ Turn a dict into a Sequence
+        """ Turn a dict into a Sequence.
 
         Args:
             cls (type[Sequence]): Current sequence
@@ -48,16 +48,12 @@ class Sequence:
 
             raise TypeError( _( f'Data was not of type \'dict\', got {t}' ).format( t = type( data ) ) )
 
-        return cls(
-            description = data.get( 'description', _( '<Description not set>' ) ),
-            id = data.get( 'id', str( uuid.uuid4() ) ),
-            name = data.get( 'name', _( 'Unnamed sequence' ) ),
-            steps = [
-                SequenceStep.from_dict( step )
-                for step in data.get( 'steps', [] )
-            ],
-            stop_on_error = data.get( 'stop_on_error', False )
-        )
+        return cls( description = data.get( 'description', _( '<Description not set>' ) ),
+                   id = data.get( 'id', str( uuid.uuid4() ) ),
+                   name = data.get( 'name', _( 'Unnamed sequence' ) ),
+                   steps = [ SequenceStep.from_dict( step )
+                            for step in data.get( 'steps', [] ) ],
+                            stop_on_error = data.get( 'stop_on_error', False ) )
 
 
     @classmethod
@@ -75,10 +71,8 @@ class Sequence:
         return cls( description = seq.description,
                    id = seq.id,
                    name = seq.name,
-                   steps = [
-                       SequenceStep.from_step( step = step )
-                       for step in seq.steps
-                       ],
+                   steps = [ SequenceStep.from_step( step = step )
+                            for step in seq.steps ],
                    stop_on_error = seq.stop_on_error )
 
 
@@ -93,10 +87,8 @@ class Sequence:
         for step in self.steps:
             steps.append( step.to_dict() )
 
-        return {
-            'id': self.id,
-            'name': self.name,
-            'description': self.description,
-            'stop_on_error': self.stop_on_error,
-            'steps': steps
-        }
+        return { 'id': self.id,
+                'name': self.name,
+                'description': self.description,
+                'stop_on_error': self.stop_on_error,
+                'steps': steps }

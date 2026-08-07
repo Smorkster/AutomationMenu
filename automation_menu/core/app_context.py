@@ -318,6 +318,7 @@ class ApplicationContext:
 
         self._output_queue = value
 
+
     def is_ldap_connected( self ) -> bool:
         """ Check whether an LDAP connection has been established.
 

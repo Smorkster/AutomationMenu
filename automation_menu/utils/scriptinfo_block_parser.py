@@ -32,11 +32,9 @@ def scriptinfo_block_parser( full_text: str ) -> tuple[ dict, dict ]:
         return {}, {}
 
     scriptinfo_meta: dict = {}
-    warnings: dict[ str, list[ str ] ] = {
-        'keys': [],
-        'values': [],
-        'other': []
-    }
+    warnings: dict[ str, list[ str ] ] = { 'keys': [],
+                                          'values': [],
+                                          'other': [] }
 
     value_to_use: bool | list[ str ] | str | ScriptState
 

@@ -54,10 +54,8 @@ def _approve_listing( script_info: ScriptInfo, app_run_state: ApplicationRunStat
         # Is user in at least one required AD group
         in_required_group: bool = (
             len( required_ad_groups ) == 0
-            or any(
-                current_user.is_member_of( group_to_check = g )
-                for g in required_ad_groups
-            )
+            or any( current_user.is_member_of( group_to_check = g )
+                   for g in required_ad_groups )
         )
 
         # Is user explicitly allowed
@@ -199,12 +197,13 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
     pattern: re.Pattern = re.compile( r'^(?!(__init__)|(GeneralTestFile)).*\.p((y)|(s1))$' )
     application_test_files: list[ ScriptInfo ] = []
     indexed_files: list[ ScriptInfo ] = []
-    scriptswithbreakpoint: list[ ScriptInfo] = []
+    scripts_with_breakpoint: list[ ScriptInfo ] = []
     script_dirs: list[ Path ] = app_state.settings.script_folders
 
     for dir in script_dirs:
 
         if not dir.exists():
+
             continue
 
         for i, file in enumerate(
@@ -217,31 +216,39 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
             )
         ):
             if file.name.startswith( 'AMTest_' ) and app_run_state == ApplicationRunState.PROD:
+
                 continue
 
             try:
-                script_info, parse_warnings, approved = _read_scriptfile( file = file, current_user = app_state.current_user, app_run_state = app_run_state )
+                script_info, parse_warnings, approved = _read_scriptfile( file = file,
+                                                                         current_user = app_state.current_user,
+                                                                         app_run_state = app_run_state )
 
                 # Guard against format changes that has not been implemented
                 for key in ( 'keys', 'values', 'other' ):
                     if key not in parse_warnings:
+
                         raise ValueError( _( '\'parse_warnings\' missing key {key}' ).format( key = key ) )
 
                 if len( parse_warnings[ 'keys' ] ) > 0:
+
                     raise ValueError( _( 'ScriptInfo contained fields that are not valid, or are misspelled: {names}' ).format( names = ', '.join( parse_warnings[ 'keys' ] ) ) )
 
                 if len( parse_warnings[ 'values' ] ) > 0:
+
                     raise ValueError( _( 'ScriptInfo contained values that are not valid, or are misspelled: {names}' ).format( names = ', '.join( parse_warnings[ 'values' ] ) ) )
 
                 if len( parse_warnings[ 'other' ] ) > 0:
+
                     raise ValueError( _( 'Parsing ScriptInfo generated error for these fields: {names}' ).format( names = ', '.join( parse_warnings[ 'other' ] ) ) )
 
                 if approved == 2:
+
                     continue
 
                 else:
                     if approved == 1:
-                        scriptswithbreakpoint.append( script_info )
+                        scripts_with_breakpoint.append( script_info )
 
                     if file.name.startswith( 'AMTest_' ):
                         application_test_files.append( script_info )
@@ -251,25 +258,19 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
 
             except ScriptInfoError as e:
                 output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
-                                'tag': OutputStyleTags.SYSERROR
-                                }
-                                )
+                                'tag': OutputStyleTags.SYSERROR } )
 
             except ValueError as e:
                 output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
-                                'tag': OutputStyleTags.SYSWARNING
-                                }
-                                )
+                                'tag': OutputStyleTags.SYSWARNING } )
 
             except Exception as e:
                 output_queue.put( { 'line': _( '{filename} not loaded: {e}' ).format( filename = file.name, e = repr( e ) ),
-                                'tag': OutputStyleTags.SYSERROR
-                                }
-                                )
+                                'tag': OutputStyleTags.SYSERROR } )
 
                 continue
 
-    if len( scriptswithbreakpoint ) > 0:
+    if len( scripts_with_breakpoint ) > 0:
         line: str = _( 'Some scripts have at least one active breakpoint in the code. Handling this has not been fully tested yet:' )
         output_queue.put( { 'line': '' ,
                            'tag': OutputStyleTags.SYSINFO
@@ -277,7 +278,7 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
         output_queue.put( { 'line': line,
                            'tag': OutputStyleTags.SYSWARNING
                            } )
-        output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scriptswithbreakpoint ] ),
+        output_queue.put( { 'line': ', '.join( [ script.get_attr( 'filename' ) for script in scripts_with_breakpoint ] ),
                            'tag': OutputStyleTags.SYSWARNING
                            } )
 

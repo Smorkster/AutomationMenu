@@ -50,6 +50,7 @@ class ScriptExecutionManager:
         self._paused: bool = False
         self._logger: Logger = logger
 
+
     @contextmanager
     def create_runner( self ) -> Generator[ Any, Any, Any ]:
         """ Contextmanager taking care of runner bootup and cleanup """
@@ -58,19 +59,21 @@ class ScriptExecutionManager:
             if self.current_runner is not None:
                 raise RuntimeError( 'Another script is running, only one allowed at a time.' )
 
-            runner: ScriptRunner = ScriptRunner( output_queue = self._output_queue, app_state = self.app_state, exec_manager = self, error_reporter = self._error_manager.report_script_error )
+            runner: ScriptRunner = ScriptRunner( output_queue = self._output_queue,
+                                                app_state = self.app_state,
+                                                exec_manager = self,
+                                                error_reporter = self._error_manager.report_script_error )
             self.current_runner = runner
 
         try:
             yield runner
 
         except Exception as e:
-            self._output_queue.put( {
-                'line': 'Exception: {error}'.format( error = str( e ) ),
-                'tag': OutputStyleTags.SYSERROR,
-                'finished': True,
-                'exec_item': runner._exec_item
-            } )
+            self._output_queue.put( { 'line': 'Exception: {error}'.format( error = str( e ) ),
+                                     'tag': OutputStyleTags.SYSERROR,
+                                     'finished': True,
+                                     'exec_item': runner._exec_item } )
+
             raise
 
         finally:
@@ -97,6 +100,7 @@ class ScriptExecutionManager:
         """
 
         with self._lock:
+
             return self.current_runner is not None and not self._paused
 
 
@@ -110,6 +114,7 @@ class ScriptExecutionManager:
         import psutil
 
         if self.current_runner is None:
+
             return False
 
         try:
@@ -234,7 +239,13 @@ class ScriptExecutionManager:
         def sync_caller() -> None:
             """ Async worker for script execution """
 
-            exec_item, exit_code, terminated = self.run_script_sync( script_info = script_info, main_window = main_window, api_callbacks = api_callbacks, enable_stop_button_callback = enable_stop_button_callback, enable_pause_button_callback = enable_pause_button_callback, stop_pause_button_blinking_callback = stop_pause_button_blinking_callback, run_input = run_input )
+            exec_item, exit_code, terminated = self.run_script_sync( script_info = script_info,
+                                                                    main_window = main_window,
+                                                                    api_callbacks = api_callbacks,
+                                                                    enable_stop_button_callback = enable_stop_button_callback,
+                                                                    enable_pause_button_callback = enable_pause_button_callback,
+                                                                    stop_pause_button_blinking_callback = stop_pause_button_blinking_callback,
+                                                                    run_input = run_input )
 
             if on_finished:
                 on_finished( exec_item, exit_code, terminated )
@@ -291,15 +302,13 @@ class ScriptExecutionManager:
         """
 
         with self.create_runner() as runner:
-            runner.run_script(
-                script_info = script_info,
-                main_window = main_window,
-                api_callbacks = api_callbacks,
-                enable_stop_button_callback = enable_stop_button_callback,
-                enable_pause_button_callback = enable_pause_button_callback,
-                stop_pause_button_blinking_callback = stop_pause_button_blinking_callback,
-                run_input = run_input,
-            )
+            runner.run_script( script_info = script_info,
+                              main_window = main_window,
+                              api_callbacks = api_callbacks,
+                              enable_stop_button_callback = enable_stop_button_callback,
+                              enable_pause_button_callback = enable_pause_button_callback,
+                              stop_pause_button_blinking_callback = stop_pause_button_blinking_callback,
+                              run_input = run_input, )
 
             runner.current_runner.wait()
 

@@ -32,8 +32,7 @@ class PreSetParam:
         """
 
         return cls( name = value[ 'name' ],
-                   set = value[ 'set' ]
-                   )
+                   set = value[ 'set' ] )
 
 
     @classmethod
@@ -49,8 +48,7 @@ class PreSetParam:
         """
 
         return cls( name = value.name,
-                   set = value.set
-                   )
+                   set = value.set )
 
 
     def to_dict( self ) -> dict[ str, str ]:
@@ -60,7 +58,5 @@ class PreSetParam:
             Dictionary representation of the preset parameter.
         """
 
-        return {
-            'name': self.name,
-            'set': self.set
-        }
+        return { 'name': self.name,
+                'set': self.set }
