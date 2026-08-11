@@ -21,7 +21,7 @@ _param_approved_field_names: list[ str ] = [ 'default', 'description', 'options'
 
 # Regex to check for approved parameters
 _param_re_check_if_new = re.compile( rf'^\s*({ '|'.join( _param_approved_field_names ) })\s*=', IGNORECASE )
-_param_re_iter_splitter = re.compile( rf':\s*(?P<flag>{'|'.join(_param_flags)})|(?P<key>{'|'.join( _param_approved_field_names )})\s*=\s*(?P<value>[^:]+)' )
+_param_re_iter_splitter = re.compile( rf':\s*(?P<flag>{'|'.join( _param_flags )})|(?P<key>{'|'.join( _param_approved_field_names )})\s*=\s*(?P<value>[^:]+)' )
 
 
 def _parse_fields( lines: list[ str ] ) -> tuple[ dict, dict ]:

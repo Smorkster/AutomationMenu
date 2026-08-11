@@ -21,12 +21,13 @@ from automation_menu.ui.types.op_buttons_ui import OpButtonsUi
 from automation_menu.ui.i18n.widget_for_translation import WidgetForTranslation
 
 
-def get_op_buttons( main_root: Tk, main_self: AutomationMenuWindow ) -> OpButtonsUi:
+def get_op_buttons( main_root: Tk, main_self: AutomationMenuWindow, frame_style: str ) -> OpButtonsUi:
     """ Create the operation button UI used during script execution.
 
     Args:
         main_root (Tk): Main application window.
         main_self (AutomationMenuWindow): Main window object.
+        frame_style (str): Style name, depending on application state, to use for frames
 
     Returns:
         widgets (OpButtonsUi): Created operation button UI widgets.
@@ -36,12 +37,12 @@ def get_op_buttons( main_root: Tk, main_self: AutomationMenuWindow ) -> OpButton
 
     widgets: OpButtonsUi = OpButtonsUi()
 
-    widgets.op_buttons_frame = Frame( master = main_root )
+    widgets.op_buttons_frame = Frame( master = main_root, style = frame_style )
     widgets.op_buttons_frame.grid( columnspan = 2, row = 0, sticky = 'nwe' )
 
     col: int = 0
 
-    widgets.menu_frame = Frame( master = widgets.op_buttons_frame )
+    widgets.menu_frame = Frame( master = widgets.op_buttons_frame, style = frame_style )
     widgets.menu_frame.grid()
     widgets.menu_frame.grid_columnconfigure( index = 0, weight = 0 )
     widgets.menu_frame.grid_columnconfigure( index = 1, weight = 0 )

@@ -137,7 +137,8 @@ class AutomationMenuWindow:
         self.tab_control: Notebook = Notebook( master = self.root, style = self.tab_style )
 
         # Create buttons for script operations
-        self.op_buttons: OpButtonsUi = get_op_buttons( main_root = self.root, main_self = self )
+        frame_style: str = f'{ self.app_context.startup_arguments[ 'app_run_state' ].value }Indicator.TFrame'
+        self.op_buttons: OpButtonsUi = get_op_buttons( main_root = self.root, main_self = self, frame_style = frame_style )
 
         # Create output
         self.tab_output, self.textbox_output = get_output_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.LanguageManager.add_translatable_widget )
@@ -223,19 +224,14 @@ class AutomationMenuWindow:
         self.root: Tk = Tk()
         self.root.withdraw()
         self.root.geometry( '1100x600' )
+        self.root.minsize( width = 620, height= 600 )
 
         title_string: str = self.app_state.secrets[ 'mainwindowtitle' ]
 
-        if self.app_context.startup_arguments[ 'app_run_state' ] == ApplicationRunState.DEV:
-            title_string += " <DEV>"
-            self.tab_style = 'Dev.TNotebook'
+        if self.app_context.startup_arguments[ 'app_run_state' ].name != 'PROD':
+            title_string += f' <{ self.app_context.startup_arguments[ 'app_run_state' ].name }>'
 
-        elif self.app_context.startup_arguments[ 'app_run_state' ] == ApplicationRunState.TEST:
-            title_string += " <TEST>"
-            self.tab_style = 'Test.TNotebook'
-
-        else:
-            self.tab_style = 'TNotebook'
+        self.tab_style = f'{ self.app_context.startup_arguments[ 'app_run_state' ].value }.TNotebook'
 
         self.root.title( string = title_string )
 

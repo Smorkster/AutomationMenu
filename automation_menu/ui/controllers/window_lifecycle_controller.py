@@ -92,7 +92,7 @@ class ExecutionWindowLifecycleController:
 
     @ui_guard_method( when_message = 'Closing main window' )
     def on_closing( self ) -> None:
-        """ Handle main window close events, including running scripts and settings persistence."""
+        """ Handle main window close events, including running scripts and settings persistence. """
 
         from automation_menu.utils.localization import _
 

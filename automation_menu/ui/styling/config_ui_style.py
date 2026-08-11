@@ -12,6 +12,8 @@ from tkinter import Text
 from tkinter.ttk import Style
 from typing import Literal
 
+_dev_indicator_color: str = "#D69456"
+_test_indicator_color: str = "#52F9F1"
 
 def set_output_styles( widget: Text ) -> None:
     """ Configure text tag styles for the output widget.
@@ -93,6 +95,13 @@ def set_ui_style( style: Style ) -> None:
     ###############
     # Frame styling
     # region
+    style.configure( 'DevIndicator.TFrame',
+                    background = _dev_indicator_color
+    )
+    style.configure( 'ProdIndicator.TFrame' )
+    style.configure( 'TestIndicator.TFrame',
+                    background = _test_indicator_color
+    )
     style.configure( 'SequenceStep.TFrame',
                     highlightcolor = '#FFFFFF',
                     highlightthickness = '2'
@@ -179,19 +188,19 @@ def set_ui_style( style: Style ) -> None:
     ##################
     # Notebook styling
     # region
-    style.configure( 'TNotebook',
+    style.configure( 'Prod.TNotebook',
                     tabmargins = [ 0, 1, 2, 0 ],  #[left, top, right, bottom]
                     background = 'lightgray'
     )
 
     style.configure( 'Dev.TNotebook',
                     tabmargins = [ 0, 1, 2, 0 ],  #[left, top, right, bottom]
-                    background = "#D69456"
+                    background = _dev_indicator_color
     )
 
     style.configure( 'Test.TNotebook',
                     tabmargins = [ 0, 1, 2, 0 ],  #[left, top, right, bottom]
-                    background = "#52F9F1"
+                    background = _test_indicator_color
     )
 
     style.configure( 'TNotebook.Tab',
