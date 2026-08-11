@@ -119,8 +119,7 @@ class ExecutionUiController:
                 old_geometry = Geometry( height = self._pre_work_refs.root.winfo_height(),
                                         width = self._pre_work_refs.root.winfo_width(),
                                         x = self._pre_work_refs.root.winfo_x(),
-                                        y = self._pre_work_refs.root.winfo_y()
-                                        )
+                                        y = self._pre_work_refs.root.winfo_y() )
                 self.min_max_on_running( old_geometry )
     # endregion pre/post run
 
@@ -196,15 +195,14 @@ class ExecutionUiController:
             old_geometry (Geometry | None): Main window geometry before script execution.
         """
 
-        win_width: int = 400
-        win_height: int = 200
-
         if old_geometry:
             self._old_window_geometry = old_geometry
             self._minimize_hide_controls()
-            self._min_max_refs.root.geometry( newGeometry = f'{ win_width }x{ win_height }+{ self._min_max_refs.root.winfo_screenwidth() - win_width  }+{ self._min_max_refs.root.winfo_screenheight() - win_height - 100 }' )
+            self._min_max_refs.root.minsize( width = self._min_max_refs.win_minimized_width, height = self._min_max_refs.win_minimized_height )
+            self._min_max_refs.root.geometry( newGeometry = f'{ self._min_max_refs.win_minimized_width }x{ self._min_max_refs.win_minimized_height }+{ self._min_max_refs.root.winfo_screenwidth() - self._min_max_refs.win_minimized_width }+{ self._min_max_refs.root.winfo_screenheight() - self._min_max_refs.win_minimized_height - 100 }' )
 
         else:
+            self._min_max_refs.root.minsize( width = self._min_max_refs.win_min_size_width, height = self._min_max_refs.win_min_size_height )
             self._min_max_refs.root.geometry( newGeometry = self._old_window_geometry.to_string() )
             self._minimize_show_controls()
 

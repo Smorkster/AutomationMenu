@@ -159,19 +159,15 @@ class AutomationMenuWindow:
                                                           app_state = self.app_state,
                                                           exec_bindings = self._exec_refs )
 
-        self.api_callbacks = {
-            'determinate_progress': self.execution_controller.set_progress_determined,
-            'hide_progress': self.execution_controller.hide_progress,
-            'indeterminate_progress': self.execution_controller.set_progress_indetermined,
-            'show_progress': self.execution_controller.show_progress,
-            'update_progress': self.execution_controller.update_progress,
-
-            'clear_status': self.execution_controller.clear_status,
-            'get_status': self.execution_controller.get_status,
-            'set_status': self.execution_controller.set_status,
-
-            'setting': self.setting
-        }
+        self.api_callbacks = { 'determinate_progress': self.execution_controller.set_progress_determined,
+                              'hide_progress': self.execution_controller.hide_progress,
+                              'indeterminate_progress': self.execution_controller.set_progress_indetermined,
+                              'show_progress': self.execution_controller.show_progress,
+                              'update_progress': self.execution_controller.update_progress,
+                              'clear_status': self.execution_controller.clear_status,
+                              'get_status': self.execution_controller.get_status,
+                              'set_status': self.execution_controller.set_status,
+                              'setting': self.setting }
 
         self.output_controller: AsyncOutputController = AsyncOutputController( output_queue = self.app_context.OutputQueue,
                                                                               text_widget = self.textbox_output,

@@ -26,3 +26,8 @@ class ExecutionMinMaxRefs:
     status_ui: StatusUi
 
     root: Tk
+
+    win_minimized_width: int = 400
+    win_minimized_height: int = 200
+    win_min_size_width: int = 620
+    win_min_size_height: int = 600
