@@ -9,16 +9,17 @@ License: MIT
 from __future__ import annotations
 
 from pathlib import Path
-from tkinter import Event, Tk
+from tkinter import Event, PhotoImage, Tk
 from tkinter.ttk import Notebook, Style
 from typing import TYPE_CHECKING
+
+from automation_menu.utils.app_path_resolver import app_path
 
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.models.application_state import ApplicationState
 
-from automation_menu.models.enums import ApplicationRunState
 from automation_menu.ui.components.op_buttons import get_op_buttons
 from automation_menu.ui.components.statusbar import get_statusbar
 from automation_menu.ui.controllers.async_output_controller import AsyncOutputController
@@ -210,6 +211,11 @@ class AutomationMenuWindow:
         self.root.deiconify()
         self.root.focus_force()
         self.root.after_idle( self._center_screen )
+
+        icon_path = Path( app_path() ) / 'automation_menu' / 'assets' / 'automation_menu.png'
+        self._app_icon = PhotoImage( file = icon_path )
+        self.root.after( 0, lambda: self.root.iconphoto( True, self._app_icon ) )
+
         self.root.mainloop()
 
 
