@@ -77,8 +77,7 @@ def _approve_listing( script_info: ScriptInfo, app_run_state: ApplicationRunStat
             (
                 is_author or
                 ( app_run_state == ApplicationRunState.DEV ) or
-                ( in_required_group ) or
-                in_allowed_users
+                ( in_required_group and in_allowed_users )
             )
         )
 
