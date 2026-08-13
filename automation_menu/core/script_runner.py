@@ -139,7 +139,7 @@ class ScriptRunner:
                                 stderr = asyncio.subprocess.PIPE,
                                 stdin = asyncio.subprocess.PIPE,
                                 text = True,
-                                encoding = 'utf-8',
+                                encoding = 'utf-8-sig',
                                 errors = 'replace',
                                 env = current_env )
 

@@ -41,7 +41,7 @@ def write_exec_history( exec_items: list[ dict ], root_dir: WindowsPath, logger:
             pass
 
     try:
-        with open( file_path, mode = 'a', encoding = 'utf-8' ) as f:
+        with open( file_path, mode = 'a', encoding = 'utf-8-sig' ) as f:
             for item in exec_items:
                 log_entry: dict[ str, str | dict ] = {
                     'timestamp': datetime.now().isoformat(),
