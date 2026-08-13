@@ -10,7 +10,7 @@ $ShortcutPath = Join-Path $Desktop "AutomationMenu.lnk"
 
 function Install-Python
 {
-    Write-Host "Get installationfile"
+    Write-Host "Downloading installation file"
     $DownloadPath = "$env:TEMP\python-installer.exe"
 
     Invoke-WebRequest -Uri $PythonInstallerUrl -OutFile $DownloadPath
@@ -33,7 +33,7 @@ function Install-PythonVenv
     This will be installed under user > AppData
     #>
 
-    Write-Host "Create run environment"
+    Write-Host "Creating run environment"
     python -m venv $PythonExecLocation
 
     & "$PythonExecLocation\Scripts\python.exe" -m pip install --upgrade pip
@@ -42,11 +42,11 @@ function Install-PythonVenv
 
 function New-LaunchShortcut
 {
-    Write-Host "Create Desktop shortcut"
+    Write-Host "Creating Desktop shortcut"
 
     if ( -not ( Test-Path ( Join-Path -Path $AutomationMenuRoot -ChildPath "main.py" ) -ErrorAction Stop ) )
     {
-        throw "AutomationMenu wasn't found"
+        throw "AutomationMenu can not be found"
     }
 
     $WshShell = New-Object -ComObject WScript.Shell
@@ -60,7 +60,7 @@ function New-LaunchShortcut
 
     $ShortCut.Save()
 
-    Write-Host "Short was created on Desktop"
+    Write-Host "Shortcut was created on Desktop"
 }
 
 function Test-PythonInstalled
@@ -85,17 +85,17 @@ if ( -not ( Test-PythonInstalled ) )
 
 if ( -not ( Test-Path $PythonExecLocation ) )
 {
-    Write-Host "Couldn't find that a run environment was installed.`nWill install one here: $PythonExecLocation"
+    Write-Host "Could not find an run environment`nWill install here: $PythonExecLocation"
     Install-PythonVenv
 }
 else
 {
-    Write-Host "Python installed and run environment is created"
+    Write-Host "Python installed and run environment created"
 }
 
 if ( -not ( Test-Path $ShortcutPath ) )
 {
-    Write-Host "Found no shortcut on Desktop."
+    Write-Host "Found no Desktop shortcut."
 
     New-LaunchShortcut
 }
