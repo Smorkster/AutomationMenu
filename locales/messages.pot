@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-07 10:47+0200\n"
+"POT-Creation-Date: 2026-08-13 14:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -92,53 +92,53 @@ msgstr ""
 msgid "Running in: '{a}', application can not handle debugging."
 msgstr ""
 
-#: automation_menu/core/script_runner.py:184
+#: automation_menu/core/script_runner.py:185
 msgid "Script terminated"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:190
+#: automation_menu/core/script_runner.py:191
 msgid "Script completed successfully"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:196
+#: automation_menu/core/script_runner.py:197
 #, python-brace-format
 msgid "Script failed with exit code {err}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:235
-#: automation_menu/core/script_runner.py:273
+#: automation_menu/core/script_runner.py:236
+#: automation_menu/core/script_runner.py:274
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
 "reactivate script."
 msgstr ""
 
-#: automation_menu/core/script_runner.py:362
+#: automation_menu/core/script_runner.py:363
 #, python-brace-format
 msgid "Starting '{file}'"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:386
+#: automation_menu/core/script_runner.py:387
 #, python-brace-format
 msgid "Subprocess error {error}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:389
+#: automation_menu/core/script_runner.py:390
 #, python-brace-format
 msgid "Unexpected error {error}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:453
+#: automation_menu/core/script_runner.py:454
 #, python-brace-format
 msgid "Termination - CalledProcessError: {e}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:457
+#: automation_menu/core/script_runner.py:458
 #, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr ""
 
-#: automation_menu/core/script_runner.py:461
+#: automation_menu/core/script_runner.py:462
 #, python-brace-format
 msgid "Termination - Exception: {e}"
 msgstr ""
@@ -153,43 +153,43 @@ msgstr ""
 msgid "Writing execution history error; file not found: {file_path}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:150
+#: automation_menu/filehandling/script_discovery.py:174
 msgid "File not found"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:154
+#: automation_menu/filehandling/script_discovery.py:188
 #, python-brace-format
 msgid "Could not read file: {error}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:231
+#: automation_menu/filehandling/script_discovery.py:265
 #, python-brace-format
 msgid "'parse_warnings' missing key {key}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:235
+#: automation_menu/filehandling/script_discovery.py:269
 #, python-brace-format
 msgid "ScriptInfo contained fields that are not valid, or are misspelled: {names}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:239
+#: automation_menu/filehandling/script_discovery.py:273
 #, python-brace-format
 msgid "ScriptInfo contained values that are not valid, or are misspelled: {names}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:243
+#: automation_menu/filehandling/script_discovery.py:277
 #, python-brace-format
 msgid "Parsing ScriptInfo generated error for these fields: {names}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:260
-#: automation_menu/filehandling/script_discovery.py:264
-#: automation_menu/filehandling/script_discovery.py:268
+#: automation_menu/filehandling/script_discovery.py:294
+#: automation_menu/filehandling/script_discovery.py:298
+#: automation_menu/filehandling/script_discovery.py:302
 #, python-brace-format
 msgid "{filename} not loaded: {e}"
 msgstr ""
 
-#: automation_menu/filehandling/script_discovery.py:274
+#: automation_menu/filehandling/script_discovery.py:308
 msgid ""
 "Some scripts have at least one active breakpoint in the code. Handling "
 "this has not been fully tested yet:"
@@ -200,12 +200,12 @@ msgstr ""
 msgid "Writing settings error; file not found: {file_path}"
 msgstr ""
 
-#: automation_menu/models/scriptinfo_not_loaded.py:22
+#: automation_menu/models/scriptinfo_not_loaded.py:27
 #: automation_menu/services/sequence_runner.py:42
 msgid "Script not loaded"
 msgstr ""
 
-#: automation_menu/models/scriptinfo_not_loaded.py:23
+#: automation_menu/models/scriptinfo_not_loaded.py:28
 msgid "Placeholder for a script referenced, but not currently loaded"
 msgstr ""
 
@@ -337,36 +337,36 @@ msgstr ""
 msgid "Sequence stopped due to individual step error"
 msgstr ""
 
-#: automation_menu/ui/components/op_buttons.py:50
+#: automation_menu/ui/components/op_buttons.py:51
 msgid "Script ..."
 msgstr ""
 
-#: automation_menu/ui/components/op_buttons.py:57
+#: automation_menu/ui/components/op_buttons.py:58
 msgid "Sequence ..."
 msgstr ""
 
-#: automation_menu/ui/components/op_buttons.py:65
+#: automation_menu/ui/components/op_buttons.py:66
 msgid "Continue"
 msgstr ""
 
-#: automation_menu/ui/components/op_buttons.py:74
+#: automation_menu/ui/components/op_buttons.py:75
 msgid "Stop script"
 msgstr ""
 
-#: automation_menu/ui/components/op_buttons.py:83
+#: automation_menu/ui/components/op_buttons.py:84
 msgid "Pause script"
 msgstr ""
 
-#: automation_menu/ui/components/script_input_form.py:240
+#: automation_menu/ui/components/script_input_form.py:245
 #, python-brace-format
 msgid "Default value: {d}"
 msgstr ""
 
-#: automation_menu/ui/components/script_input_form.py:311
+#: automation_menu/ui/components/script_input_form.py:316
 msgid "Only whole numbers are allowed"
 msgstr ""
 
-#: automation_menu/ui/components/script_input_form.py:315
+#: automation_menu/ui/components/script_input_form.py:320
 msgid "Only numbers are allowed"
 msgstr ""
 
@@ -403,20 +403,20 @@ msgid ""
 " minimized."
 msgstr ""
 
-#: automation_menu/ui/controllers/execution_ui_controller.py:137
+#: automation_menu/ui/controllers/execution_ui_controller.py:136
 msgid "Process was resumed"
 msgstr ""
 
-#: automation_menu/ui/controllers/execution_ui_controller.py:140
-#: automation_menu/ui/windows/main_window.py:327
+#: automation_menu/ui/controllers/execution_ui_controller.py:139
+#: automation_menu/ui/windows/main_window.py:325
 msgid "Pause"
 msgstr ""
 
-#: automation_menu/ui/controllers/execution_ui_controller.py:147
+#: automation_menu/ui/controllers/execution_ui_controller.py:146
 msgid "Process was paused"
 msgstr ""
 
-#: automation_menu/ui/controllers/execution_ui_controller.py:150
+#: automation_menu/ui/controllers/execution_ui_controller.py:149
 msgid "Resume"
 msgstr ""
 
@@ -690,11 +690,11 @@ msgstr ""
 msgid "{n} has invalid float default value: {v}"
 msgstr ""
 
-#: automation_menu/utils/docstring_parser.py:312
+#: automation_menu/utils/docstring_parser.py:313
 msgid "File must have docstring at beginning of file"
 msgstr ""
 
-#: automation_menu/utils/docstring_parser.py:316
+#: automation_menu/utils/docstring_parser.py:317
 #, python-brace-format
 msgid ""
 "Cannot parse {file}:\n"
