@@ -31,7 +31,7 @@ def read_settingsfile( settings_file_path: str, debug_logger: Logger ) -> RawSet
     """
 
     try:
-        with open( settings_file_path, mode = 'r', encoding = 'utf-8' ) as f:
+        with open( settings_file_path, mode = 'r', encoding = 'utf-8-sig' ) as f:
 
             loaded_settings: RawSettings = json.load( f )
 
@@ -62,7 +62,7 @@ def write_settingsfile( settings: Settings, settings_file_path: str ) -> None:
     from automation_menu.utils.localization import _
 
     try:
-        with open( settings_file_path, mode = 'w', encoding = 'utf-8' ) as f:
+        with open( settings_file_path, mode = 'w', encoding = 'utf-8-sig' ) as f:
             f.write( settings.to_json() )
 
     except FileNotFoundError as e:

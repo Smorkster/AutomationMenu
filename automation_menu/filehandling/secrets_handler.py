@@ -19,5 +19,5 @@ def read_secrets_file( file_path: str ) -> dict:
         (dict): Dict containing secret data
     """
 
-    with open( file_path, mode = 'r', encoding = 'utf-8' ) as f:
+    with open( file_path, mode = 'r', encoding = 'utf-8-sig' ) as f:
         return json.load( f )

@@ -281,11 +281,12 @@ def docstring_parser( raw_docstring: str ) -> tuple[ dict, dict ]:
     return parsed_data, warnings
 
 
-def extract_script_metadata( script_fullpath: str ) -> tuple[ dict, dict ]:
+def extract_script_metadata( script_fullpath: str, encoding: str ) -> tuple[ dict, dict ]:
     """ Extract metadata from a script file docstring.
 
     Args:
         script_fullpath (str): Path to the script file.
+        encoding (str): Encoding used for the file
 
     Returns:
         parsed_docstring (dict), warnings (dict): Parsed description and fields from the script docstring, and warnings for invalid or misspelled field names.
@@ -297,7 +298,7 @@ def extract_script_metadata( script_fullpath: str ) -> tuple[ dict, dict ]:
     warnings: dict = {}
 
     try:
-        with open( script_fullpath, 'r', encoding = 'utf-8' ) as f:
+        with open( script_fullpath, 'r', encoding = encoding ) as f:
             tree: ast.Module = ast.parse( f.read() )
 
         if ( tree.body

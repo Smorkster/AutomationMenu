@@ -13,10 +13,13 @@ from __future__ import annotations
 import os
 import re
 
+from chardet import DetectionDict, UniversalDetector
 from operator import attrgetter
 from pathlib import Path
 from queue import Queue
 from typing import TYPE_CHECKING
+
+from automation_menu.utils.source_encoding_detector import get_python_source_encoding
 
 if TYPE_CHECKING:
     from automation_menu.models.application_state import ApplicationState
@@ -140,13 +143,45 @@ def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: Appl
 
     from automation_menu.utils.localization import _
 
+    encoding_header: str
+    encoding_detected: DetectionDict | None = None
+    encoding: str
+
     try:
-        with open( file.path, 'r', encoding = 'utf-8' ) as f:
+        encoding_detector = UniversalDetector()
+        with open( file.path, 'rb' ) as f:
+            for line in f:
+                encoding_detector.feed( line )
+
+                if encoding_detector.done:
+
+                    break
+
+        encoding_detected = encoding_detector.close()
+
+        encoding_header = get_python_source_encoding( script_path = file.path, detected_encoding = encoding_detected[ 'encoding' ] or 'utf-8' )
+        encoding = ( encoding_header or encoding_detected[ 'encoding' ] if encoding_detected else '' ) or 'utf-8'
+
+        if 'utf-8' not in encoding:
+
+            raise UnicodeError()
+
+        with open( file.path, 'r', encoding = encoding ) as f:
             content = f.read()
 
     except FileNotFoundError as e:
 
         raise FileNotFoundError( _( 'File not found' ) )
+
+    except ( UnicodeError, UnicodeDecodeError ):
+
+        raise UnicodeError( """Script file is not saved using encoding UTF-8, and no source encoding is declared.
+Python requires UTF-8 by default for .py files.
+
+Fix by either:
+1. Saving the file as UTF-8
+2. Adding an encoding header, for example:
+   # -*- coding: utf-8 -*-""" )
 
     except Exception as e:
 
@@ -159,7 +194,7 @@ def _read_scriptfile( file: os.DirEntry, current_user: User, app_run_state: Appl
 
     else:
         try:
-            metadata, warnings = extract_script_metadata( script_fullpath = file.path )
+            metadata, warnings = extract_script_metadata( script_fullpath = file.path, encoding = encoding )
 
         except Exception as e:
 
