@@ -127,6 +127,7 @@ class ScriptRunner:
             exec_string = self.app_state.python_exe_path
             current_env[ 'PYTHONBREAKPOINT' ] = 'pdb.set_trace'
             current_env[ 'PYTHONUNBUFFERED' ] = '1'
+            current_env[ 'PYTHONIOENCODING' ] = 'utf-8'
 
         elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
             exec_string = 'powershell.exe'
