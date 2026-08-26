@@ -13,6 +13,8 @@ from datetime import datetime
 
 @dataclass
 class ScriptOutput:
+    """ Store one timestamped line of script output. """
+
     out_time: datetime
     output: str
 

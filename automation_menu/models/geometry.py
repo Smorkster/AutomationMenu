@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Geometry:
+    """ Represent width, height, and position for a Tkinter geometry string. """
 
     height: int = 0
     width: int = 0

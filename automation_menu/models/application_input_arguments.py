@@ -8,6 +8,7 @@ License: MIT
 
 
 class ApplicationInputArguments:
+    """ Store parsed startup arguments used when launching the application. """
 
     application_state: str
     loglevel: str
