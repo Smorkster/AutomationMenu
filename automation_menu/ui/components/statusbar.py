@@ -41,11 +41,11 @@ def _create_status_textfield( status_ui: StatusUi ) -> None:
     status_ui.text_status_tt = AlwaysOnTopToolTip( widget = status_ui.text_status, msg = _( 'Execution status can be updated from running script' ) )
 
 
-def get_statusbar( master_root: Tk ) -> StatusUi:
+def get_statusbar( parent_frame: Frame ) -> StatusUi:
     """ Create the status bar UI.
 
     Args:
-        master_root (Tk): Window to attach the status bar to.
+        parent_frame (Frame): Window to attach the status bar to.
 
     Returns:
         ui (StatusUi): Created status bar UI widgets.
@@ -53,7 +53,7 @@ def get_statusbar( master_root: Tk ) -> StatusUi:
 
     ui: StatusUi = StatusUi()
 
-    ui.status_bar = Frame( master = master_root )
+    ui.status_bar = Frame( master = parent_frame )
     ui.status_bar.grid( columnspan = 2, row = 3, sticky = 'wes' )
 
     ui.status_bar.columnconfigure( index = 0, weight = 1 )

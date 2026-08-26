@@ -46,7 +46,7 @@ def build_tab_content( tab_control: Frame, op_callbacks: dict, translate_store_c
     wft: WidgetForTranslation = WidgetForTranslation( widget = ui.history_tree, default_text = columns )
     translate_store_callback( wft )
 
-    ui.history_item_display = Frame( ui.tabHistory )
+    ui.history_item_display = Frame( master = ui.tabHistory )
     ui.history_item_display.grid( column = 1, row = 0, sticky = 'nswe' )
     ui.history_item_display.columnconfigure( index = 0, weight = 0 )
     ui.history_item_display.columnconfigure( index = 1, weight = 1 )

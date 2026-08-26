@@ -13,7 +13,7 @@ import alwaysontop_tooltip
 
 from typing import TYPE_CHECKING
 from logging import Logger
-from tkinter import Entry, Event
+from tkinter import Event
 from tkinter.ttk import Combobox, Frame, Label, Treeview
 from types import FunctionType
 from typing import Any, Callable, Literal, Tuple, cast
@@ -267,7 +267,7 @@ class SequenceUiController:
         for k in self._sequence_manager._sequences.items():
             tree.insert( '', 'end', values = ( k[ 1 ].name, k[ 0 ] ) )
 
-        self._execution_ui.main_window.op_buttons.sequence_menu.rebuild_menu( exec_list = self._sequence_manager._sequences )
+        self._execution_ui.main_window.menu_buttons.sequence_menu.rebuild_menu( exec_list = self._sequence_manager._sequences )
 
 
     def on_listbox_click( self, event: Event ) -> None:

@@ -17,7 +17,6 @@ from typing import Callable, TYPE_CHECKING
 
 from automation_menu.models.script_input_argument import InputArgument
 from automation_menu.models.scriptinfo_not_loaded import ScriptInfoNotLoaded
-from automation_menu.models.scriptmetadata import ScriptMetadata
 from automation_menu.types.sequence_callbacks import SequenceCallbacks
 
 if TYPE_CHECKING:
@@ -171,11 +170,11 @@ class SequenceManager:
         self.sequence_ui_controller.populate_sequence_form( self.current_sequence )
 
 
-    def create_tab( self, parent_tab: Notebook ) -> Frame:
+    def create_tab( self, parent_notebook: Notebook ) -> Frame:
         """ Create the sequence tab UI and bind it to the controller.
 
         Args:
-            parent_tab (Notebook): Notebook widget to attach the sequence tab to.
+            parent_notebook (Notebook): Notebook widget to attach the sequence tab to.
 
         Returns:
             (Frame): Frame containing the sequence UI.
@@ -183,7 +182,7 @@ class SequenceManager:
 
         self._add_callbacks()
 
-        self._sequence_widgets = create_sequence_tab( tabcontrol = parent_tab, translate_callback = self._app_context.LanguageManager.add_translatable_widget )
+        self._sequence_widgets = create_sequence_tab( tabcontrol = parent_notebook, translate_callback = self._app_context.LanguageManager.add_translatable_widget )
         self.sequence_ui_controller.bind_ui( sequence_ui = self._sequence_widgets )
 
         return self._sequence_widgets.main_frame

@@ -44,21 +44,29 @@ class ExecutionTabUiController:
 
         # Create sequence tab
         tab_index += 1
-        self.sequence_tab: Frame = self.app_context.SequenceManager.create_tab( parent_tab = self.tab_ui_bindings.tab_control )
+        self.persistent_gui_tab: Frame = self.app_context.PersistentGuiManager.create_tab( parent_notebook = self.tab_ui_bindings.tab_control )
+        self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
+
+        # Create sequence tab
+        tab_index += 1
+        self.sequence_tab: Frame = self.app_context.SequenceManager.create_tab( parent_notebook = self.tab_ui_bindings.tab_control )
         self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
 
         # Create settings tab
         tab_index += 1
-        self.tabSettings: Frame = self.app_context.SettingsManager.create_tab( parent_tab = self.tab_ui_bindings.tab_control )
+        self.tabSettings: Frame = self.app_context.SettingsManager.create_tab( parent_notebook = self.tab_ui_bindings.tab_control )
         self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
 
         # Create history tab
         tab_index += 1
-        self.tabHistory: Frame = self.app_context.HistoryManager.create_tab( parent_tab = self.tab_ui_bindings.tab_control, translate_store_callback = self.app_context.LanguageManager.add_translatable_widget )
+        self.tabHistory: Frame = self.app_context.HistoryManager.create_tab( parent_notebook = self.tab_ui_bindings.tab_control )
         self._tabs_build[ tab_index ] = { 'idx': tab_index, 'built': False }
 
         self.tab_ui_bindings.tab_control.bind( '<<NotebookTabChanged>>', self._on_tab_change )
-        self.tab_ui_bindings.tab_control.grid( column = 0, columnspan = 2, row = 2, sticky = 'nswe' )
+        self.tab_ui_bindings.tab_control.grid( column = 0,
+                                              columnspan = 2,
+                                              row = 2,
+                                              sticky = 'nswe' )
 
 
     @ui_guard_method( when_message = 'Tab change' )
@@ -77,12 +85,15 @@ class ExecutionTabUiController:
 
         if not self._tabs_build.get( idx, {} ).get( 'built', True ):
             if idx == 1:
-                self.app_context.SequenceManager.build_tab_content()
+                self.app_context.PersistentGuiManager.build_tab_content()
 
             elif idx == 2:
-                self.app_context.SettingsManager.build_tab_content()
+                self.app_context.SequenceManager.build_tab_content()
 
             elif idx == 3:
+                self.app_context.SettingsManager.build_tab_content()
+
+            elif idx == 4:
                 self.app_context.HistoryManager.build_tab_content( translate_store_callback = self.app_context.LanguageManager.add_translatable_widget, translate_callback = translate )
 
             self._tabs_build[ idx ][ 'built' ] = True

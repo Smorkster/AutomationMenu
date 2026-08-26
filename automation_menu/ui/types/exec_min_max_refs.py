@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from tkinter import Tk
 from tkinter.ttk import Notebook
 
+from automation_menu.ui.types.menu_buttons_ui import MenuButtonsUi
 from automation_menu.ui.types.op_buttons_ui import OpButtonsUi
 from automation_menu.ui.types.status_ui import StatusUi
 
@@ -18,6 +19,8 @@ from automation_menu.ui.types.status_ui import StatusUi
 @dataclass
 class ExecutionMinMaxRefs:
     """ Store UI references used when minimizing or restoring the window during execution."""
+
+    menu_buttons: MenuButtonsUi
 
     tab_control: Notebook
 

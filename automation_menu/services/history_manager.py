@@ -30,16 +30,16 @@ class HistoryManager:
             app_context (ApplicationContext): Context and manager container for the application.
         """
 
-        self.app_context = app_context
+        self._app_context = app_context
         self._logger: Logger = app_context.debug_logger
 
         self._historylist: list[ ExecHistory ] = []
         self._history_callbacks: dict = {}
 
         self._history_widgets: HistoryUi
-        self._history_ui_controller: HistoryUiController = HistoryUiController( app_context = self.app_context,
+        self._history_ui_controller: HistoryUiController = HistoryUiController( app_context = self._app_context,
                                                                                history_manager = self,
-                                                                               logger = self.app_context.debug_logger )
+                                                                               logger = self._app_context.debug_logger )
 
 
     def _add_callbacks( self ) -> None:
@@ -128,12 +128,11 @@ class HistoryManager:
             item.list_id = tree_id
 
 
-    def create_tab( self, parent_tab: Notebook, translate_store_callback: Callable ) ->  Frame:
+    def create_tab( self, parent_notebook: Notebook ) ->  Frame:
         """ Create the frame used to display execution history.
 
         Args:
-            parent_tab (Notebook): Notebook widget to attach the history tab to.
-            translate_store_callback (Callable): Callback used to register widgets for translation.
+            parent_notebook (Notebook): Notebook widget to attach the history tab to.
 
         Returns:
             (Frame): Frame containing the history UI.
@@ -141,7 +140,7 @@ class HistoryManager:
 
         from automation_menu.utils.localization import _
 
-        self._tab: Frame = create_history_tab( tab_control = parent_tab, translate_store_callback = translate_store_callback )
+        self._tab: Frame = create_history_tab( tab_control = parent_notebook, translate_store_callback = self._app_context.LanguageManager.add_translatable_widget )
 
         return self._tab
 

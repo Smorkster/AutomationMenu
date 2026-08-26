@@ -72,17 +72,17 @@ class SettingsManager:
         return self.settings_ui
 
 
-    def create_tab( self, parent_tab: Notebook ) -> Frame:
+    def create_tab( self, parent_notebook: Notebook ) -> Frame:
         """ Create the settings tab container.
 
         Args:
-            parent_tab (Notebook): Notebook that will contain the settings tab.
+            parent_notebook (Notebook): Notebook that will contain the settings tab.
 
         Returns:
             (Frame): Created settings tab frame.
         """
 
-        self._tab = create_settings_tab( tab_control = parent_tab,
+        self._tab = create_settings_tab( tab_control = parent_notebook,
                                         translate_store_callback = self._app_context.LanguageManager.add_translatable_widget )
 
         return self._tab
@@ -104,7 +104,7 @@ class SettingsManager:
         """
 
         saved: RawSettings = read_settingsfile( settings_file_path = settings_file_path,
-                                  debug_logger = self._app_context.debug_logger )
+                                               debug_logger = self._app_context.debug_logger )
         self.settings = Settings( settings_dict = saved,
                                  save_callback = self.save_settings )
         self._settings_file_path = Path( settings_file_path )
@@ -114,10 +114,8 @@ class SettingsManager:
         if len( setting_errors ) > 0:
             from automation_menu.utils.localization import _
             for e in setting_errors:
-                self._app_context.OutputQueue.put( {
-                    'line': e,
-                    'tag': OutputStyleTags.SYSERROR
-                } )
+                self._app_context.OutputQueue.put( { 'line': e,
+                                                    'tag': OutputStyleTags.SYSERROR } )
 
         return self.settings
 
