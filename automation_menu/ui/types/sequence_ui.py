@@ -14,7 +14,7 @@ from tkinter.ttk import Button, Checkbutton, Combobox, Entry, Frame, Label, Scro
 class SequenceUi():
     """ Store widget references used by the sequence management UI."""
 
-    def __init__(self) -> None:
+    def __init__( self ) -> None:
         """ Initialize the sequence UI widget reference container."""
 
         pass

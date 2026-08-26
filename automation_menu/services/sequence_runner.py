@@ -5,7 +5,7 @@ from tkinter import Tk
 from typing import Callable
 
 from automation_menu.core.script_execution_manager import ScriptExecutionManager
-from automation_menu.core.script_runner import ScriptRunner
+from automation_menu.core.one_time_script_runner import OneTimeScriptRunner
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.models.scriptinfo_not_loaded import ScriptInfoNotLoaded
 from automation_menu.models.sequence import Sequence
@@ -33,7 +33,7 @@ def sequence_runner( sequence: Sequence, execution_mgr: ScriptExecutionManager, 
         exec_mgr = execution_mgr
         run_args: list[ str ] = build_run_args( pre_set_params = step.pre_set_parameters )
         run_success: int = 0
-        runner: ScriptRunner | None = None
+        runner: OneTimeScriptRunner | None = None
         output_item: dict[ str, object ] = {}
 
         try:
@@ -54,7 +54,6 @@ def sequence_runner( sequence: Sequence, execution_mgr: ScriptExecutionManager, 
                                   stop_pause_button_blinking_callback = stop_pause,
                                   run_input = run_args )
 
-                runner.current_process.wait()
                 exit_code: int = runner.get_exit_code()
                 terminated: bool = runner.was_terminated()
                 effective_stop: bool = step.stop_on_error or sequence.stop_on_error

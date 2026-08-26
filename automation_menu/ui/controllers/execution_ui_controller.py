@@ -55,7 +55,6 @@ class ExecutionUiController:
         self._blink_state: bool = False
         self._progressbar_visible: bool = False
 
-
         if exec_bindings is None:
 
             raise ValueError( 'Execution bindings cant be empty' )
@@ -219,7 +218,7 @@ class ExecutionUiController:
         self._min_max_refs.status_ui.status_bar.grid_columnconfigure( index = 0, weight = 0 )
         self._min_max_refs.status_ui.status_bar.grid_columnconfigure( index = 1, weight = 0 )
 
-        self._min_max_refs.op_buttons.menu_frame.grid_remove()
+        self._min_max_refs.menu_buttons.menu_frame.grid_remove()
         self._min_max_refs.op_buttons.btn_continue_breakpoint.config( style = 'RunningSmall.TButton' )
         self._min_max_refs.op_buttons.btn_stop_script.config( style = 'RunningSmall.TButton' )
         self._min_max_refs.op_buttons.btn_pause_resume_script.config( style = 'RunningSmall.TButton' )
@@ -239,7 +238,7 @@ class ExecutionUiController:
         self._min_max_refs.status_ui.status_bar.grid_columnconfigure( index = 0, weight = 1 )
         self._min_max_refs.status_ui.status_bar.grid_columnconfigure( index = 1, weight = 0 )
 
-        self._min_max_refs.op_buttons.menu_frame.grid()
+        self._min_max_refs.menu_buttons.menu_frame.grid()
         self._min_max_refs.op_buttons.btn_continue_breakpoint.config( style = 'TButton' )
         self._min_max_refs.op_buttons.btn_stop_script.config( style = 'TButton' )
         self._min_max_refs.op_buttons.btn_pause_resume_script.config( style = 'TButton' )

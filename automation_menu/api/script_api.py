@@ -68,6 +68,7 @@ def _send( msg_type: str, data: dict ) -> None:
     print( f'{ MESSAGE_START }{ json.dumps( msg ) }{ MESSAGE_END }', flush = True )
 
 
+# region One time run
 # region Progressbar
 def determinate_progress() -> None:
     """ API entry to set progressbar to determinate mode """
@@ -188,3 +189,55 @@ def set_status( text: str, append: bool = False ) -> None:
 
     _send( msg_type = 'status', data = data )
 # endregion Textstatus
+# endregion One time run
+
+
+# region Persistent script
+# region Progress
+def set_persistent_progress( percent: float ) -> None:
+    """ API entry to update progressbar value
+
+    Args:
+        percent (float): Precalculated value to set in the progressbar
+    """
+
+    data: dict[ str, float ] = { 'percent': percent }
+
+    _send( msg_type = 'progress', data = data )
+# endregion Progress
+
+# region State
+def send_persistent_state( state: str ) -> None:
+    """ Set the state text for persistent script.
+
+    Accepted states: IDLE, RUNNING, PAUSED
+
+    Args:
+        state (str): State to display the script is in.
+    """
+
+    if state.upper() not in [ 'IDLE', 'PAUSED', 'RUNNING' ]:
+
+        raise ValueError( 'Invalid state name. Valid names are: IDLE, PAUSED, RUNNING' )
+
+    data: dict[ str, str ] = { 'set': state }
+
+    _send( msg_type = 'state', data = data )
+# endregion State
+
+# region Status
+def send_persistent_status( text: str ) -> None:
+    """ Set the status text for persistent script.
+
+    Newline characters are stripped from the text before it is sent.
+
+    Args:
+        text (str): Text to display as the status.
+    """
+
+    data: dict[ str, str ] = { 'set': text }
+
+    _send( msg_type = 'status', data = data )
+# endregion Status
+
+# endregion Persistent script

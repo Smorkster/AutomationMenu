@@ -12,12 +12,14 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 
 from logging import Formatter, Logger, StreamHandler
 from pathlib import Path, WindowsPath
 
 from automation_menu.models.application_input_arguments import ApplicationInputArguments
+from automation_menu.services.persistent_gui_manager import PersistentGuiManager
 from automation_menu.utils.app_path_resolver import app_path
 
 # Add the project root to Python path if needed
@@ -40,6 +42,22 @@ from automation_menu.services.settings_manager import SettingsManager
 from automation_menu.ui.i18n.language_manager import LanguageManager
 from automation_menu.utils.localization import change_language
 from automation_menu.utils.logging_utils import JsonFileHandler
+
+
+def _set_run_state() -> str:
+    """ Verify if application runs in VSCode debugger or not
+
+    This is needed for handling breakpoints in the scripts
+    """
+
+    import sys
+
+    # Generic Python debugger detection
+    if os.environ.get( 'DEBUGPY_RUNNING' ):
+
+        return 'vscode'
+
+    return 'free'
 
 
 def setup_logger( level: str = 'DEBUG' ) -> Logger:
@@ -107,7 +125,7 @@ def main() -> None:
 
         settings = app_context.SettingsManager.settings
 
-        app_state = ApplicationState( current_user = current_user, secrets = secrets, settings = settings )
+        app_state = ApplicationState( current_user = current_user, secrets = secrets, settings = settings, run_state = _set_run_state() )
         debug_logger.debug( msg = f'sequence list loaded with "{ len( app_state.settings.saved_sequences ) }" sequences' )
         change_language( language_code = app_state.settings.current_language )
         app_context.LanguageManager = LanguageManager( current_language = app_state.settings.current_language )
@@ -115,6 +133,7 @@ def main() -> None:
         app_context.ScriptManager.gather_scripts( output_queue = app_context.OutputQueue, app_state = app_state, app_run_state = startup_arguments[ 'app_run_state' ] )
         app_context.ErrorManager = ErrorManager( app_state = app_state, ldap_connection = ldap_connection )
         app_context.ExecutionManager = ScriptExecutionManager( output_queue = app_context.OutputQueue, app_state = app_state, error_manager = app_context.ErrorManager, logger = debug_logger )
+        app_context.PersistentGuiManager = PersistentGuiManager( app_state = app_state, app_context = app_context )
         app_context.SequenceManager = SequenceManager( app_context = app_context, app_state = app_state, saved_sequences = app_state.settings.saved_sequences )
         app_context.HistoryManager = HistoryManager( app_context = app_context )
 

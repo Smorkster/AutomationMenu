@@ -13,14 +13,15 @@ from tkinter import Event, PhotoImage, Tk
 from tkinter.ttk import Notebook, Style
 from typing import TYPE_CHECKING
 
-from automation_menu.utils.app_path_resolver import app_path
+from automation_menu.ui.types.menu_buttons_ui import MenuButtonsUi
+from automation_menu.utils.python_path_resolver import find_python_exe
 
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
     from automation_menu.models.application_state import ApplicationState
 
-from automation_menu.ui.components.op_buttons import get_op_buttons
+from automation_menu.ui.components.op_buttons import get_menu_buttons
 from automation_menu.ui.components.statusbar import get_statusbar
 from automation_menu.ui.controllers.async_output_controller import AsyncOutputController
 from automation_menu.ui.controllers.execution_ui_controller import ExecutionUiController
@@ -38,7 +39,6 @@ from automation_menu.ui.types.exec_pre_work_refs import ExecutionPreWorkRefs
 from automation_menu.ui.types.exec_refs import ExecRefs
 from automation_menu.ui.types.exec_status_refs import ExecutionStatusRefs
 from automation_menu.ui.types.exec_tab_refs import ExecutionTabUiRefs
-from automation_menu.ui.types.op_buttons_ui import OpButtonsUi
 from automation_menu.ui.types.status_ui import StatusUi
 from automation_menu.utils.decorators import ui_guard_method
 
@@ -58,6 +58,9 @@ class AutomationMenuWindow:
 
         self.app_state: ApplicationState = app_state
         self.app_context: ApplicationContext = app_context
+
+        if self.app_state.python_exe_path == '':
+            self.app_state.python_exe_path = find_python_exe()
 
         self._init_state()
 
@@ -100,24 +103,24 @@ class AutomationMenuWindow:
     def _create_execution_refs( self ) -> None:
         """ Create grouped execution-related UI reference objects."""
 
-        self._exec_refs: ExecRefs = ExecRefs(
-            ExecutionPreWorkRefs= ExecutionPreWorkRefs( op_buttons = self.op_buttons,
-                                                         tab_control = self.tab_control,
-                                                         status_widgets = self.status_widgets,
-                                                         textbox_output = self.textbox_output,
-                                                         root = self.root ),
-            ExecutionPostWorkRefs = ExecutionPostWorkRefs( root = self.root ),
-            ExecutionButtonRefs =  ExecutionButtonRefs( btn_pause_resume_script = self.op_buttons.btn_pause_resume_script,
-                                                       root = self.root ),
-            ExecutionMinMaxRefs = ExecutionMinMaxRefs( tab_control = self.tab_control,
-                                                       op_buttons = self.op_buttons,
-                                                       status_ui = self.status_widgets,
-                                                       root = self.root ),
-            ExecutionStatusRefs = ExecutionStatusRefs( progress_frame = self.status_widgets.status_bar,
-                                                       text_status = self.status_widgets.text_status,
-                                                       progressbar = self.status_widgets.progressbar,
-                                                       separator = self.status_widgets.separator,
-                                                       root = self.root )
+        self._exec_refs: ExecRefs = ExecRefs( ExecutionPreWorkRefs= ExecutionPreWorkRefs( op_buttons = self.op_buttons,
+                                                                                         tab_control = self.tab_control,
+                                                                                         status_widgets = self.status_widgets,
+                                                                                         textbox_output = self.textbox_output,
+                                                                                         root = self.root ),
+                                             ExecutionPostWorkRefs = ExecutionPostWorkRefs( root = self.root ),
+                                             ExecutionButtonRefs =  ExecutionButtonRefs( btn_pause_resume_script = self.op_buttons.btn_pause_resume_script,
+                                                                                        root = self.root ),
+                                             ExecutionMinMaxRefs = ExecutionMinMaxRefs( tab_control = self.tab_control,
+                                                                                       menu_buttons = self.menu_buttons,
+                                                                                       op_buttons = self.op_buttons,
+                                                                                       status_ui = self.status_widgets,
+                                                                                       root = self.root ),
+                                             ExecutionStatusRefs = ExecutionStatusRefs( progress_frame = self.status_widgets.status_bar,
+                                                                                       text_status = self.status_widgets.text_status,
+                                                                                       progressbar = self.status_widgets.progressbar,
+                                                                                       separator = self.status_widgets.separator,
+                                                                                       root = self.root )
         )
 
 
@@ -137,17 +140,17 @@ class AutomationMenuWindow:
 
         self.tab_control: Notebook = Notebook( master = self.root, style = self.tab_style )
 
-        # Create buttons for script operations
+        # Create menu
         frame_style: str = f'{ self.app_context.startup_arguments[ 'app_run_state' ].value }Indicator.TFrame'
-        self.op_buttons: OpButtonsUi = get_op_buttons( main_root = self.root, main_self = self, frame_style = frame_style )
+        self.menu_buttons: MenuButtonsUi = get_menu_buttons( main_root = self.root, main_self = self, frame_style = frame_style )
 
-        # Create output
-        self.tab_output, self.textbox_output = get_output_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.LanguageManager.add_translatable_widget )
+        # Create output and buttons for script operations
+        op_callbacks: dict = { 'continue_breakpoint': self.continue_breakpoint,
+                              'stop_script': self.stop_script,
+                              'pause_resume_script': self.pause_resume_script }
+        self.tab_output, self.textbox_output, self.op_buttons, self.status_widgets = get_output_tab( tabcontrol = self.tab_control, translate_callback = self.app_context.LanguageManager.add_translatable_widget, op_callbacks = op_callbacks )
 
         set_output_styles( widget = self.textbox_output )
-
-        # Create statusbar
-        self.status_widgets: StatusUi = get_statusbar( master_root = self.root )
 
 
     def _init_execution( self ) -> None:
@@ -284,7 +287,7 @@ class AutomationMenuWindow:
             event (Event | None): Event that triggered the handler.
         """
 
-        self.op_buttons.script_menu.show_popup_menu()
+        self.menu_buttons.script_menu.show_popup_menu()
 
 
     def set_display_dev( self ) -> None:

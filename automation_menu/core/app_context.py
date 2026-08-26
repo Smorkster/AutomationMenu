@@ -19,6 +19,8 @@ from ldap3.core.connection import Connection
 from logging import Logger
 from typing import TYPE_CHECKING
 
+from automation_menu.services.persistent_gui_manager import PersistentGuiManager
+
 if TYPE_CHECKING:
     from automation_menu.core.script_execution_manager import ScriptExecutionManager
     from automation_menu.ui.windows.main_window import AutomationMenuWindow
@@ -54,6 +56,7 @@ class ApplicationContext:
         self._execution_manager: ScriptExecutionManager | None = None
         self._history_manager: HistoryManager | None = None
         self._input_manager: InputManager | None = None
+        self._persistent_gui_manager: PersistentGuiManager | None = None
         self._script_manager: ScriptManager | None = None
         self._sequence_manager: SequenceManager | None = None
         self._settings_manager: SettingsManager | None =None
@@ -205,6 +208,35 @@ class ApplicationContext:
         """
 
         self._language_manager = value
+
+
+    @property
+    def PersistentGuiManager( self ) -> PersistentGuiManager:
+        """ Get the initialized manager for persistent GUI scripts
+
+        Returns:
+            PersistentGuiManager: The shared manager instance.
+
+        Raises:
+            RuntimeError: If the persistent GUI script manager has not been initialized.
+        """
+
+        if self._persistent_gui_manager is None:
+
+            raise RuntimeError( 'Persistent GUI manager is not initialized yet' )
+
+        return self._persistent_gui_manager
+
+
+    @PersistentGuiManager.setter
+    def PersistentGuiManager( self, value: PersistentGuiManager) -> None:
+        """ Set the persistent GUI manager instance
+
+        Args:
+            value (PersistentGuiManager): Persistent GUI manager instance to store.
+        """
+
+        self._persistent_gui_manager = value
 
 
     @property

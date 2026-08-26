@@ -10,6 +10,8 @@ from typing import Any
 
 
 class ScriptInfoError( ValueError ):
+    """ Raised when script metadata cannot be parsed or validated. """
+
     def __init__( self, message: str, *args: Any ) -> None:
         """ Exception for error in script info block/docstring
 
@@ -23,6 +25,8 @@ class ScriptInfoError( ValueError ):
 
 
 class MissingDocstringError( ValueError ):
+    """ Raised when a script is missing its required metadata docstring. """
+
     def __init__( self, message: str, *args: Any ) -> None:
         """ Exception for missing Python style docstring in file
 

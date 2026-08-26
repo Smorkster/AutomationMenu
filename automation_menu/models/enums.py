@@ -6,7 +6,7 @@ GitHub: https://github.com/Smorkster/automationmenu
 License: MIT
 """
 
-from enum import Enum
+from enum import Enum, StrEnum, auto
 
 
 class ApplicationRunState( Enum ):
@@ -17,7 +17,24 @@ class ApplicationRunState( Enum ):
     PROD = 'Prod'
 
 
-class OutputStyleTags(Enum):
+class ExecutionState( StrEnum ):
+    """ Execution lifecycle states for one-time and persistent scripts. """
+
+    CLOSED = auto()
+    FORCED_STOPPING = auto()
+    FORCED_STOPPING_FAILED = auto()
+    IDLE = auto()
+    PAUSED = auto()
+    PAUSED_BY_SCRIPT = auto()
+    RUNNING = auto()
+    STARTING = auto()
+    STOP_FAILED = auto()
+    STOPPED = auto()
+    STOPPING = auto()
+    UNLAUNCHED = auto()
+
+
+class OutputStyleTags( Enum ):
     """ Tags for output text styling """
 
     ERROR = 'suite_error'
@@ -47,11 +64,13 @@ class SysInstructions( Enum ):
 class ValidScriptInfoFields ( Enum ):
     """ Valid names in ScriptInfo block/docstring """
 
-    STATE = 'state'
-    AUTHOR = 'author'
-    VERSION = 'version'
-    SYNOPSIS = 'synopsis'
-    DESCRIPTION = 'description'
-    REQUIREDADGROUPS = 'required_ad_groups'
     ALLOWEDUSERS = 'allowed_users'
+    AUTHOR = 'author'
+    DESCRIPTION = 'description'
     DISABLEMINIMIZEONRUNNING = 'disable_minimize_on_running'
+    PERSISTENTGUI = 'persistent_gui'
+    PERSISTENTGUIMULTIPLE = 'persistent_gui_multiple'
+    REQUIREDADGROUPS = 'required_ad_groups'
+    STATE = 'state'
+    SYNOPSIS = 'synopsis'
+    VERSION = 'version'

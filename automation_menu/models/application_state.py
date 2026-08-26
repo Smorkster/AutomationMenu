@@ -23,6 +23,7 @@ class ApplicationState:
     secrets: Secrets
     current_user: User
     settings: Settings
+    run_state: str
 
     python_exe_path: str = ''
     running_automation: Optional[ ScriptMenuItem ] = None

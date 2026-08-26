@@ -1,6 +1,6 @@
 """
 A manager module for executing script with a contextmanager
-Use as ScriptExecutionManagare and not ScriptRunner seperately
+Use as ScriptExecutionManager and not ScriptRunner seperately
 
 Author: Smorkster
 GitHub: https://github.com/Smorkster/automationmenu
@@ -24,7 +24,7 @@ from psutil import NoSuchProcess, Process
 from queue import Queue
 from threading import Lock
 
-from automation_menu.core.script_runner import ScriptRunner
+from automation_menu.core.one_time_script_runner import OneTimeScriptRunner
 from automation_menu.models.application_state import ApplicationState
 from automation_menu.models.enums import OutputStyleTags
 from automation_menu.models.scriptinfo import ScriptInfo
@@ -42,7 +42,7 @@ class ScriptExecutionManager:
             logger (Logger): Logger with specified logging level
         """
 
-        self.current_runner: ScriptRunner | None = None
+        self.current_runner: OneTimeScriptRunner | None = None
         self.app_state: ApplicationState = app_state
         self._error_manager: ErrorManager = error_manager
         self._lock: Lock = threading.Lock()
@@ -59,10 +59,10 @@ class ScriptExecutionManager:
             if self.current_runner is not None:
                 raise RuntimeError( 'Another script is running, only one allowed at a time.' )
 
-            runner: ScriptRunner = ScriptRunner( output_queue = self._output_queue,
-                                                app_state = self.app_state,
-                                                exec_manager = self,
-                                                error_reporter = self._error_manager.report_script_error )
+            runner: OneTimeScriptRunner = OneTimeScriptRunner( output_queue = self._output_queue,
+                                                              app_state = self.app_state,
+                                                              exec_manager = self,
+                                                              error_reporter = self._error_manager.report_script_error )
             self.current_runner = runner
 
         try:
@@ -309,8 +309,6 @@ class ScriptExecutionManager:
                               enable_pause_button_callback = enable_pause_button_callback,
                               stop_pause_button_blinking_callback = stop_pause_button_blinking_callback,
                               run_input = run_input, )
-
-            runner.current_runner.wait()
 
             exit_code: int = runner.get_exit_code()
             terminated: bool = runner.was_terminated()
