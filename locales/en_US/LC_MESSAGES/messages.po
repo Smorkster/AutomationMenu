@@ -545,7 +545,7 @@ msgstr "Generated output"
 
 #: automation_menu/ui/tabs/history_tab.py:117
 msgid "Execution history"
-msgstr ""
+msgstr "Execution history"
 
 #: automation_menu/ui/tabs/output_tab.py:41
 msgid "Script output"
@@ -553,12 +553,12 @@ msgstr "Script output"
 
 #: automation_menu/ui/tabs/persistent_gui_tab.py:87
 msgid "Script name"
-msgstr "Script namn"
+msgstr "Script name"
 
 #: automation_menu/ui/tabs/persistent_gui_tab.py:93
 #: automation_menu/ui/tabs/persistent_gui_tab.py:170
 msgid "State"
-msgstr "Starte"
+msgstr "State"
 
 #: automation_menu/ui/tabs/persistent_gui_tab.py:99
 #: automation_menu/ui/tabs/persistent_gui_tab.py:171
@@ -568,7 +568,7 @@ msgstr "Progress"
 #: automation_menu/ui/tabs/persistent_gui_tab.py:105
 #: automation_menu/ui/tabs/persistent_gui_tab.py:169
 msgid "Status"
-msgstr "Started"
+msgstr "Status"
 
 #: automation_menu/ui/tabs/persistent_gui_tab.py:111
 msgid "Output"
