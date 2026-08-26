@@ -12,16 +12,14 @@ import asyncio
 import os
 import psutil
 import subprocess
-import sys
 import threading
 
 from pathlib import Path
 from queue import Queue
-from threading import Event
 from tkinter import Tk
 from typing import TYPE_CHECKING, Callable
 
-from automation_menu.utils.python_path_resolver import find_python_exe
+from automation_menu.core.process_execution import ProcessExecution
 
 if TYPE_CHECKING:
     from automation_menu.core.script_execution_manager import ScriptExecutionManager
@@ -34,7 +32,7 @@ from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.utils.screenshot import take_screenshot
 
 
-class ScriptRunner:
+class OneTimeScriptRunner:
     def __init__( self, output_queue: Queue, app_state: ApplicationState, exec_manager: ScriptExecutionManager, error_reporter: Callable ) -> None:
         """" A script runner, managing bootup, process output and termination
 
@@ -54,14 +52,8 @@ class ScriptRunner:
         self.current_process: subprocess.Popen
         self._exec_item: ExecHistory
         self._script_info: ScriptInfo
-        self._tasks: list[ asyncio.Task ] = []
-        self._in_breakpoint: bool = False
         self._terminated: bool = False
-        self._process_started: Event = threading.Event()
-        self._run_state: str = ''
-
-        if self.app_state.python_exe_path == '':
-            self.app_state.python_exe_path = find_python_exe()
+        self._run_state: str = app_state.run_state
 
 
     def _collect_error_info( self, error: str ) -> None:
@@ -100,50 +92,6 @@ class ScriptRunner:
                                          'exec_item': self._exec_item } )
 
 
-    def _create_process( self ) -> subprocess.Popen:
-        """ Create and start a process to execute script
-
-        Returns:
-            (subprocess.Popen): Newly created process
-        """
-
-        from automation_menu.utils.localization import _
-
-        exec_string: str = ''
-        current_env: dict[ str, str ] = os.environ.copy()
-
-        self._set_run_state()
-
-        if self._run_state == 'free':
-
-            pass
-
-        elif self._run_state == 'vscode':
-            self._output_queue.put( { 'line': _( 'Running in: \'{a}\', application can not handle debugging.' ).format( a = self._run_state ),
-                                     'tag': OutputStyleTags.SYSINFO,
-                                     'exec_item': self._exec_item } )
-
-        if self._script_info.get_attr( 'filename' ).endswith( '.py' ):
-            exec_string = self.app_state.python_exe_path
-            current_env[ 'PYTHONBREAKPOINT' ] = 'pdb.set_trace'
-            current_env[ 'PYTHONUNBUFFERED' ] = '1'
-
-        elif self._script_info.get_attr( 'filename' ).endswith( '.ps1' ):
-            exec_string = 'powershell.exe'
-
-        args = [ exec_string, str( self._script_info.get_attr( 'fullpath' ) ) ]
-        args.extend( self.run_input )
-
-        return subprocess.Popen( args = args,
-                                stdout = asyncio.subprocess.PIPE,
-                                stderr = asyncio.subprocess.PIPE,
-                                stdin = asyncio.subprocess.PIPE,
-                                text = True,
-                                encoding = 'utf-8',
-                                errors = 'replace',
-                                env = current_env )
-
-
     def _is_breakpoint_line( self, line: str ) -> int:
         """ Verify if a line from the output, corresponds with a breakpoint has occured in the running script
 
@@ -164,19 +112,20 @@ class ScriptRunner:
         return re.search( 'At .*:{l}', line ) is not None
 
 
-    def _read_monitor_completion( self ) -> None:
-        """ Wait for script process to finish and inform when """
+    def _on_completion( self, return_code: int | None ) -> None:
+        """ Publish the final execution result and reset transient UI state.
 
-        from automation_menu.utils.localization import _
+        Args:
+            return_code (int | None): Exit code from the completed process, or None
+                if completion could not be determined.
+        """
 
-        self._process_started.wait()
-        p: subprocess.Popen = self.current_process
-
-        if not p:
+        if return_code is None:
 
             return
 
-        return_code: int = p.wait()
+        from automation_menu.utils.localization import _
+
         self._exec_item.set_exit_code( exit_code = return_code )
 
         if self._terminated:
@@ -204,98 +153,58 @@ class ScriptRunner:
         self.script_execution_manager._paused = False
 
 
-    def _read_stderr( self ) -> None:
-        """ Monitor standard error output from running process """
+    def _on_error( self, line_str: str | None ) -> None:
+        """ Route stderr output to the execution output queue.
 
-        from automation_menu.utils.localization import _
-
-        self._process_started.wait()
-
-        if self.current_process is None or not self.current_process.stderr:
-
-            return
-
-        while True:
-            try:
-                line: str = self.current_process.stderr.readline()
-
-            except:
-
-                break
-
-            if not line:
-
-                break
-
-            line_str: str = line.decode() if isinstance( line, bytes ) else line
-            line_nr: int = self._is_breakpoint_line( line_str )
-
-            if line_nr > 0:
-                _in_breakpoint = self._run_state != 'vscode' or True
-                self._output_queue.put( { 'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr = line_nr - 1 ),
-                                         'tag': OutputStyleTags.SYSINFO,
-                                         'breakpoint': _in_breakpoint,
-                                         'exec_item': self._exec_item } )
-            else:
-                self._output_queue.put( { 'line': line_str.rstrip(),
-                                         'tag': OutputStyleTags.ERROR,
-                                         'exec_item': self._exec_item } )
-
-
-    def _read_stdout( self ) -> None:
-        """ Monitor standard output from running process """
-
-        from automation_menu.utils.localization import _
-
-        self._process_started.wait()
-
-        if self.current_process is None or not self.current_process.stdout:
-
-            return
-
-        while True:
-            try:
-                line: str = self.current_process.stdout.readline()
-
-            except:
-
-                break
-
-            if not line:
-
-                break
-
-            line_str: str = line.decode() if isinstance( line, bytes ) else line
-            line_nr: int = self._is_breakpoint_line( line_str )
-
-            if line_nr > 0:
-                _in_breakpoint = self._run_state != 'vscode' or True
-                self._output_queue.put( { 'line': _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr =  line_nr - 1 ),
-                                         'tag': OutputStyleTags.SYSINFO,
-                                         'breakpoint': _in_breakpoint,
-                                         'exec_item': self._exec_item } )
-            else:
-                self._output_queue.put( { 'line': line_str.rstrip(),
-                                         'tag': OutputStyleTags.INFO,
-                                         'exec_item': self._exec_item } )
-
-
-    def _set_run_state( self ) -> None:
-        """ Verify if application runs in VSCode debugger or not
-
-        This is needed for handling breakpoints in the scripts
+        Args:
+            line_str (str | None): Error output line read from the process.
         """
 
-        import sys
+        from automation_menu.utils.localization import _
 
-        # Generic Python debugger detection
-        if sys.gettrace() is not None:
+        if line_str is None:
 
-            self._run_state = 'Free'
+            return
 
-        elif os.environ.get( 'DEBUGPY_RUNNING' ):
+        line_nr: int = self._is_breakpoint_line( line_str )
+        _in_breakpoint: bool = False
+        tag: OutputStyleTags = OutputStyleTags.ERROR
 
-            self._run_state = 'vscode'
+        if line_nr > 0:
+            _in_breakpoint = self._run_state != 'vscode' or True
+
+        self._output_queue.put( { 'line': line_str,
+                                 'tag': tag,
+                                 'breakpoint': _in_breakpoint,
+                                 'exec_item': self._exec_item } )
+
+
+    def _on_output( self, line: str | None ) -> None:
+        """ Route stdout output or breakpoint messages to the output queue.
+
+        Args:
+            line (str | None): Standard output line read from the process.
+        """
+
+        if line is None:
+
+            return
+
+        from automation_menu.utils.localization import _
+
+        line_nr: int = self._is_breakpoint_line( line )
+        _in_breakpoint: bool = False
+        tag: OutputStyleTags = OutputStyleTags.INFO
+
+        if line_nr > 0:
+            _in_breakpoint = self._run_state != 'vscode' or True
+            line = _( 'A breakpoint occured in the script at row {line_nr}. Click \'Continue\' to reactivate script.' ).format( line_nr =  line_nr - 1 )
+            tag = OutputStyleTags.SYSINFO
+
+        self._output_queue.put( { 'line': line,
+                                 'tag': tag,
+                                 'breakpoint': _in_breakpoint,
+                                 'exec_item': self._exec_item } )
 
 
     def get_exec_item( self ) -> ExecHistory:
@@ -328,14 +237,7 @@ class ScriptRunner:
         return self._run_state
 
 
-    def run_script( self,
-                    script_info: ScriptInfo,
-                    main_window: Tk,
-                    api_callbacks: dict,
-                    enable_stop_button_callback: Callable,
-                    enable_pause_button_callback: Callable,
-                    stop_pause_button_blinking_callback: Callable,
-                    run_input: list[ str ] ) -> None:
+    def run_script( self, script_info: ScriptInfo, main_window: Tk, api_callbacks: dict, enable_stop_button_callback: Callable, enable_pause_button_callback: Callable, stop_pause_button_blinking_callback: Callable, run_input: list[ str ] ) -> None:
         """ Start process to run selected script
 
         Args:
@@ -367,20 +269,26 @@ class ScriptRunner:
             enable_stop_button_callback()
             enable_pause_button_callback()
 
-            threading.Thread( target = self._read_stdout,
-                             daemon = True,
-                             name = f'{ self._script_info.filename }_stdout' ).start()
-            threading.Thread( target = self._read_stderr,
-                             daemon = True,
-                             name = f'{ self._script_info.filename }_stderr' ).start()
-            threading.Thread( target = self._read_monitor_completion,
-                             daemon = True,
-                             name = f'{ self._script_info.filename }_stdmonitor' ).start()
+            if self._run_state == 'free':
 
-            self.current_process = self._create_process()
-            self._process_started.set()
+                pass
 
-            self.current_process.wait()
+            elif self._run_state == 'vscode':
+                self._output_queue.put( { 'line': _( 'Running in: \'{a}\', application can not handle debugging.' ).format( a = self._run_state ),
+                                         'tag': OutputStyleTags.SYSINFO,
+                                         'exec_item': self._exec_item } )
+
+            self._process_execution = ProcessExecution( script_info = self._script_info,
+                                                       python_exe_path = self.app_state.python_exe_path,
+                                                       on_output = self._on_output,
+                                                       on_error = self._on_error,
+                                                       on_completion = self._on_completion )
+            self.current_process = self._process_execution.create_process( run_input = self.run_input,
+                                                                          run_state = self._run_state,
+                                                                          monitor_completion = False )
+
+            return_code = self.current_process.wait()
+            self._on_completion( return_code = return_code )
 
         except subprocess.SubprocessError as e:
             error_line = _( 'Subprocess error {error}' ).format( error = e )

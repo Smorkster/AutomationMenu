@@ -35,6 +35,8 @@ class ScriptMetadata:
 
     # UI behavior flags
     disable_minimize_on_running: bool = False
+    persistent_gui: bool = False
+    persistent_gui_multiple: bool = False
 
 
     def __post_init__( self ) -> None:
@@ -51,6 +53,10 @@ class ScriptMetadata:
         if not self.author:
 
             raise ValueError( 'Author is required' )
+
+        if self.persistent_gui and self.persistent_gui_multiple:
+
+            raise ValueError( 'persistent_gui and persistent_gui_multiple can''t be used at the same time' )
 
 
     def has_input_parameters( self ) -> bool:

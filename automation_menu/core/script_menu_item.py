@@ -19,6 +19,8 @@ from tkinter import Event
 from tkinter.ttk import Frame, Label
 from typing import TYPE_CHECKING, Callable
 
+from automation_menu.utils.python_path_resolver import find_python_exe
+
 
 if TYPE_CHECKING:
     from automation_menu.ui.windows.main_window import AutomationMenuWindow
@@ -168,7 +170,7 @@ class ScriptMenuItem:
 
         from automation_menu.utils.localization import _
 
-        def script_process_wrapper() -> None:
+        def _script_process_wrapper() -> None:
             """ Wrapper to execute script from separate thread """
 
             with self.master_self.app_context.ExecutionManager.create_runner() as runner:
@@ -188,11 +190,15 @@ class ScriptMenuItem:
             for entered in self.master_self.app_context.InputManager.collect_entered_input():
                 entered_inputs.extend( [ f'--{ entered.name }', f'{ entered.value }' ] )
 
-            disable_minimize = self.script_info.scriptmeta.disable_minimize_on_running
+            if self.script_info.scriptmeta.persistent_gui or self.script_info.scriptmeta.persistent_gui_multiple:
+                self.master_self.app_context.PersistentGuiManager.start_script( script_info = self.script_info, entered_input = entered_inputs )
 
-            self.master_self.execution_controller.execution_pre_work( disable_minimize = disable_minimize )
+            else:
+                disable_minimize = self.script_info.scriptmeta.disable_minimize_on_running
 
-            threading.Thread( target = script_process_wrapper, daemon = True ).start()
+                self.master_self.execution_controller.execution_pre_work( disable_minimize = disable_minimize )
+
+                threading.Thread( target = _script_process_wrapper, daemon = True ).start()
 
         except ValueError as e:
             dynamic_inputbox( title = _( 'Missing required input' ), message = _( 'These arguments are required by the script:\n{r}' ).format( r = str( e ) ) ).show()
