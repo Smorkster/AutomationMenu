@@ -139,8 +139,9 @@ def _parse_parameter_new_format( param_spec: str, param_name: str ) -> ScriptInp
     Examples:
         param simple_param : description = Description of parameter.
         param required_param : required : description = Description of required parameter.
-        param param_with_options : options = A, B, C : description = Description of parameter with options.
-            Options will be presented as a readonly combobox
+        param param_with_options : options = A | B | C : description = Description of parameter with options.
+            Options are separated by '|' (vertical bar)
+            Options will be presented as a readonly combobox.
         param param_with_required_type : type = str : description = Description of parameter with type.
 
     Args:
@@ -173,7 +174,7 @@ def _parse_parameter_new_format( param_spec: str, param_name: str ) -> ScriptInp
             sip.type = segment_value
 
         elif segment_key == 'options':
-            sip.alternatives = [ a.strip() for a in segment_value.split( ',' ) ]
+            sip.alternatives = [ a.strip() for a in segment_value.split( '|' ) ]
 
         elif segment_key == 'description':
             sip.description = segment_value

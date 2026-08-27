@@ -14,6 +14,7 @@ from tkinter.ttk import Notebook, Style
 from typing import TYPE_CHECKING
 
 from automation_menu.ui.types.menu_buttons_ui import MenuButtonsUi
+from automation_menu.utils.app_path_resolver import app_path
 from automation_menu.utils.python_path_resolver import find_python_exe
 
 
@@ -22,7 +23,6 @@ if TYPE_CHECKING:
     from automation_menu.models.application_state import ApplicationState
 
 from automation_menu.ui.components.op_buttons import get_menu_buttons
-from automation_menu.ui.components.statusbar import get_statusbar
 from automation_menu.ui.controllers.async_output_controller import AsyncOutputController
 from automation_menu.ui.controllers.execution_ui_controller import ExecutionUiController
 from automation_menu.ui.controllers.input_manager import InputManager
@@ -39,7 +39,6 @@ from automation_menu.ui.types.exec_pre_work_refs import ExecutionPreWorkRefs
 from automation_menu.ui.types.exec_refs import ExecRefs
 from automation_menu.ui.types.exec_status_refs import ExecutionStatusRefs
 from automation_menu.ui.types.exec_tab_refs import ExecutionTabUiRefs
-from automation_menu.ui.types.status_ui import StatusUi
 from automation_menu.utils.decorators import ui_guard_method
 
 

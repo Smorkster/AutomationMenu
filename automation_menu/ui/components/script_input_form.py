@@ -106,7 +106,7 @@ def on_input_key_press_type_float( event: Event ) -> str | None:
 
 def on_input_entry_entered( event: Event, required: bool, required_label: Label ) -> None:
     """ If input is required, verify that input is entered
-    
+
     Args:
         event (Event): Event triggering the handler
         required (bool): True if input is required
@@ -117,6 +117,27 @@ def on_input_entry_entered( event: Event, required: bool, required_label: Label 
 
     if required:
         if len( cast( Entry, event.widget ).get() ) == 0:
+            fg = '#FF0000'
+
+    required_label.config( foreground = fg )
+
+
+def on_input_combobox_selected( event: Event, required: bool, required_label: Label ) -> None:
+    """ If input is required, verify that input is entered
+
+    Args:
+        event (Event): Event triggering the handler
+        required (bool): True if input is required
+        required_label (Label): Label widget to notified valid input
+    """
+
+    fg: str = "#70AC6E"
+
+    if required:
+        box: Combobox = cast( Combobox, event.widget )
+        entered: str = box.get()
+
+        if len( entered ) == 0 or entered not in box.cget( 'values' ):
             fg = '#FF0000'
 
     required_label.config( foreground = fg )
@@ -228,7 +249,9 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
 
     # Layout config for the grid of parameter frames
     for i in range( number_of_columns ):
-        input_container.grid_columnconfigure( index = i, weight = 1, uniform = 'params' )
+        input_container.grid_columnconfigure( index = i,
+                                             weight = 1,
+                                             uniform = 'params' )
 
     for param in parameters:
         tt_description = param.description
@@ -245,7 +268,11 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
             tt_description += '\n' + _( 'Default value: {d}' ).format( d = param_value )
 
         parameter_frame: Frame = Frame( master = input_container )
-        parameter_frame.grid( column = column_count, row = row, sticky = 'nswe', padx = 2, pady = 2 )
+        parameter_frame.grid( column = column_count,
+                             row = row,
+                             sticky = 'nswe',
+                             padx = 2,
+                             pady = 2 )
         parameter_frame.grid_columnconfigure( index = 0, weight = 0, uniform = 'name' )
         parameter_frame.grid_columnconfigure( index = 1, weight = 0, uniform = 'required' )
         parameter_frame.grid_columnconfigure( index = 2, weight = 1 )
@@ -296,6 +323,11 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
                                        values = param.alternatives,
                                        state = 'readonly' )
 
+                if param.required:
+                    param_input.bind( '<<ComboboxSelected>>',
+                                     lambda e, r = param.required, r1 = param_required_label: on_input_combobox_selected( e, r, r1 ),
+                                     add = '+' )
+
                 if use_pre_set_param_value:
                     param_input.set( param_value )
 
@@ -308,8 +340,10 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
                                      lambda e, r = param.required, rl = param_required_label: on_input_entry_entered( e, r, rl ),
                                      add = '+' )
 
-                param_input.delete( 0, 'end' )
-                param_input.insert( 'end', param_value )
+                if len( param_value ) > 0:
+                    param_input.delete( 0, 'end' )
+                    param_input.insert( 'end', param_value )
+                    param_input.event_generate( '<KeyRelease>' )
 
             if param.type == 'int':
                 param_input.bind( '<Key>', on_input_key_press_type_int )
