@@ -182,6 +182,7 @@ def collect_entered_input( frame_to_search: Frame, parameter_list: list[ ScriptI
     for widget in frame_to_search.winfo_children():
         children = widget.winfo_children()
         param_name = widget.children[ '!label' ].cget( 'text' )
+        param_template: ScriptInputParameter = [ p for p in parameter_list if p.name == param_name ][ 0 ]
 
         if len( children ) < 3:
 
@@ -215,7 +216,6 @@ def collect_entered_input( frame_to_search: Frame, parameter_list: list[ ScriptI
                     invalid_input.append( f'{ param_name }: { param_input_given }\n' )
 
             else:
-                param_template: ScriptInputParameter = [ p for p in parameter_list if p.name == param_name ][ 0 ]
 
                 try:
                     if param_template.type == 'float':
@@ -224,7 +224,7 @@ def collect_entered_input( frame_to_search: Frame, parameter_list: list[ ScriptI
                     elif param_template.type == 'int':
                         int( param_input_given )
 
-                except:
+                except ValueError:
                     invalid_input.append( ( f'{ param_name }: { param_input_given }\n' ) )
 
         entered_input.append( InputArgument( name = param_name, value = param_input_given ) )
