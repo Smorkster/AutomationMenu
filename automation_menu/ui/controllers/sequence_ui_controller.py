@@ -503,11 +503,11 @@ class SequenceUiController:
             args (Tuple): Unused positional arguments accepted by the callback.
         """
 
-        self._sequence_manager.save_edited_step( selected_script_name = self._sequence_ui.step_script_list.get(),
+        saved: bool = self._sequence_manager.save_edited_step( selected_script_name = self._sequence_ui.step_script_list.get(),
                                                 selected_stop_on_error = self._sequence_ui.stop_step_on_error_var.get(),
                                                 step_input_frame = self._sequence_ui.input_params_frame )
 
-        if not self._blink_active:
+        if saved and not self._blink_active:
             self._start_blinking()
 
 

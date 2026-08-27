@@ -11,6 +11,7 @@ from tkinter import Canvas, Event
 from tkinter.ttk import Checkbutton, Combobox, Entry, Frame, Label
 from typing import cast
 
+from automation_menu.models.custom_exceptions import InvalidInputError
 from automation_menu.models.presetparam import PreSetParam
 from automation_menu.models.script_input_argument import InputArgument
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
@@ -173,9 +174,11 @@ def collect_entered_input( frame_to_search: Frame ) -> list[ InputArgument ]:
 
     entered_input: list[ InputArgument ] = []
     missing_required_input: list[ str ] = []
+    invalid_input: list[ str ] = []
 
     for widget in frame_to_search.winfo_children():
         children = widget.winfo_children()
+        param_name = widget.children[ '!label' ].cget( 'text' )
 
         if len( children ) < 3:
 
@@ -189,22 +192,30 @@ def collect_entered_input( frame_to_search: Frame ) -> list[ InputArgument ]:
 
         if isinstance( candidate, Checkbutton ):
 
-            param_text = 'True' if 'selected' in candidate.state() else 'False'
+            param_input_given = 'True' if 'selected' in candidate.state() else 'False'
 
         else:
             if children[ 1 ].cget( 'foreground' ) and children[ 1 ].cget( 'foreground' ).string == '#FF0000':
-                missing_required_input.append( children[ 0 ].cget( 'text' ) )
+                missing_required_input.append( param_name )
 
                 continue
 
-            param_text = str( candidate.get() ).strip()
+            param_input_given = str( candidate.get() ).strip()
 
-            if not param_text:
+            if not param_input_given:
 
                 continue
 
-        param_name = widget.children[ '!label' ].cget( 'text' )
-        entered_input.append( InputArgument( name = param_name, value = param_text ) )
+            if isinstance( candidate, Combobox ):
+
+                if param_input_given not in candidate.cget( 'values' ):
+                    invalid_input.append( f'{ param_name }: { param_input_given }\n' )
+
+        entered_input.append( InputArgument( name = param_name, value = param_input_given ) )
+
+    if len( invalid_input ) > 0:
+
+        raise InvalidInputError( '\n'.join( invalid_input ) )
 
     if len( missing_required_input ) > 0:
 
@@ -328,8 +339,7 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
                                      lambda e, r = param.required, r1 = param_required_label: on_input_combobox_selected( e, r, r1 ),
                                      add = '+' )
 
-                if use_pre_set_param_value:
-                    param_input.set( param_value )
+                param_input.set( param_value )
 
             else:
                 param_input = Entry( master = parameter_frame,

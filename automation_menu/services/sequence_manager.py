@@ -15,6 +15,9 @@ import uuid
 from tkinter.ttk import Frame, Notebook
 from typing import Callable, TYPE_CHECKING
 
+from dynamicinputbox.dynamicinputbox import dynamic_inputbox
+
+from automation_menu.models.custom_exceptions import InvalidInputError
 from automation_menu.models.script_input_argument import InputArgument
 from automation_menu.models.scriptinfo_not_loaded import ScriptInfoNotLoaded
 from automation_menu.types.sequence_callbacks import SequenceCallbacks
@@ -384,7 +387,7 @@ class SequenceManager:
         threading.Thread( target = _mini_runner, daemon = True ).start()
 
 
-    def save_edited_step( self, selected_script_name: str, selected_stop_on_error: bool, step_input_frame: Frame | None ) -> None:
+    def save_edited_step( self, selected_script_name: str, selected_stop_on_error: bool, step_input_frame: Frame | None ) -> bool:
         """ Save the currently edited sequence step.
 
         Args:
@@ -395,7 +398,7 @@ class SequenceManager:
 
         if self.current_sequence is None:
 
-            return
+            return False
 
         if not self.current_step_for_edit:
             self.current_step_for_edit = SequenceStep()
@@ -420,13 +423,25 @@ class SequenceManager:
 
         self.current_step_for_edit.step_index = index
 
-        if step_input_frame and step_input_frame.winfo_exists():
-            step_input: list[ InputArgument ] = collect_entered_input( frame_to_search = step_input_frame )
-            self.current_step_for_edit.pre_set_parameters = [ PreSetParam( name = n.name, set = n.value ) for n in step_input ]
+        try:
+            if step_input_frame and step_input_frame.winfo_exists():
+                step_input: list[ InputArgument ] = collect_entered_input( frame_to_search = step_input_frame )
 
-        self.sequence_ui_controller.hide_step_form()
-        self.sequence_ui_controller.populate_sequence_steps( sequence = self.current_sequence )
-        self._persist_sequences()
+                self.current_step_for_edit.pre_set_parameters = [ PreSetParam( name = n.name, set = n.value ) for n in step_input ]
+
+            self.sequence_ui_controller.hide_step_form()
+            self.sequence_ui_controller.populate_sequence_steps( sequence = self.current_sequence )
+            self._persist_sequences()
+
+            return True
+
+        except InvalidInputError as e:
+
+            from automation_menu.utils.localization import _
+
+            dynamic_inputbox( title = _( 'Invalid input entered' ), message = _( 'Input values entered for the script is not valid for these parameters:\n{r}' ).format( r = str( e ) ) ).show()
+
+            return False
 
 
     def save_sequence( self ) -> None:

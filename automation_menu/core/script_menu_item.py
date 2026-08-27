@@ -19,7 +19,7 @@ from tkinter import Event
 from tkinter.ttk import Frame, Label
 from typing import TYPE_CHECKING, Callable
 
-from automation_menu.utils.python_path_resolver import find_python_exe
+from automation_menu.models.custom_exceptions import InvalidInputError
 
 
 if TYPE_CHECKING:
@@ -200,5 +200,10 @@ class ScriptMenuItem:
 
                 threading.Thread( target = _script_process_wrapper, daemon = True ).start()
 
+        except InvalidInputError as e:
+
+            dynamic_inputbox( title = _( 'Invalid input entered' ), message = _( 'Input values entered for the script is not valid for these parameters:\n{r}' ).format( r = str( e ) ) ).show()
+
         except ValueError as e:
+
             dynamic_inputbox( title = _( 'Missing required input' ), message = _( 'These arguments are required by the script:\n{r}' ).format( r = str( e ) ) ).show()
