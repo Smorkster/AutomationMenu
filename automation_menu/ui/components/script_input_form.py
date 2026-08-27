@@ -355,7 +355,9 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
                                      lambda e, r = param.required, r1 = param_required_label: _on_input_combobox_selected( e, r, r1 ),
                                      add = '+' )
 
-                param_input.set( param_value )
+                if len( param_value ) > 0:
+                    param_input.set( param_value )
+                    param_input.event_generate( '<<ComboboxSelected>>' )
 
             else:
                 param_input = Entry( master = parameter_frame,
