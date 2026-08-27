@@ -425,7 +425,7 @@ class SequenceManager:
 
         try:
             if step_input_frame and step_input_frame.winfo_exists():
-                step_input: list[ InputArgument ] = collect_entered_input( frame_to_search = step_input_frame )
+                step_input: list[ InputArgument ] = collect_entered_input( frame_to_search = step_input_frame, parameter_list = self.current_step_for_edit.script_info.scriptmeta.script_input_parameters )
 
                 self.current_step_for_edit.pre_set_parameters = [ PreSetParam( name = n.name, set = n.value ) for n in step_input ]
 

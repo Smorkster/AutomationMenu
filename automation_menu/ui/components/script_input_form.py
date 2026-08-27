@@ -16,6 +16,8 @@ from automation_menu.models.presetparam import PreSetParam
 from automation_menu.models.script_input_argument import InputArgument
 from automation_menu.models.scriptinputparameter import ScriptInputParameter
 
+_allowed_int_keysym_list: list[ str ] = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'BackSpace', 'Delete', 'Tab', 'Right', 'Left', 'Home', 'End', 'minus', 'plus', 'Shift_L', 'Shift_R' ]
+_allowed_float_keysym_list: list[ str ] = _allowed_int_keysym_list + [ 'period' ]
 
 def clear_previous_values( input_frame: Frame ) -> None:
     """ Remove any entered values from existing input widgets.
@@ -33,7 +35,103 @@ def clear_previous_values( input_frame: Frame ) -> None:
             w.set( '' )
 
 
-def on_keyboard_focus( widget: Entry, canvas: Canvas ) -> None:
+def _on_input_combobox_selected( event: Event, required: bool, required_label: Label ) -> None:
+    """ If input is required, verify that input is entered
+
+    Args:
+        event (Event): Event triggering the handler
+        required (bool): True if input is required
+        required_label (Label): Label widget to notified valid input
+    """
+
+    fg: str = "#70AC6E"
+
+    if required:
+        box: Combobox = cast( Combobox, event.widget )
+        entered: str = box.get()
+
+        if len( entered ) == 0 or entered not in box.cget( 'values' ):
+            fg = '#FF0000'
+
+    required_label.config( foreground = fg )
+
+
+def _on_input_entry_entered( event: Event, required: bool, required_label: Label ) -> None:
+    """ If input is required, verify that input is entered
+
+    Args:
+        event (Event): Event triggering the handler
+        required (bool): True if input is required
+        required_label (Label): Label widget to notified valid input
+    """
+
+    fg: str = "#70AC6E"
+
+    if required:
+        if len( cast( Entry, event.widget ).get() ) == 0:
+            fg = '#FF0000'
+
+    required_label.config( foreground = fg )
+
+
+def _on_input_key_press_type_float( event: Event ) -> str | None:
+    """ Prevent anything but numbers to be entered.
+    Used when input type is int or float
+
+    Args:
+        event (Event): Event that triggered the handler.
+
+    Returns:
+        (str | None): Tkinter break instruction for the Return key, otherwise None.
+    """
+
+    if event.keysym not in _allowed_float_keysym_list:
+
+        return 'break'
+
+    if event.keysym == 'period' and cast( Entry, event.widget ).get().count( '.' ) >= 1:
+
+        return 'break'
+
+    return
+
+
+def _on_input_key_press_type_int( event: Event ) -> str | None:
+    """ Prevent anything but numbers to be entered.
+    Used when input type is int or float
+
+    Args:
+        event (Event): Event that triggered the handler.
+
+    Returns:
+        (str | None): Tkinter break instruction for the Return key, otherwise None.
+    """
+
+    if event.keysym not in _allowed_int_keysym_list:
+
+        return 'break'
+
+    return
+
+
+def _on_input_key_press_no_new_line( event: Event ) -> str | None:
+    """ Prevent newline characters from being entered.
+
+    Args:
+        event (Event): Event that triggered the handler.
+
+    Returns:
+        (str | None): Tkinter break instruction for the Return key, otherwise None.
+    """
+
+    if event.keysym == 'Return':
+
+        return 'break'
+
+    return
+
+
+def _on_keyboard_focus( widget: Entry, canvas: Canvas ) -> None:
     """ Scroll the canvas to keep the focused entry widget visible.
 
     Args:
@@ -66,107 +164,12 @@ def on_keyboard_focus( widget: Entry, canvas: Canvas ) -> None:
     canvas.yview_moveto( scroll_fraction )
 
 
-def on_input_key_press_no_new_line( event: Event ) -> str | None:
-    """ Prevent newline characters from being entered.
-
-    Args:
-        event (Event): Event that triggered the handler.
-
-    Returns:
-        (str | None): Tkinter break instruction for the Return key, otherwise None.
-    """
-
-    if event.keysym == 'Return':
-
-        return 'break'
-
-    return
-
-
-def on_input_key_press_type_float( event: Event ) -> str | None:
-    """ Prevent anything but numbers to be entered.
-    Used when input type is int or float
-
-    Args:
-        event (Event): Event that triggered the handler.
-
-    Returns:
-        (str | None): Tkinter break instruction for the Return key, otherwise None.
-    """
-
-    if event.keysym not in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'period', 'BackSpace', 'Tab' ]:
-
-        return 'break'
-
-    if event.keysym == 'period' and cast( Entry, event.widget ).get().count( '.' ) >= 1:
-
-        return 'break'
-
-    return
-
-
-def on_input_entry_entered( event: Event, required: bool, required_label: Label ) -> None:
-    """ If input is required, verify that input is entered
-
-    Args:
-        event (Event): Event triggering the handler
-        required (bool): True if input is required
-        required_label (Label): Label widget to notified valid input
-    """
-
-    fg: str = "#70AC6E"
-
-    if required:
-        if len( cast( Entry, event.widget ).get() ) == 0:
-            fg = '#FF0000'
-
-    required_label.config( foreground = fg )
-
-
-def on_input_combobox_selected( event: Event, required: bool, required_label: Label ) -> None:
-    """ If input is required, verify that input is entered
-
-    Args:
-        event (Event): Event triggering the handler
-        required (bool): True if input is required
-        required_label (Label): Label widget to notified valid input
-    """
-
-    fg: str = "#70AC6E"
-
-    if required:
-        box: Combobox = cast( Combobox, event.widget )
-        entered: str = box.get()
-
-        if len( entered ) == 0 or entered not in box.cget( 'values' ):
-            fg = '#FF0000'
-
-    required_label.config( foreground = fg )
-
-
-def on_input_key_press_type_int( event: Event ) -> str | None:
-    """ Prevent anything but numbers to be entered.
-    Used when input type is int or float
-
-    Args:
-        event (Event): Event that triggered the handler.
-
-    Returns:
-        (str | None): Tkinter break instruction for the Return key, otherwise None.
-    """
-
-    if event.keysym not in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'BackSpace', 'Tab' ]:
-
-        return 'break'
-
-    return
-
-
-def collect_entered_input( frame_to_search: Frame ) -> list[ InputArgument ]:
+def collect_entered_input( frame_to_search: Frame, parameter_list: list[ ScriptInputParameter ] ) -> list[ InputArgument ]:
     """ Collect entered parameter values from the input form.
 
     Args:
         frame_to_search (Frame): Frame containing parameter input widgets.
+        parameter_list (list[ ScriptInputParameter ]): Parameter definitions currently used
 
     Returns:
         entered_input (list[PreSetParam]): Entered input values as preset parameters.
@@ -210,6 +213,19 @@ def collect_entered_input( frame_to_search: Frame ) -> list[ InputArgument ]:
 
                 if param_input_given not in candidate.cget( 'values' ):
                     invalid_input.append( f'{ param_name }: { param_input_given }\n' )
+
+            else:
+                param_template: ScriptInputParameter = [ p for p in parameter_list if p.name == param_name ][ 0 ]
+
+                try:
+                    if param_template.type == 'float':
+                        float( param_input_given )
+
+                    elif param_template.type == 'int':
+                        int( param_input_given )
+
+                except:
+                    invalid_input.append( ( f'{ param_name }: { param_input_given }\n' ) )
 
         entered_input.append( InputArgument( name = param_name, value = param_input_given ) )
 
@@ -336,7 +352,7 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
 
                 if param.required:
                     param_input.bind( '<<ComboboxSelected>>',
-                                     lambda e, r = param.required, r1 = param_required_label: on_input_combobox_selected( e, r, r1 ),
+                                     lambda e, r = param.required, r1 = param_required_label: _on_input_combobox_selected( e, r, r1 ),
                                      add = '+' )
 
                 param_input.set( param_value )
@@ -347,7 +363,7 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
 
                 if param.required:
                     param_input.bind( '<KeyRelease>',
-                                     lambda e, r = param.required, rl = param_required_label: on_input_entry_entered( e, r, rl ),
+                                     lambda e, r = param.required, rl = param_required_label: _on_input_entry_entered( e, r, rl ),
                                      add = '+' )
 
                 if len( param_value ) > 0:
@@ -356,19 +372,19 @@ def create_input_widgets( parameters: list[ ScriptInputParameter ], container: F
                     param_input.event_generate( '<KeyRelease>' )
 
             if param.type == 'int':
-                param_input.bind( '<Key>', on_input_key_press_type_int )
+                param_input.bind( '<Key>', _on_input_key_press_type_int )
                 tt_description += '\n' + _( 'Only whole numbers are allowed' )
 
             elif param.type == 'float':
-                param_input.bind( '<Key>', on_input_key_press_type_float )
+                param_input.bind( '<Key>', _on_input_key_press_type_float )
                 tt_description += '\n' + _( 'Only numbers are allowed' )
 
             else:
-                param_input.bind( '<Key>', on_input_key_press_no_new_line )
+                param_input.bind( '<Key>', _on_input_key_press_no_new_line )
 
         param_input.bind( '<FocusIn>',
                          lambda e, c = target_canvas:
-                         on_keyboard_focus( e.widget, c ) )
+                         _on_keyboard_focus( e.widget, c ) )
         param_input.grid( column = 2,
                          row = 0,
                          padx = 5,

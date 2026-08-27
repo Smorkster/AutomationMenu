@@ -94,13 +94,13 @@ class InputManager:
 
         if frame_to_search is not None:
 
-            return collect_entered_input( frame_to_search = frame_to_search )
+            return collect_entered_input( frame_to_search = frame_to_search, parameter_list = self._current_script_info.scriptmeta.script_input_parameters )
 
         if not self.is_visible() or self._current_frame is None:
 
             return []
 
-        return collect_entered_input( self._current_frame )
+        return collect_entered_input( self._current_frame, parameter_list = self._current_script_info.scriptmeta.script_input_parameters )
 
 
     def hide_input_frame( self ) -> None:
