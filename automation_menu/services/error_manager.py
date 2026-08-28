@@ -17,6 +17,8 @@ from automation_menu.utils.email_handler import send_error_mail
 
 
 class ErrorManager:
+    """ Handle script error reporting and related notification context. """
+
     def __init__( self, app_state: ApplicationState, ldap_connection: Connection | None ) -> None:
         """ Manage language change and GUI update
 

@@ -20,6 +20,8 @@ from automation_menu.models.script_output import ScriptOutput
 
 
 class ExecHistory:
+    """ Store metadata and output collected from one script execution. """
+
     def __init__( self, script_info: ScriptInfo ) -> None:
         """ Class to hold script execution history
 

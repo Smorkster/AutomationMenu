@@ -23,6 +23,8 @@ from automation_menu.ui.types.history_ui import HistoryUi
 
 
 class HistoryManager:
+    """ Manage execution history storage and the UI used to display it. """
+
     def __init__( self, app_context: ApplicationContext ) -> None:
         """ Manage execution history items UI widgets for display
 

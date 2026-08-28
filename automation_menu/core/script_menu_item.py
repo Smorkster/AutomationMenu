@@ -31,6 +31,8 @@ from automation_menu.models.enums import ScriptState
 
 
 class ScriptMenuItem:
+    """ Represent a clickable script entry in the application menu. """
+
     def __init__ ( self, script_menu: Frame, script_info: ScriptInfo, main_object: AutomationMenuWindow, menu_hide_callback: Callable ) -> None:
         """ Object for representing a script in the menu
 

@@ -19,6 +19,8 @@ from automation_menu.utils.app_path_resolver import app_path
 
 
 class Settings:
+    """ Store persisted application settings and normalize their defaults. """
+
     def __init__( self, save_callback: Callable, settings_dict: RawSettings | None = None ) -> None:
         """ Initialize application settings.
 

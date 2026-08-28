@@ -22,6 +22,8 @@ from automation_menu.models.sequence import Sequence
 
 
 class SequenceMenuItem:
+    """ Represent a clickable sequence entry in the application menu. """
+
     def __init__ ( self, sequence_menu: Frame, sequence: Sequence, main_object: AutomationMenuWindow, menu_hide_callback: Callable ) -> None:
         """ Object for representing a sequence in the menu
 

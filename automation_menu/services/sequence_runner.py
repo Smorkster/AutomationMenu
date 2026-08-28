@@ -1,4 +1,10 @@
+"""
+Run saved script sequences step by step using the execution manager.
 
+Author: Smorkster
+GitHub: https://github.com/Smorkster/automationmenu
+License: MIT
+"""
 
 import queue
 from tkinter import Tk
