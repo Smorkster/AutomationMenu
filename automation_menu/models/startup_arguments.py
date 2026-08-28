@@ -21,3 +21,4 @@ class StartupArguments( TypedDict, total = False ):
 
     app_run_state: Required[ ApplicationRunState ]
     loglevel: Required[ str ]
+    mini: Required[ bool ]

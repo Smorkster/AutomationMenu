@@ -108,7 +108,7 @@ class ProcessExecution:
             self._on_output( line_str.rstrip() )
 
 
-    def create_process( self, run_input: list[ str ], persistent: bool = False, run_state: str = 'free', monitor_completion: bool = True ) -> subprocess.Popen:
+    def create_process( self, run_input: list[ str ], persistent: bool = False, run_state: str = 'free', monitor_completion: bool = True, mini_runner: bool = False ) -> subprocess.Popen | None:
         """ Create and start a process to execute script
 
         Args:
@@ -116,6 +116,7 @@ class ProcessExecution:
             persistent (bool): True if this will start a persistent script
             run_state (str): State in which python will run (debug or not)
             monitor_completion (bool): True if completion should be monitored directly (used for persistent scripts)
+            mini_runner (bool): True if starter from the mini runner
 
         Returns:
             (subprocess.Popen): Newly created process
@@ -151,21 +152,21 @@ class ProcessExecution:
         args.append( str( self._script_info.get_attr( 'fullpath' ) ) )
         args.extend( run_input )
 
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
+
         threading.Thread( target = self._read_stdout,
-                         daemon = True,
-                         name = f'{ self._script_info.filename }_stdout' ).start()
+                        daemon = True,
+                        name = f'{ self._script_info.filename }_stdout' ).start()
         threading.Thread( target = self._read_stderr,
-                         daemon = True,
-                         name = f'{ self._script_info.filename }_stderr' ).start()
+                        daemon = True,
+                        name = f'{ self._script_info.filename }_stderr' ).start()
 
         if monitor_completion:
             threading.Thread( target = self._monitor_completion,
                             daemon = True,
                             name = f'{ self._script_info.filename }_stdmonitor' ).start()
-
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        startupinfo.wShowWindow = subprocess.SW_HIDE
 
         self.current_process = subprocess.Popen( args = args,
                                                 startupinfo = startupinfo,
@@ -177,7 +178,8 @@ class ProcessExecution:
                                                 encoding = 'utf-8',
                                                 creationflags = flags,
                                                 errors = 'replace',
-                                                env = current_env )
+                                                env = current_env,
+                                                start_new_session = mini_runner )
 
         self._process_started.set()
 

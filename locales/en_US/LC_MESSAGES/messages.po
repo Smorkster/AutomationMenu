@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-26 14:16+0200\n"
+"POT-Creation-Date: 2026-08-28 13:18+0200\n"
 "PO-Revision-Date: 2025-09-18 15:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_US\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: main.py:150
+#: main.py:166
 msgid "Application interrupted by user"
 msgstr "Application interrupted by user"
 
-#: main.py:161
+#: main.py:177
 #, python-brace-format
 msgid ""
 "An unexpected error occurred:\n"
@@ -37,7 +37,7 @@ msgstr ""
 "\n"
 "The application will now exit."
 
-#: main.py:162
+#: main.py:178
 msgid "Application Error"
 msgstr "Application Error"
 
@@ -65,29 +65,29 @@ msgstr "Could not connect to AD"
 msgid "Not connected to LDAP"
 msgstr "Not connected to LDAP"
 
-#: automation_menu/core/one_time_script_runner.py:85
+#: automation_menu/core/one_time_script_runner.py:87
 msgid "Mail sent"
 msgstr "Mail sent"
 
-#: automation_menu/core/one_time_script_runner.py:90
+#: automation_menu/core/one_time_script_runner.py:92
 #, python-brace-format
 msgid "Could not send error message to developer {e}"
 msgstr "Could not send error message to developer {e}"
 
-#: automation_menu/core/one_time_script_runner.py:133
+#: automation_menu/core/one_time_script_runner.py:135
 msgid "Script terminated"
 msgstr "Script terminated"
 
-#: automation_menu/core/one_time_script_runner.py:139
+#: automation_menu/core/one_time_script_runner.py:141
 msgid "Script completed successfully"
 msgstr "Script completed successfully"
 
-#: automation_menu/core/one_time_script_runner.py:145
+#: automation_menu/core/one_time_script_runner.py:147
 #, python-brace-format
 msgid "Script failed with exit code {err}"
 msgstr "Script failed with exit code {err}"
 
-#: automation_menu/core/one_time_script_runner.py:201
+#: automation_menu/core/one_time_script_runner.py:203
 #, python-brace-format
 msgid ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
@@ -96,37 +96,37 @@ msgstr ""
 "A breakpoint occured in the script at row {line_nr}. Click 'Continue' to "
 "reactivate script."
 
-#: automation_menu/core/one_time_script_runner.py:264
+#: automation_menu/core/one_time_script_runner.py:266
 #, python-brace-format
 msgid "Starting '{file}'"
 msgstr "Starting '{file}'"
 
-#: automation_menu/core/one_time_script_runner.py:277
+#: automation_menu/core/one_time_script_runner.py:279
 #, python-brace-format
 msgid "Running in: '{a}', application can not handle debugging."
 msgstr "Running in: '{a}', application can not handle debugging."
 
-#: automation_menu/core/one_time_script_runner.py:294
+#: automation_menu/core/one_time_script_runner.py:297
 #, python-brace-format
 msgid "Subprocess error {error}"
 msgstr "Subprocess error {error}"
 
-#: automation_menu/core/one_time_script_runner.py:297
+#: automation_menu/core/one_time_script_runner.py:300
 #, python-brace-format
 msgid "Unexpected error {error}"
 msgstr "Unexpected error {error}"
 
-#: automation_menu/core/one_time_script_runner.py:361
+#: automation_menu/core/one_time_script_runner.py:364
 #, python-brace-format
 msgid "Termination - CalledProcessError: {e}"
 msgstr "Termination - CalledProcessError: {e}"
 
-#: automation_menu/core/one_time_script_runner.py:365
+#: automation_menu/core/one_time_script_runner.py:368
 #, python-brace-format
 msgid "Termination - SubprocessError: {e}"
 msgstr "Termination - SubprocessError: {e}"
 
-#: automation_menu/core/one_time_script_runner.py:369
+#: automation_menu/core/one_time_script_runner.py:372
 #, python-brace-format
 msgid "Termination - Exception: {e}"
 msgstr "Termination - Exception: {e}"
@@ -136,23 +136,38 @@ msgstr "Termination - Exception: {e}"
 msgid "Script ended with exit code: {e}"
 msgstr "Script ended with exit code: {e}"
 
-#: automation_menu/core/script_menu_item.py:73
+#: automation_menu/core/script_menu_item.py:75
 msgid " (Dev)"
 msgstr " (Dev)"
 
-#: automation_menu/core/script_menu_item.py:92
+#: automation_menu/core/script_menu_item.py:94
 msgid "In development, and should only be run by its developer."
 msgstr "In development, and should only be run by its developer."
 
-#: automation_menu/core/script_menu_item.py:96
+#: automation_menu/core/script_menu_item.py:98
 msgid "Application test script, only used to test application functionality"
 msgstr "Application test script, only used to test application functionality"
 
-#: automation_menu/core/script_menu_item.py:204
+#: automation_menu/core/script_menu_item.py:207
+#: automation_menu/services/sequence_manager.py:442
+msgid "Invalid input entered"
+msgstr "Invalid input entered"
+
+#: automation_menu/core/script_menu_item.py:207
+#: automation_menu/services/sequence_manager.py:442
+#, python-brace-format
+msgid ""
+"Input values entered for the script is not valid for these parameters:\n"
+"{r}"
+msgstr ""
+"Input values entered for the script is not valid for these parameters:\n"
+"{r}"
+
+#: automation_menu/core/script_menu_item.py:211
 msgid "Missing required input"
 msgstr "Missing required input"
 
-#: automation_menu/core/script_menu_item.py:204
+#: automation_menu/core/script_menu_item.py:211
 #, python-brace-format
 msgid ""
 "These arguments are required by the script:\n"
@@ -221,7 +236,7 @@ msgid "Writing settings error; file not found: {file_path}"
 msgstr "Writing settings error; file not found: {file_path}"
 
 #: automation_menu/models/scriptinfo_not_loaded.py:27
-#: automation_menu/services/sequence_runner.py:42
+#: automation_menu/services/sequence_runner.py:48
 msgid "Script not loaded"
 msgstr "Script not loaded"
 
@@ -247,43 +262,43 @@ msgstr "Expected dict, got {t}"
 msgid "Invalid pre_set_parameters for step {f}: {p}"
 msgstr "Invalid pre_set_parameters for step {f}: {p}"
 
-#: automation_menu/models/settings.py:87
+#: automation_menu/models/settings.py:89
 #, python-brace-format
 msgid "Script folder '{d}' is not a valid path"
 msgstr "Script folder '{d}' is not a valid path"
 
-#: automation_menu/services/error_manager.py:48
+#: automation_menu/services/error_manager.py:50
 msgid "No connection to LDAP server established"
 msgstr "No connection to LDAP server established"
 
-#: automation_menu/services/history_manager.py:72
+#: automation_menu/services/history_manager.py:74
 #, python-brace-format
 msgid "{d} d"
 msgstr "{d} d"
 
-#: automation_menu/services/history_manager.py:75
+#: automation_menu/services/history_manager.py:77
 #, python-brace-format
 msgid "{h} h"
 msgstr "{h} h"
 
-#: automation_menu/services/history_manager.py:78
+#: automation_menu/services/history_manager.py:80
 #, python-brace-format
 msgid "{m} m"
 msgstr "{m} m"
 
-#: automation_menu/services/history_manager.py:81
+#: automation_menu/services/history_manager.py:83
 #, python-brace-format
 msgid "{s} s"
 msgstr "{s} s"
 
-#: automation_menu/services/history_manager.py:168
-#: automation_menu/services/sequence_manager.py:259
+#: automation_menu/services/history_manager.py:169
+#: automation_menu/services/sequence_manager.py:262
 #, python-brace-format
 msgid "No history item for {i}"
 msgstr "No history item for {i}"
 
-#: automation_menu/services/history_manager.py:170
-#: automation_menu/services/sequence_manager.py:261
+#: automation_menu/services/history_manager.py:171
+#: automation_menu/services/sequence_manager.py:264
 #, python-brace-format
 msgid "Couldn't find history item from list id '{ id }'"
 msgstr "Couldn't find history item from list id '{ id }'"
@@ -298,62 +313,62 @@ msgstr ""
 msgid "No ScriptInfo at path {p} was found"
 msgstr ""
 
-#: automation_menu/services/sequence_manager.py:65
+#: automation_menu/services/sequence_manager.py:68
 #, python-brace-format
 msgid "Unsupported saved sequence format, type: {t}"
 msgstr "Unsupported saved sequence format, type: {t}"
 
-#: automation_menu/services/sequence_manager.py:202
+#: automation_menu/services/sequence_manager.py:205
 msgid "'Current sequence' was lost, can't remove sequence"
 msgstr "'Current sequence' was lost, can't remove sequence"
 
-#: automation_menu/services/sequence_manager.py:241
+#: automation_menu/services/sequence_manager.py:244
 msgid "No sequence is selected"
 msgstr "No sequence is selected"
 
-#: automation_menu/services/sequence_manager.py:318
+#: automation_menu/services/sequence_manager.py:321
 msgid "'Current sequence' was lost, can't remove step"
 msgstr "'Current sequence' was lost, can't remove step"
 
-#: automation_menu/services/sequence_manager.py:322
+#: automation_menu/services/sequence_manager.py:325
 msgid "'Current step' was lost, can't remove step"
 msgstr "'Current step' was lost, can't remove step"
 
-#: automation_menu/services/sequence_manager.py:364
+#: automation_menu/services/sequence_manager.py:367
 #, python-brace-format
 msgid "Starting sequence {name}, with {step_count} steps"
 msgstr "Starting sequence {name}, with {step_count} steps"
 
-#: automation_menu/services/sequence_manager.py:443
+#: automation_menu/services/sequence_manager.py:458
 msgid "'Current sequence' was lost, can't save data"
 msgstr "'Current sequence' was lost, can't save data"
 
-#: automation_menu/services/sequence_runner.py:47
+#: automation_menu/services/sequence_runner.py:53
 #, python-brace-format
 msgid "Couldn't initiate a runner for sequence {s}"
 msgstr "Couldn't initiate a runner for sequence {s}"
 
-#: automation_menu/services/sequence_runner.py:63
+#: automation_menu/services/sequence_runner.py:69
 #, python-brace-format
 msgid "Aborted by user at step {i}"
 msgstr "Aborted by user at step {i}"
 
-#: automation_menu/services/sequence_runner.py:72
+#: automation_menu/services/sequence_runner.py:78
 #, python-brace-format
 msgid "Stopped on error at step {i} (exit code: {e})"
 msgstr "Stopped on error at step {i} (exit code: {e})"
 
-#: automation_menu/services/sequence_runner.py:80
+#: automation_menu/services/sequence_runner.py:86
 #, python-brace-format
 msgid "Step {i} failed (exit code {e})"
 msgstr "Step {i} failed (exit code {e})"
 
-#: automation_menu/services/sequence_runner.py:94
+#: automation_menu/services/sequence_runner.py:100
 #, python-brace-format
 msgid "Error in script '{f}', step {s} of {c}"
 msgstr "Error in {f}, step {s} of {c}"
 
-#: automation_menu/services/sequence_runner.py:106
+#: automation_menu/services/sequence_runner.py:112
 msgid "Sequence stopped due to individual step error"
 msgstr "Sequence stopped at step {i} due to individual step error"
 
@@ -390,26 +405,26 @@ msgid "Force stop"
 msgstr "Force stop"
 
 #: automation_menu/ui/components/op_buttons.py:167
-#: automation_menu/ui/controllers/execution_ui_controller.py:139
-#: automation_menu/ui/windows/main_window.py:323
+#: automation_menu/ui/controllers/execution_ui_controller.py:138
+#: automation_menu/ui/windows/main_window.py:324
 msgid "Pause"
 msgstr "Pause"
 
 #: automation_menu/ui/components/op_buttons.py:174
-#: automation_menu/ui/controllers/execution_ui_controller.py:149
+#: automation_menu/ui/controllers/execution_ui_controller.py:148
 msgid "Resume"
 msgstr "Resume"
 
-#: automation_menu/ui/components/script_input_form.py:245
+#: automation_menu/ui/components/script_input_form.py:295
 #, python-brace-format
 msgid "Default value: {d}"
 msgstr "Default value: {d}"
 
-#: automation_menu/ui/components/script_input_form.py:316
+#: automation_menu/ui/components/script_input_form.py:378
 msgid "Only whole numbers are allowed"
 msgstr "Only whole numbers are allowed"
 
-#: automation_menu/ui/components/script_input_form.py:320
+#: automation_menu/ui/components/script_input_form.py:382
 msgid "Only numbers are allowed"
 msgstr "Only numbers are allowed"
 
@@ -450,11 +465,11 @@ msgstr ""
 "The script has 'DisableMinimizeOnRunning', meaning the window will not be"
 " minimized."
 
-#: automation_menu/ui/controllers/execution_ui_controller.py:136
+#: automation_menu/ui/controllers/execution_ui_controller.py:135
 msgid "Process was resumed"
 msgstr "Process was resumed"
 
-#: automation_menu/ui/controllers/execution_ui_controller.py:146
+#: automation_menu/ui/controllers/execution_ui_controller.py:145
 msgid "Process was paused"
 msgstr "Process was paused"
 
@@ -547,7 +562,7 @@ msgstr "Generated output"
 msgid "Execution history"
 msgstr "Execution history"
 
-#: automation_menu/ui/tabs/output_tab.py:41
+#: automation_menu/ui/tabs/output_tab.py:43
 msgid "Script output"
 msgstr "Script output"
 
@@ -754,6 +769,14 @@ msgstr ""
 msgid "Settings"
 msgstr "Settings"
 
+#: automation_menu/ui/windows/mini_window.py:139
+msgid "Start"
+msgstr "Start"
+
+#: automation_menu/ui/windows/mini_window.py:207
+msgid "Type"
+msgstr "Type"
+
 #: automation_menu/utils/docstring_parser.py:59
 #, python-brace-format
 msgid "{n} has invalid boolean default value: {v}"
@@ -769,11 +792,11 @@ msgstr "{n} has invalid integer default value: {v}"
 msgid "{n} has invalid float default value: {v}"
 msgstr "{n} has invalid float default value: {v}"
 
-#: automation_menu/utils/docstring_parser.py:313
+#: automation_menu/utils/docstring_parser.py:314
 msgid "File must have docstring at beginning of file"
 msgstr "File must have docstring at beginning of file"
 
-#: automation_menu/utils/docstring_parser.py:317
+#: automation_menu/utils/docstring_parser.py:318
 #, python-brace-format
 msgid ""
 "Cannot parse {file}:\n"

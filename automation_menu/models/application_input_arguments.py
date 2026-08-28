@@ -12,3 +12,4 @@ class ApplicationInputArguments:
 
     application_state: str
     loglevel: str
+    mini: bool

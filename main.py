@@ -20,7 +20,9 @@ from pathlib import Path, WindowsPath
 
 from automation_menu.models.application_input_arguments import ApplicationInputArguments
 from automation_menu.services.persistent_gui_manager import PersistentGuiManager
+from automation_menu.ui.windows.mini_window import AutomationMiniWindow
 from automation_menu.utils.app_path_resolver import app_path
+from automation_menu.utils.python_path_resolver import find_python_exe
 
 # Add the project root to Python path if needed
 project_root = Path( __file__ ).parent
@@ -106,12 +108,15 @@ def main() -> None:
                               action = 'store',
                               choices = [ 'debug', 'info', 'warning', 'error', 'critical' ],
                               default = 'info' )
+    input_parser.add_argument( '--mini',
+                              action = 'store_true' )
 
     input_args: ApplicationInputArguments = input_parser.parse_args( namespace = ApplicationInputArguments() )
 
     try:
         startup_arguments: StartupArguments = { 'app_run_state': ApplicationRunState[ input_args.application_state.upper() ],
-                                               'loglevel': input_args.loglevel }
+                                               'loglevel': input_args.loglevel,
+                                               'mini': input_args.mini }
 
         debug_logger = setup_logger( level = startup_arguments[ 'loglevel' ] )
         secrets = Secrets( read_secrets_file( file_path = str( Path( app_path() ) / 'secrets.json' ) ) )
@@ -127,20 +132,31 @@ def main() -> None:
 
         app_state = ApplicationState( current_user = current_user, secrets = secrets, settings = settings, run_state = _set_run_state() )
         debug_logger.debug( msg = f'sequence list loaded with "{ len( app_state.settings.saved_sequences ) }" sequences' )
+
+        if app_state.python_exe_path == '':
+            app_state.python_exe_path = find_python_exe()
+
         change_language( language_code = app_state.settings.current_language )
         app_context.LanguageManager = LanguageManager( current_language = app_state.settings.current_language )
         app_context.ScriptManager = ScriptManager( script_dir_path = settings.script_folders, current_user = current_user )
         app_context.ScriptManager.gather_scripts( output_queue = app_context.OutputQueue, app_state = app_state, app_run_state = startup_arguments[ 'app_run_state' ] )
         app_context.ErrorManager = ErrorManager( app_state = app_state, ldap_connection = ldap_connection )
         app_context.ExecutionManager = ScriptExecutionManager( output_queue = app_context.OutputQueue, app_state = app_state, error_manager = app_context.ErrorManager, logger = debug_logger )
-        app_context.PersistentGuiManager = PersistentGuiManager( app_state = app_state, app_context = app_context )
-        app_context.SequenceManager = SequenceManager( app_context = app_context, app_state = app_state, saved_sequences = app_state.settings.saved_sequences )
+
+        if not startup_arguments[ 'mini' ]:
+            app_context.PersistentGuiManager = PersistentGuiManager( app_state = app_state, app_context = app_context )
+            app_context.SequenceManager = SequenceManager( app_context = app_context, app_state = app_state, saved_sequences = app_state.settings.saved_sequences )
+
         app_context.HistoryManager = HistoryManager( app_context = app_context )
 
         # Launch the main application window
         from automation_menu.ui.windows.main_window import AutomationMenuWindow
 
-        AutomationMenuWindow( app_state = app_state, app_context = app_context )
+        if startup_arguments[ 'mini' ]:
+            AutomationMiniWindow( app_state = app_state, app_context = app_context )
+
+        else:
+            AutomationMenuWindow( app_state = app_state, app_context = app_context )
 
         write_exec_history( exec_items = app_context.HistoryManager.get_history_list(),
                            root_dir = WindowsPath( Path( app_path() ) ),

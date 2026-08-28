@@ -58,9 +58,6 @@ class AutomationMenuWindow:
         self.app_state: ApplicationState = app_state
         self.app_context: ApplicationContext = app_context
 
-        if self.app_state.python_exe_path == '':
-            self.app_state.python_exe_path = find_python_exe()
-
         self._init_state()
 
         self._init_root()
