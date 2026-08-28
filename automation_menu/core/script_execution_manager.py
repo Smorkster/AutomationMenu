@@ -32,6 +32,8 @@ from automation_menu.ui.windows.main_window import AutomationMenuWindow
 
 
 class ScriptExecutionManager:
+    """ Coordinate script runners, threading, and pause or resume control. """
+
     def __init__( self, output_queue: Queue, app_state: ApplicationState, error_manager: ErrorManager, logger: Logger ) -> None:
         """ Provides a contextmanager for running a script
 
@@ -118,6 +120,10 @@ class ScriptExecutionManager:
             return False
 
         try:
+            if not self.current_runner.current_process:
+
+                return False
+
             pid: int = self.current_runner.current_process.pid
             process: Process = psutil.Process( pid )
 
@@ -160,6 +166,10 @@ class ScriptExecutionManager:
             return False
 
         try:
+            if not self.current_runner.current_process:
+
+                return False
+
             pid: int = self.current_runner.current_process.pid
             process: Process = psutil.Process( pid )
 

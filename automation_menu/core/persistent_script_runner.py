@@ -143,7 +143,7 @@ class PersistentScriptRunner:
                 pass
 
 
-    def run_script( self ) -> subprocess.Popen:
+    def run_script( self ) -> subprocess.Popen | None:
         """ Start the persistent script process and begin monitoring it.
 
         Returns:

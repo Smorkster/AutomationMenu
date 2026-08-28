@@ -33,6 +33,8 @@ from automation_menu.utils.screenshot import take_screenshot
 
 
 class OneTimeScriptRunner:
+    """ Run a single script process and coordinate its execution lifecycle. """
+
     def __init__( self, output_queue: Queue, app_state: ApplicationState, exec_manager: ScriptExecutionManager, error_reporter: Callable ) -> None:
         """" A script runner, managing bootup, process output and termination
 
@@ -48,8 +50,8 @@ class OneTimeScriptRunner:
         self.script_execution_manager: ScriptExecutionManager = exec_manager
         self._error_reporter: Callable = error_reporter
 
-        self.main_window = None
-        self.current_process: subprocess.Popen
+        self.main_window: Tk | None = None
+        self.current_process: subprocess.Popen | None
         self._exec_item: ExecHistory
         self._script_info: ScriptInfo
         self._terminated: bool = False
@@ -287,8 +289,9 @@ class OneTimeScriptRunner:
                                                                           run_state = self._run_state,
                                                                           monitor_completion = False )
 
-            return_code = self.current_process.wait()
-            self._on_completion( return_code = return_code )
+            if self.current_process:
+                return_code = self.current_process.wait()
+                self._on_completion( return_code = return_code )
 
         except subprocess.SubprocessError as e:
             error_line = _( 'Subprocess error {error}' ).format( error = e )
