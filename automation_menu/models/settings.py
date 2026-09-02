@@ -78,7 +78,7 @@ class Settings:
                 self._script_folders.append( default_script_folder )
 
         for f in self._saved_script_folders:
-            p = Path( f )
+            p: Path = Path( f )
 
             try:
                 self._script_folders.index( p )

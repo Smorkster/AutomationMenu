@@ -113,6 +113,7 @@ class SettingsManager:
 
         if len( setting_errors ) > 0:
             from automation_menu.utils.localization import _
+
             for e in setting_errors:
                 self._app_context.OutputQueue.put( { 'line': e,
                                                     'tag': OutputStyleTags.SYSERROR } )
@@ -129,3 +130,19 @@ class SettingsManager:
 
         write_settingsfile( settings = obj,
                            settings_file_path = str( self._settings_file_path ) )
+
+
+    def test_add_main_script_folder( self, main_script_folder: str ) -> None:
+        """ Check if main script folder is listed, otherwise add it
+
+        Args:
+            main_script_folder (str): Path to main script folder.
+        """
+
+        p: Path = Path( main_script_folder )
+
+        try:
+            self.settings.script_folders.index( p )
+
+        except:
+            self.settings.script_folders.append( p )

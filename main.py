@@ -128,6 +128,8 @@ def main() -> None:
         app_context = ApplicationContext( debug_logger = debug_logger, startup_arguments = startup_arguments )
         app_context.SettingsManager = SettingsManager( app_context = app_context, settings_file_path = secrets[ 'settings_file_path' ] )
 
+        app_context.SettingsManager.test_add_main_script_folder( main_script_folder = str( secrets.get( 'main_script_folder' ) ) )
+
         settings = app_context.SettingsManager.settings
 
         app_state = ApplicationState( current_user = current_user, secrets = secrets, settings = settings, run_state = _set_run_state() )

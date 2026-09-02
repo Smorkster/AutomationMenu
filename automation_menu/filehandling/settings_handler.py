@@ -40,6 +40,7 @@ def read_settingsfile( settings_file_path: str, debug_logger: Logger ) -> RawSet
                 return loaded_settings
 
             else:
+
                 return {}
 
     except Exception as e:

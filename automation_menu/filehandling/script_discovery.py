@@ -240,15 +240,10 @@ def get_scripts( output_queue: Queue, app_state: ApplicationState, app_run_state
 
             continue
 
-        for i, file in enumerate(
-            sorted(
-                [
-                    f for f in os.scandir( dir )
-                    if f.is_file() and pattern.match( string = f.name )
-                ],
-                key = lambda x: x.name.lower()
-            )
-        ):
+        for i, file in enumerate( sorted(
+                [ f for f in os.scandir( dir )
+                 if f.is_file() and pattern.match( string = f.name ) ],
+                key = lambda x: x.name.lower() ) ):
             if file.name.startswith( 'AMTest_' ) and app_run_state == ApplicationRunState.PROD:
 
                 continue
