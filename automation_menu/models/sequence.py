@@ -53,7 +53,7 @@ class Sequence:
                    name = data.get( 'name', _( 'Unnamed sequence' ) ),
                    steps = [ SequenceStep.from_dict( step )
                             for step in data.get( 'steps', [] ) ],
-                            stop_on_error = data.get( 'stop_on_error', False ) )
+                   stop_on_error = data.get( 'stop_on_error', False ) )
 
 
     @classmethod

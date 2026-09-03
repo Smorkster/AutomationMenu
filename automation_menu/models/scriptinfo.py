@@ -50,6 +50,24 @@ class ScriptInfo:
         setattr( self, attr_name, attr_val )
 
 
+    @classmethod
+    def from_dict( cls: type[ ScriptInfo ], value: dict ) -> ScriptInfo:
+        """ Create an instance from a dict
+        
+        Args:
+            cls (type[ScriptInfo]): Current preset parameter class.
+            value (dict): Dictionary containing the script info values.
+        """
+
+        m: ScriptMetadata = ScriptMetadata.from_dict( value.get( 'scriptmeta', {} ) )
+        s: ScriptInfo = cls( filename = value[ 'filename' ],
+                            fullpath = Path( value[ 'fullpath' ] ),
+                            scriptmeta = m,
+                            using_breakpoint = value.get( 'using_breakpoint', False ) )
+
+        return s
+
+
     def get_attr( self, attr_name: str ) -> Any:
         """ Get an attribute value from the instance or its script metadata.
 
@@ -108,3 +126,12 @@ class ScriptInfo:
 
         else:
             setattr( self, attr_name, attr_val )
+
+
+    def to_dict( self ) -> dict:
+        """ Transform into a dictionary """
+
+        return { 'filename': self.filename,
+                'fullpath': self.fullpath,
+                'using_breakpoint': self.using_breakpoint,
+                'scriptmeta': self.scriptmeta.to_dict() }

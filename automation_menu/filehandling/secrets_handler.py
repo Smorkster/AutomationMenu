@@ -20,4 +20,5 @@ def read_secrets_file( file_path: str ) -> dict:
     """
 
     with open( file_path, mode = 'r', encoding = 'utf-8-sig' ) as f:
+
         return json.load( f )
