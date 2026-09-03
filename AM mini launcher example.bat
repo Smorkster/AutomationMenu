@@ -6,4 +6,5 @@ set "ARGS=--mini"
 
 set "PYTHONPYCACHEPREFIX=%APPDATA%\AutomationMenu\pycache"
 
-"%PYTHON%" "%AM%" "%ARGS%"
+start "" /b "%PYTHON%" "%AM%" "%ARGS%"
+exit

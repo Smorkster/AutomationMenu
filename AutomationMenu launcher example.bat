@@ -5,4 +5,5 @@ set "AM=G:\AutomatiseringTools\AutomationMenu\main.py"
 
 set "PYTHONPYCACHEPREFIX=%APPDATA%\AutomationMenu\pycache"
 
-"%PYTHON%" "%AM%"
+start "" /b "%PYTHON%" "%AM%"
+exit
