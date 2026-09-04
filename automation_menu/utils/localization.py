@@ -121,7 +121,7 @@ def setup_localization( domain: str = 'messages', language: str | None = None ) 
                                                             languages = [ language ],
                                                             fallback = True )
 
-        print( f'Loaded localization: { language } from { locale_dir }' )
+        #print( f'Loaded localization: { language } from { locale_dir }' )
         _ = translation.gettext
 
     except Exception as e:
