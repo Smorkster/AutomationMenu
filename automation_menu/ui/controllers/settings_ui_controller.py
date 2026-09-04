@@ -13,6 +13,7 @@ from tkinter.ttk import Combobox
 from typing import Callable
 
 from automation_menu.models.settings import Settings
+from automation_menu.types.settings_ui_callbacks import SettingsUiCallbacks
 from automation_menu.ui.types.settings_ui import SettingsUi
 from automation_menu.utils.decorators import ui_guard_method
 
@@ -20,19 +21,21 @@ from automation_menu.utils.decorators import ui_guard_method
 class SettingsUiController:
     """ Control settings UI behavior and updates to stored settings."""
 
-    def __init__( self, settings: Settings, root_window: Tk, change_app_language: Callable ) -> None:
+    def __init__( self, settings: Settings, root_window: Tk, change_app_language: Callable, op_callbacks: SettingsUiCallbacks ) -> None:
         """ Initialize the settings UI controller.
 
         Args:
             settings (Settings): Settings model to read from and update.
             root_window (Tk): Root application window.
             change_app_language (Callable): Callback used to change the application language.
+            op_callbacks (SettingsUiCallbacks): Callbacks for widget commands.
         """
 
         self.settings: Settings = settings
         self.settings_ui: SettingsUi
         self.root_window: Tk = root_window
         self.change_app_language = change_app_language
+        self._settings_op_callbacks: SettingsUiCallbacks = op_callbacks
 
 
     def bind_ui( self, settings_ui: SettingsUi ) -> None:
@@ -61,6 +64,15 @@ class SettingsUiController:
                                                             text = str( path ),
                                                             tags = 'exists' )
             self.settings.script_folders.append( Path( directory ) )
+
+
+    def rebuild_menu( self ) -> None:
+        """ Script run menu needs to be rebuilt from current info """
+
+        self._settings_op_callbacks.gather_script_info( clear_cache = True )
+
+        scripts_list = self._settings_op_callbacks.get_script_list()
+        self._settings_op_callbacks.clear_script_menu( exec_list = scripts_list )
 
 
     def remove_script_folder( self ) -> None:

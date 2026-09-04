@@ -220,7 +220,8 @@ class CustomMenu:
 
         self.exec_list: dict[ str, Sequence ] | list[ ScriptInfo ] = exec_list
 
-        for c in self._menu_container.winfo_children():
+        for c in self._menu_container.grid_slaves():
+            c.grid_forget()
             c.destroy()
 
         self._create_popup_content()
@@ -230,14 +231,13 @@ class CustomMenu:
 
         visible_height: int = min( content_height, self._max_height )
 
-        self._canvas.configure(
-            width = content_width,
-            height = visible_height,
-            scrollregion = self._canvas.bbox( self._window_id )
-        )
+        self._canvas.configure( width = content_width,
+                               height = visible_height,
+                               scrollregion = self._canvas.bbox( self._window_id ) )
+
+        self.popup.update_idletasks()
 
         if self._visible:
-            self.popup.update_idletasks()
             x: int = self.menu_button.winfo_rootx()
             y: int = self.menu_button.winfo_rooty() + self.menu_button.winfo_height()
             self.popup.geometry( f'+{ x }+{ y }' )
