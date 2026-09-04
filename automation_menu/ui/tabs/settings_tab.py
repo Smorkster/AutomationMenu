@@ -105,6 +105,7 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
 
 
     settings_ui: SettingsUi = SettingsUi()
+    _title_label_wraplength: float | str = 250
 
     frame_root: Frame = Frame( master = tab )
     frame_root.grid( column = 0,
@@ -162,7 +163,8 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     app_settings_group.rowconfigure( index = row, weight = 0 )
     chb_on_top_title: Label = Label( master = app_settings_group,
                                     text = _( 'Set as topmost window' ),
-                                    padding = ( 5, 10 ) )
+                                    padding = ( 5, 10 ),
+                                    wraplength = _title_label_wraplength )
     chb_on_top_title.grid( column = 0,
                           row = row,
                           sticky = 'we' )
@@ -189,7 +191,8 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     app_settings_group.rowconfigure( index = row, weight = 0 )
     chb_minimize_on_running_title: Label = Label( master = app_settings_group,
                                                  text = _( 'Minimize size during script execution' ),
-                                                 padding = ( 5, 10 ) )
+                                                 padding = ( 5, 10 ),
+                                                 wraplength = _title_label_wraplength )
     chb_minimize_on_running_title.grid( column = 0,
                                        row = row,
                                        sticky = 'we' )
@@ -216,7 +219,8 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     app_settings_group.rowconfigure( index = row, weight = 0 )
     chb_force_focus_post_execution_title: Label = Label( master = app_settings_group,
                                                         text = _( 'Main window focus post execution' ),
-                                                        padding = ( 5, 10 ) )
+                                                        padding = ( 5, 10 ),
+                                                        wraplength = _title_label_wraplength )
     chb_force_focus_post_execution_title.grid( column = 0,
                                               row = row,
                                               sticky = 'we' )
@@ -243,7 +247,8 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     app_settings_group.rowconfigure( index = row, weight = 0 )
     cmb_current_language_title: Label = Label( master = app_settings_group,
                                               text = _( 'Application language' ),
-                                              padding = ( 5, 10 ) )
+                                              padding = ( 5, 10 ),
+                                              wraplength = _title_label_wraplength )
     cmb_current_language_title.grid( column = 0,
                                     row = row,
                                     sticky = 'nw' )
@@ -282,7 +287,8 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     app_settings_group.rowconfigure( index = row, weight = 0 )
     keepass_shortcut_title: Label = Label( master = app_settings_group,
                                           text = _( 'KeePass shortcut' ),
-                                          padding = ( 5, 10 ) )
+                                          padding = ( 5, 10 ),
+                                          wraplength = _title_label_wraplength )
     keepass_shortcut_title.grid( column = 0,
                                 row = row,
                                 sticky = 'nw' )
@@ -358,7 +364,8 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     app_settings_group.rowconfigure( index = row, weight = 0 )
     script_folders_title: Label = Label( master = app_settings_group,
                                         text = _( 'Script folders' ),
-                                        padding = ( 5, 10 ) )
+                                        padding = ( 5, 10 ),
+                                        wraplength = _title_label_wraplength )
     script_folders_title.grid( column = 0,
                               row = row,
                               sticky = 'nw' )
@@ -419,6 +426,29 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     wft: WidgetForTranslation = WidgetForTranslation( widget = script_folder_btn_remove, default_text = 'Remove' )
     add_translatable( wft )
 
+    row += 1
+
+    app_settings_group.rowconfigure( index = row, weight = 0 )
+    menu_rebuild_title: Label = Label( master = app_settings_group,
+                                      text = _( 'To have any new or changed scripts listed in the menu, click ''Rebuild'' to read all script information again.' ),
+                                      padding = ( 5, 10 ),
+                                      wraplength = _title_label_wraplength )
+    menu_rebuild_title.grid( column = 0,
+                            row = row,
+                            sticky = 'nw' )
+
+    wft: WidgetForTranslation = WidgetForTranslation( widget = menu_rebuild_title, default_text = 'To have any new or changed scripts listed in the menu, click ''Rebuild'' to read all script information again.' )
+    add_translatable( wft )
+
+    menu_rebuild_btn: Button = Button( master = app_settings_group,
+                                      text = _( 'Rebuild' ),
+                                      command = settings_ui_controller.rebuild_menu )
+    menu_rebuild_btn.grid( column = 1,
+                          row = row,
+                          sticky = 'nw' )
+
+    wft: WidgetForTranslation = WidgetForTranslation( widget = menu_rebuild_btn, default_text = 'Rebuild' )
+    add_translatable( wft )
 
     ###############
     # Errorhandling
@@ -446,7 +476,8 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     error_group.rowconfigure( index = row, weight = 0 )
     chb_send_mail_on_error_title: Label = Label( master = error_group,
                                                 text = _( 'Send mail to developer on script error' ),
-                                                padding = ( 5, 10 ) )
+                                                padding = ( 5, 10 ),
+                                                wraplength = _title_label_wraplength )
     chb_send_mail_on_error_title.grid( column = 0,
                                       row = row,
                                       sticky = 'we' )
@@ -473,7 +504,8 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     error_group.rowconfigure( index = row, weight = 0 )
     chb_include_screenshot_in_errormail_title: Label = Label( master = error_group,
                                                              text = _( 'Include screenshot in mail when reporting error' ),
-                                                             padding = ( 5, 10 ) )
+                                                             padding = ( 5, 10 ),
+                                                             wraplength = _title_label_wraplength )
     chb_include_screenshot_in_errormail_title.grid( column = 0,
                                                    row = row,
                                                    sticky = 'we' )
