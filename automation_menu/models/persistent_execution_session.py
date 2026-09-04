@@ -220,7 +220,7 @@ class PersistentExecutionSession:
     def _wait_stop( self ) -> None:
         """ Wait briefly for a graceful stop request to complete. """
 
-        if self._runner:
+        if self._runner and self._runner.current_process:
             try:
                 self._runner.current_process.wait( timeout = 5 )
 
@@ -234,7 +234,7 @@ class PersistentExecutionSession:
     def _wait_forced_stop( self ) -> None:
         """ Wait for a forced stop operation to terminate the process tree. """
 
-        if self._runner:
+        if self._runner and self._runner.current_process:
             try:
                 self._runner.current_process.wait( timeout = 5 )
 
@@ -248,7 +248,7 @@ class PersistentExecutionSession:
     def force_stop_runner( self ) -> None:
         """ Force terminate the process tree for this session. """
 
-        if self._runner:
+        if self._runner and self._runner.current_process:
             self.update_state( self._row_id, ExecutionState.FORCED_STOPPING )
             self._runner.current_process.kill()
             threading.Thread( target = self._wait_forced_stop, daemon = True ).start()
@@ -365,7 +365,7 @@ class PersistentExecutionSession:
     def resume_runner( self ) -> None:
         """ Resume a paused session by sending a continue signal. """
 
-        if not self._runner:
+        if not self._runner or not self._runner.current_process:
 
             return
 
@@ -388,7 +388,7 @@ class PersistentExecutionSession:
     def pause_runner( self ) -> None:
         """ Pause the session process when the script supports it. """
 
-        if not self._runner:
+        if not self._runner or not self._runner.current_process:
 
                 return
 
@@ -432,7 +432,7 @@ class PersistentExecutionSession:
     def stop_runner( self ) -> None:
         """ Request a graceful stop for the running session. """
 
-        if self._runner:
+        if self._runner and self._runner.current_process:
             self.update_state( self._row_id, ExecutionState.STOPPING )
             self._runner.current_process.terminate()
             threading.Thread( target = self._wait_stop, daemon = True ).start()

@@ -93,6 +93,7 @@ class AutomationMiniWindow:
         self._input.grid_remove()
         self._input_desc_var.set( '' )
         self._input_desc.grid_remove()
+        self._script_list.set( '' )
         self.root.geometry( '' )
 
 
@@ -224,6 +225,3 @@ class AutomationMiniWindow:
 
             self._button.grid( column = 1, row = 3 )
             self.root.geometry( '' )
-
-        else:
-            self._clear_input()
