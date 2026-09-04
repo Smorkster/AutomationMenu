@@ -20,9 +20,10 @@ if TYPE_CHECKING:
 
 from automation_menu.filehandling.script_cache_handler import get_menu_cache_path, read_menu_cache, write_menu_cache_file
 from automation_menu.filehandling.script_discovery import get_scripts
-from automation_menu.models.enums import ApplicationRunState
+from automation_menu.models.enums import ApplicationRunState, OutputStyleTags
 from automation_menu.models.scriptinfo import ScriptInfo
 from automation_menu.models.user import User
+from automation_menu.utils.localization import _
 
 
 class ScriptManager:
@@ -72,13 +73,26 @@ class ScriptManager:
             self._script_list.clear()
 
         if self._menu_cache_path.exists():
-            menu_cache_from_file: dict = read_menu_cache( self._menu_cache_path )
+            try:
+                menu_cache_from_file: dict = read_menu_cache( self._menu_cache_path )
 
-            for k, d in menu_cache_from_file.items():
-                s: ScriptInfo = ScriptInfo.from_dict( d )
-                self._script_list.append( s )
+                for k, d in menu_cache_from_file.items():
+                    s: ScriptInfo = ScriptInfo.from_dict( d )
+                    self._script_list.append( s )
 
-            return
+                return
+
+            except json.JSONDecodeError:
+                self._output_queue.put( { 'line': _( 'The menu cache file could not be decoded. Will gather info from script files.' ),
+                                         'tag': OutputStyleTags.SYSERROR } )
+
+                pass
+
+            except FileNotFoundError:
+                self._output_queue.put( { 'line': _( 'The menu cache file could not be located. Will gather info from script files.' ),
+                                         'tag': OutputStyleTags.SYSERROR } )
+
+                pass
 
         self._script_list = get_scripts( output_queue = self._output_queue,
                                         app_state = self._app_state,

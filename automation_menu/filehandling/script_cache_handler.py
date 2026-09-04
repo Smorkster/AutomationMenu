@@ -31,7 +31,10 @@ def read_menu_cache( cache_file: Path ) -> dict:
         cache_file (Path): Path of file to read
 
     Returns:
-        (dict): Read cache content
+        (dict): Read cache content.
+
+    Raises:
+        json.JSONDecodeError on bad/corrupt JSON formatting
     """
 
     try:
@@ -40,6 +43,10 @@ def read_menu_cache( cache_file: Path ) -> dict:
             return json.load( f )
 
     except json.JSONDecodeError as e:
+
+        raise
+
+    except FileNotFoundError:
 
         raise
 
@@ -57,6 +64,9 @@ def write_menu_cache_file( cache_file_path: Path, cache_content: str ) -> None:
     """
 
     try:
+        if not cache_file_path.parent.exists():
+            cache_file_path.parent.mkdir()
+
         with open( str( cache_file_path ), mode = 'w' ) as f:
             f.write( cache_content )
 

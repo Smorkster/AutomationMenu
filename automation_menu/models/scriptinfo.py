@@ -132,6 +132,6 @@ class ScriptInfo:
         """ Transform into a dictionary """
 
         return { 'filename': self.filename,
-                'fullpath': self.fullpath,
+                'fullpath': str( self.fullpath ),
                 'using_breakpoint': self.using_breakpoint,
                 'scriptmeta': self.scriptmeta.to_dict() }
