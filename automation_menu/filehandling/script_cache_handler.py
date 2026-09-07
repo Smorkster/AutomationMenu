@@ -50,10 +50,6 @@ def read_menu_cache( cache_file: Path ) -> dict:
 
         raise
 
-    except Exception as e:
-
-        raise
-
 
 def write_menu_cache_file( cache_file_path: Path, cache_content: str ) -> None:
     """ Write script-menu to file
@@ -70,12 +66,8 @@ def write_menu_cache_file( cache_file_path: Path, cache_content: str ) -> None:
         with open( str( cache_file_path ), mode = 'w' ) as f:
             f.write( cache_content )
 
-    except FileNotFoundError as e:
+    except PermissionError as e:
 
         from automation_menu.utils.localization import _
 
-        raise FileNotFoundError( _( 'Writing script menu cache; file not found: {file_path}' ).format( file_path = cache_file_path ) ) from e
-
-    except Exception as e:
-
-        raise e
+        raise PermissionError( _( 'Writing script menu cache caused PermissionError: {file_path}' ).format( file_path = cache_file_path ) ) from e
