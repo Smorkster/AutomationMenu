@@ -46,7 +46,7 @@ class Sequence:
 
         if not isinstance( data, dict ):
 
-            raise TypeError( _( f'Data was not of type \'dict\', got {t}' ).format( t = type( data ) ) )
+            raise TypeError( _( 'Data was not of type \'dict\', got {t}' ).format( t = type( data ) ) )
 
         return cls( description = data.get( 'description', _( '<Description not set>' ) ),
                    id = data.get( 'id', str( uuid.uuid4() ) ),
