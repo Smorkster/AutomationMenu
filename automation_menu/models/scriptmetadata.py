@@ -43,7 +43,9 @@ class ScriptMetadata:
         """ Validate required metadata after initialization.
 
         Raises:
-            ValueError: If `synopsis` or `author` is empty.
+            ValueError: If `synopsis` or `author` is empty,
+                or both `persistent_gui` and `persistent_gui_multiple`
+                are set.
         """
 
         if not self.synopsis:
