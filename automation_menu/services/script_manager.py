@@ -138,7 +138,7 @@ class ScriptManager:
         """
 
         for si in self._script_list:
-            if si.fullpath == str( path ):
+            if str( si.fullpath ) == str( path ):
 
                 return si
 
