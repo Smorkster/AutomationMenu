@@ -13,7 +13,7 @@ from typing import Callable
 
 @dataclass
 class SettingsUiCallbacks:
-    """ Store callbacks used by settings widgets construction and interaction."""
+    """ Store callbacks used by settings widgets construction and interaction. """
 
     clear_script_menu: Callable
     gather_script_info: Callable
