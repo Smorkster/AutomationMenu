@@ -44,15 +44,14 @@ class SettingsManager:
             settings_file_path (str): Path to the settings file.
         """
 
-        self._app_context: ApplicationContext = app_context
-
-        self.read_saved_settings( settings_file_path = settings_file_path )
-
         self.settings: Settings
         self.settings_ui: SettingsUi
         self._settings_file_path: Path
         self.settings_ui_controller: SettingsUiController
         self._op_callbacks: SettingsUiCallbacks
+
+        self._app_context: ApplicationContext = app_context
+        self.read_saved_settings( settings_file_path = settings_file_path )
 
 
     def _collect_op_callbacks( self ) -> None:
