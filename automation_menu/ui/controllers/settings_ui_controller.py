@@ -15,7 +15,6 @@ from typing import Callable
 from automation_menu.models.settings import Settings
 from automation_menu.types.settings_ui_callbacks import SettingsUiCallbacks
 from automation_menu.ui.types.settings_ui import SettingsUi
-from automation_menu.utils.decorators import ui_guard_method
 
 
 class SettingsUiController:
@@ -34,7 +33,7 @@ class SettingsUiController:
         self.settings: Settings = settings
         self.settings_ui: SettingsUi
         self.root_window: Tk = root_window
-        self.change_app_language = change_app_language
+        self.change_app_language: Callable = change_app_language
         self._settings_op_callbacks: SettingsUiCallbacks = op_callbacks
 
 
@@ -51,8 +50,12 @@ class SettingsUiController:
     def add_script_folder( self ) -> None:
         """ Open a folder dialog and add a new script folder if it is not already listed."""
 
-        directory: str = filedialog.askdirectory()
+        directory: str = filedialog.askdirectory( initialdir = 'C:\\' )
         path: Path = Path( directory )
+
+        if not path.exists() or directory == '':
+
+            return
 
         try:
             self.settings.script_folders.index( path )
@@ -142,7 +145,6 @@ class SettingsUiController:
         self.settings.minimize_on_running = new_value
 
 
-    @ui_guard_method( when_message = 'Setting window \'on top\'' )
     def set_on_top( self, new_value: bool ) -> None:
         """ Set whether the main window should stay on top and save the setting.
 
