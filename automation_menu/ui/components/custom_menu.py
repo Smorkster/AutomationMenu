@@ -190,10 +190,8 @@ class CustomMenu:
 
             return
 
-        widget = self.parent.winfo_containing(
-            self.parent.winfo_pointerx(),
-            self.parent.winfo_pointery()
-        )
+        widget = self.parent.winfo_containing( self.parent.winfo_pointerx(),
+                                              self.parent.winfo_pointery() )
 
         self._skip_next_open = widget is self.menu_button
         self.hide_popup_menu()
