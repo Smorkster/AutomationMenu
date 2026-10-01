@@ -85,6 +85,7 @@ class Settings:
 
             except:
                 self._script_folders.append( p )
+
                 if not p.exists():
                     self._settings_errors.append( _( 'Script folder \'{d}\' is not a valid path' ).format( d = f ) )
 

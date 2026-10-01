@@ -105,19 +105,25 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
 
 
     settings_ui: SettingsUi = SettingsUi()
+    _title_label_wraplength: float | str = 250
 
     frame_root: Frame = Frame( master = tab )
     frame_root.grid( column = 0,
                     columnspan = 2,
                     row = 0,
                     sticky = 'nswe' )
-    frame_root.columnconfigure( index = 0, weight = 1 )
-    frame_root.columnconfigure( index = 1, weight = 0 )
-    frame_root.rowconfigure( index = 0, weight = 1 )
+    frame_root.columnconfigure( index = 0,
+                               weight = 1 )
+    frame_root.columnconfigure( index = 1,
+                               weight = 0 )
+    frame_root.rowconfigure( index = 0,
+                            weight = 1 )
 
-    container_canvas: Canvas = Canvas( master = frame_root, highlightthickness = 0 )
+    container_canvas: Canvas = Canvas( master = frame_root,
+                                      highlightthickness = 0 )
     container_canvas.grid( sticky = 'nswe' )
-    container_canvas.grid_columnconfigure( index = 0, weight = 1 )
+    container_canvas.grid_columnconfigure( index = 0,
+                                          weight = 1 )
 
     container_scrollbar: Scrollbar = Scrollbar( master = frame_root,
                                                orient = 'vertical',
@@ -129,24 +135,30 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     container_canvas.configure( yscrollcommand = container_scrollbar.set )
 
     settings_widget_container: Frame = Frame( master = container_canvas )
-    settings_widget_container.columnconfigure( index = 0, weight = 1 )
+    settings_widget_container.columnconfigure( index = 0,
+                                              weight = 1 )
     window_id: int = container_canvas.create_window( ( 0, 0 ),
                                                     window = settings_widget_container,
                                                     anchor = 'nw' )
 
-    settings_widget_container.bind( '<Configure>', _on_frame_config )
-    container_canvas.bind( '<Configure>', _on_canvas_config )
-    container_canvas.bind_all( '<MouseWheel>', _on_mousewheel )
+    settings_widget_container.bind( '<Configure>',
+                                   _on_frame_config )
+    container_canvas.bind( '<Configure>',
+                          _on_canvas_config )
+    container_canvas.bind_all( '<MouseWheel>',
+                              _on_mousewheel )
 
     ######################
     # Application settings
     tab_frame_row: int = 0
 
-    app_settings_group_title: Label = Label( text=_( 'Application settings' ),
+    app_settings_group_title: Label = Label( text = _( 'Application settings' ),
                                             style = 'LabelFrameTitle.TLabel' )
     app_settings_group: LabelFrame = LabelFrame( master = settings_widget_container,
                                                 labelwidget = app_settings_group_title )
-    app_settings_group.grid( column = 0, row = tab_frame_row, sticky = 'nwe' )
+    app_settings_group.grid( column = 0,
+                            row = tab_frame_row,
+                            sticky = 'nwe' )
     app_settings_group.grid_columnconfigure( index = 0,
                                             weight = 0,
                                             uniform = 'titles' )
@@ -154,20 +166,24 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
                                             weight = 1,
                                             uniform = 'values' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = app_settings_group_title, default_text = 'Application settings' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = app_settings_group_title,
+                                                     default_text = 'Application settings' )
     add_translatable( wft )
 
     row: int = 0
 
-    app_settings_group.rowconfigure( index = row, weight = 0 )
+    app_settings_group.rowconfigure( index = row,
+                                    weight = 0 )
     chb_on_top_title: Label = Label( master = app_settings_group,
                                     text = _( 'Set as topmost window' ),
-                                    padding = ( 5, 10 ) )
+                                    padding = ( 5, 10 ),
+                                    wraplength = _title_label_wraplength )
     chb_on_top_title.grid( column = 0,
                           row = row,
                           sticky = 'we' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_on_top_title, default_text = 'Set as topmost window' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_on_top_title,
+                                                     default_text = 'Set as topmost window' )
     add_translatable( wft )
 
     val_chb_on_top: BooleanVar = BooleanVar( value = settings.on_top )
@@ -179,22 +195,27 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
                     sticky = 'nw' )
     settings_ui.chb_top_most = chb_on_top
 
-    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_on_top, msg = _ ( 'Shall the window be set as topmost, above all other windows' ) )
+    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_on_top,
+                                                msg = _ ( 'Shall the window be set as topmost, above all other windows' ) )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Shall the window be set as topmost, above all other windows' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tt,
+                                                     default_text = 'Shall the window be set as topmost, above all other windows' )
     add_translatable( wft )
 
     row += 1
 
-    app_settings_group.rowconfigure( index = row, weight = 0 )
+    app_settings_group.rowconfigure( index = row,
+                                    weight = 0 )
     chb_minimize_on_running_title: Label = Label( master = app_settings_group,
                                                  text = _( 'Minimize size during script execution' ),
-                                                 padding = ( 5, 10 ) )
+                                                 padding = ( 5, 10 ),
+                                                 wraplength = _title_label_wraplength )
     chb_minimize_on_running_title.grid( column = 0,
                                        row = row,
                                        sticky = 'we' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_minimize_on_running_title, default_text = 'Minimize size during script execution' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_minimize_on_running_title,
+                                                     default_text = 'Minimize size during script execution' )
     add_translatable( wft )
 
     val_chb_minimize_on_running: BooleanVar = BooleanVar( value = settings.minimize_on_running )
@@ -206,22 +227,27 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
                                  sticky = 'nw' )
     settings_ui.chb_minimize_on_running = chb_minimize_on_running
 
-    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_minimize_on_running, msg = _( 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' ) )
+    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_minimize_on_running,
+                                                msg = _( 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' ) )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tt,
+                                                     default_text = 'Downsize the window during script execution, trying not to be in its way. This setting can be ignored in ScriptInfo-block with \'DisableMinimizeOnRunning\'.' )
     add_translatable( wft )
 
     row += 1
 
-    app_settings_group.rowconfigure( index = row, weight = 0 )
+    app_settings_group.rowconfigure( index = row,
+                                    weight = 0 )
     chb_force_focus_post_execution_title: Label = Label( master = app_settings_group,
                                                         text = _( 'Main window focus post execution' ),
-                                                        padding = ( 5, 10 ) )
+                                                        padding = ( 5, 10 ),
+                                                        wraplength = _title_label_wraplength )
     chb_force_focus_post_execution_title.grid( column = 0,
                                               row = row,
                                               sticky = 'we' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_force_focus_post_execution_title, default_text = 'Main window focus post execution' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_force_focus_post_execution_title,
+                                                     default_text = 'Main window focus post execution' )
     add_translatable( wft )
 
     val_chb_force_focus_post_execution: BooleanVar = BooleanVar( value = settings.force_focus_post_execution )
@@ -233,29 +259,35 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
                                         sticky = 'nw' )
     settings_ui.chb_force_focus_post_execution = chb_force_focus_post_execution
 
-    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_force_focus_post_execution, msg = _( 'Should the main window be forced back to focus after execution of script or sequence have finished' ) )
+    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_force_focus_post_execution,
+                                                msg = _( 'Should the main window be forced back to focus after execution of script or sequence have finished' ) )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Should the main window be forced back to focus after execution of script or sequence have finished' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tt,
+                                                     default_text = 'Should the main window be forced back to focus after execution of script or sequence have finished' )
     add_translatable( wft )
 
     row += 1
 
-    app_settings_group.rowconfigure( index = row, weight = 0 )
+    app_settings_group.rowconfigure( index = row,
+                                    weight = 0 )
     cmb_current_language_title: Label = Label( master = app_settings_group,
                                               text = _( 'Application language' ),
-                                              padding = ( 5, 10 ) )
+                                              padding = ( 5, 10 ),
+                                              wraplength = _title_label_wraplength )
     cmb_current_language_title.grid( column = 0,
                                     row = row,
                                     sticky = 'nw' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = cmb_current_language_title, default_text = 'Application language' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = cmb_current_language_title,
+                                                     default_text = 'Application language' )
     add_translatable( wft )
 
     val_cmb_current_language: StringVar = StringVar()
     cmb_current_language: Combobox = Combobox( master = app_settings_group,
                                               values = get_available_languages(),
                                               textvariable = val_cmb_current_language )
-    cmb_current_language.bind( '<<ComboboxSelected>>', settings_ui_controller.set_current_language )
+    cmb_current_language.bind( '<<ComboboxSelected>>',
+                              settings_ui_controller.set_current_language )
     cmb_current_language.grid( column = 1,
                               columnspan = 2,
                               row = row,
@@ -272,22 +304,27 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     settings_ui.cmb_current_language = cmb_current_language
     settings_ui.cmb_current_language_val = val_cmb_current_language
 
-    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = cmb_current_language, msg = _( 'Language to use in the application' ) )
+    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = cmb_current_language,
+                                                msg = _( 'Language to use in the application' ) )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Language to use in the application' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tt,
+                                                     default_text = 'Language to use in the application' )
     add_translatable( wft )
 
     row += 1
 
-    app_settings_group.rowconfigure( index = row, weight = 0 )
+    app_settings_group.rowconfigure( index = row,
+                                    weight = 0 )
     keepass_shortcut_title: Label = Label( master = app_settings_group,
                                           text = _( 'KeePass shortcut' ),
-                                          padding = ( 5, 10 ) )
+                                          padding = ( 5, 10 ),
+                                          wraplength = _title_label_wraplength )
     keepass_shortcut_title.grid( column = 0,
                                 row = row,
                                 sticky = 'nw' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_title, default_text = 'KeePass shortcut' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_title,
+                                                     default_text = 'KeePass shortcut' )
     add_translatable( wft )
 
     keepass_shortcut_value_frame: Frame = Frame( master = app_settings_group )
@@ -298,48 +335,56 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     val_keepass_shortcut_ctrl: BooleanVar = BooleanVar( value = settings.keepass_shortcut.get( 'ctrl' ) )
     keepass_shortcut_ctrl: Checkbutton = Checkbutton( master = keepass_shortcut_value_frame,
                                                      text = _( 'CTRL' ),
-                                                     variable = val_keepass_shortcut_ctrl,
-                                                     command = lambda: settings.set_keepass_shortcut( shortcut_key = 'ctrl', shortcut_val = val_keepass_shortcut_ctrl.get() ) )
+                                                     variable = val_keepass_shortcut_ctrl )
+    val_keepass_shortcut_ctrl.trace_add( mode = 'write',
+                                        callback = lambda *args: settings.set_keepass_shortcut( shortcut_key = 'ctrl', shortcut_val = val_keepass_shortcut_ctrl.get() ) )
     keepass_shortcut_ctrl.grid( column = 0,
                                row = 0,
                                sticky = 'nw' )
     settings_ui.keepass_shortcut_ctrl = keepass_shortcut_ctrl
     settings_ui.keepass_shortcut_ctrl_val = val_keepass_shortcut_ctrl
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_ctrl, default_text = 'CTRL' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_ctrl,
+                                                     default_text = 'CTRL' )
     add_translatable( wft )
 
     val_keepass_shortcut_alt: BooleanVar = BooleanVar( value = settings.keepass_shortcut.get( 'alt' ) )
     keepass_shortcut_alt: Checkbutton = Checkbutton( master = keepass_shortcut_value_frame,
                                                     text = _( 'ALT' ),
-                                                    variable = val_keepass_shortcut_alt,
-                                                    command = lambda : settings.set_keepass_shortcut( shortcut_key = 'alt', shortcut_val = val_keepass_shortcut_alt.get() ) )
+                                                    variable = val_keepass_shortcut_alt )
+    val_keepass_shortcut_alt.trace_add( mode = 'write',
+                                       callback = lambda *args: settings.set_keepass_shortcut( shortcut_key = 'alt', shortcut_val = val_keepass_shortcut_alt.get() ) )
     keepass_shortcut_alt.grid( column = 1,
                               row = 0,
                               sticky = 'nw' )
     settings_ui.keepass_shortcut_alt = keepass_shortcut_alt
     settings_ui.keepass_shortcut_alt_val = val_keepass_shortcut_alt
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_alt, default_text = 'ALT' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_alt,
+                                                     default_text = 'ALT' )
     add_translatable( wft )
 
     val_keepass_shortcut_shift: BooleanVar = BooleanVar( value = settings.keepass_shortcut.get( 'shift' ) )
     keepass_shortcut_shift: Checkbutton = Checkbutton( master = keepass_shortcut_value_frame,
                                                       text = _( 'Shift' ),
-                                                      variable = val_keepass_shortcut_shift,
-                                                      command = lambda *args: settings.set_keepass_shortcut( shortcut_key = 'shift', shortcut_val = val_keepass_shortcut_shift.get() ) )
+                                                      variable = val_keepass_shortcut_shift )
+    val_keepass_shortcut_shift.trace_add( mode = 'write',
+                                         callback = lambda *args: settings.set_keepass_shortcut( shortcut_key = 'shift', shortcut_val = val_keepass_shortcut_shift.get() ) )
     keepass_shortcut_shift.grid( column = 2,
                                 row = 0,
                                 sticky = 'nw' )
     settings_ui.keepass_shortcut_shift = keepass_shortcut_shift
     settings_ui.keepass_shortcut_shift_val = val_keepass_shortcut_shift
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_shift, default_text = 'Shift' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = keepass_shortcut_shift,
+                                                     default_text = 'Shift' )
     add_translatable( wft )
 
     val_keepass_shortcut_key: StringVar = StringVar( value = settings.keepass_shortcut.get( 'key' ) )
-    keepass_shortcut_key: Entry = Entry( master = keepass_shortcut_value_frame, textvariable = val_keepass_shortcut_key )
-    val_keepass_shortcut_key.trace_add( mode = 'write', callback = lambda *args: settings.set_keepass_shortcut( shortcut_key = 'key', shortcut_val = val_keepass_shortcut_key.get() ) )
+    keepass_shortcut_key: Entry = Entry( master = keepass_shortcut_value_frame,
+                                        textvariable = val_keepass_shortcut_key )
+    val_keepass_shortcut_key.trace_add( mode = 'write',
+                                       callback = lambda *args: settings.set_keepass_shortcut( shortcut_key = 'key', shortcut_val = val_keepass_shortcut_key.get() ) )
     keepass_shortcut_key.grid( column = 3,
                               row = 0,
                               padx = 5,
@@ -348,25 +393,31 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
     settings_ui.keepass_shortcut_key = keepass_shortcut_key
     settings_ui.keepass_shortcut_key_val = val_keepass_shortcut_key
 
-    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = keepass_shortcut_key, msg = _( 'Shortcut used to activate KeePass for auto typing' ) )
+    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = keepass_shortcut_key,
+                                                msg = _( 'Shortcut used to activate KeePass for auto typing' ) )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Shortcut used to activate KeePass for auto typing' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tt,
+                                                     default_text = 'Shortcut used to activate KeePass for auto typing' )
     add_translatable( wft )
 
     row += 1
 
-    app_settings_group.rowconfigure( index = row, weight = 0 )
+    app_settings_group.rowconfigure( index = row,
+                                    weight = 0 )
     script_folders_title: Label = Label( master = app_settings_group,
                                         text = _( 'Script folders' ),
-                                        padding = ( 5, 10 ) )
+                                        padding = ( 5, 10 ),
+                                        wraplength = _title_label_wraplength )
     script_folders_title.grid( column = 0,
                               row = row,
                               sticky = 'nw' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = script_folders_title, default_text = 'Script folders' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = script_folders_title,
+                                                     default_text = 'Script folders' )
     add_translatable( wft )
 
     script_folders_list: Treeview = Treeview( master = app_settings_group,
+                                             name = 'script_folder_list',
                                              show = 'tree',
                                              selectmode = 'browse',
                                              height = 5 )
@@ -393,22 +444,26 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
                              row = row,
                              rowspan = 2,
                              sticky = 'we' )
-    script_folders_list.bind( '<<TreeviewSelect>>', _on_tree_select )
+    script_folders_list.bind( '<<TreeviewSelect>>',
+                             _on_tree_select )
     settings_ui.script_folders_list = script_folders_list
 
     script_folder_btn_add: Button = Button( master = app_settings_group,
+                                           name = 'script_folder_btn_add',
                                            text = _( 'Add' ),
                                            command = settings_ui_controller.add_script_folder )
     script_folder_btn_add.grid( column = 2,
                                row = row,
                                sticky = 'nw' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = script_folder_btn_add, default_text = 'Add' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = script_folder_btn_add,
+                                                     default_text = 'Add' )
     add_translatable( wft )
 
     row += 1
 
     script_folder_btn_remove: Button = Button( master = app_settings_group,
+                                              name = 'script_folder_btn_remove',
                                               state = 'disabled',
                                               text = _( 'Remove' ),
                                               command = settings_ui_controller.remove_script_folder )
@@ -416,9 +471,37 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
                                   row = row,
                                   sticky = 'nw' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = script_folder_btn_remove, default_text = 'Remove' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = script_folder_btn_remove,
+                                                     default_text = 'Remove' )
     add_translatable( wft )
 
+    row += 1
+
+    app_settings_group.rowconfigure( index = row,
+                                    weight = 0 )
+    menu_rebuild_title: Label = Label( master = app_settings_group,
+                                      text = _( 'To have any new or changed scripts listed in the menu, click ''Rebuild'' to read all script information again.' ),
+                                      padding = ( 5, 10 ),
+                                      wraplength = _title_label_wraplength )
+    menu_rebuild_title.grid( column = 0,
+                            row = row,
+                            sticky = 'nw' )
+
+    wft: WidgetForTranslation = WidgetForTranslation( widget = menu_rebuild_title,
+                                                     default_text = 'To have any new or changed scripts listed in the menu, click ''Rebuild'' to read all script information again.' )
+    add_translatable( wft )
+
+    menu_rebuild_btn: Button = Button( master = app_settings_group,
+                                      name = 'menu_rebuild_btn',
+                                      text = _( 'Rebuild' ),
+                                      command = settings_ui_controller.rebuild_menu )
+    menu_rebuild_btn.grid( column = 1,
+                          row = row,
+                          sticky = 'nw' )
+
+    wft: WidgetForTranslation = WidgetForTranslation( widget = menu_rebuild_btn,
+                                                     default_text = 'Rebuild' )
+    add_translatable( wft )
 
     ###############
     # Errorhandling
@@ -438,20 +521,24 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
                      row = tab_frame_row,
                      sticky = 'nwe' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = error_group_title, default_text = 'Errorhandling' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = error_group_title,
+                                                     default_text = 'Errorhandling' )
     add_translatable( wft )
 
     row: int = 0
 
-    error_group.rowconfigure( index = row, weight = 0 )
+    error_group.rowconfigure( index = row,
+                             weight = 0 )
     chb_send_mail_on_error_title: Label = Label( master = error_group,
                                                 text = _( 'Send mail to developer on script error' ),
-                                                padding = ( 5, 10 ) )
+                                                padding = ( 5, 10 ),
+                                                wraplength = _title_label_wraplength )
     chb_send_mail_on_error_title.grid( column = 0,
                                       row = row,
                                       sticky = 'we' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_send_mail_on_error_title, default_text = 'Send mail to developer on script error' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_send_mail_on_error_title,
+                                                     default_text = 'Send mail to developer on script error' )
     add_translatable( wft )
 
     val_chb_send_mail_on_error: BooleanVar = BooleanVar( value = settings.send_mail_on_error )
@@ -463,22 +550,27 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
                                 sticky = 'we' )
     settings_ui.chb_send_mail_on_error = chb_send_mail_on_error
 
-    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_send_mail_on_error, msg = _( 'Should an mail be sent to its developer if an error occurs in the script?' ) )
+    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_send_mail_on_error,
+                                                msg = _( 'Should an mail be sent to its developer if an error occurs in the script?' ) )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Should an mail be sent to its developer if an error occurs in the script?' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tt,
+                                                     default_text = 'Should an mail be sent to its developer if an error occurs in the script?' )
     add_translatable( wft )
 
     row += 1
 
-    error_group.rowconfigure( index = row, weight = 0 )
+    error_group.rowconfigure( index = row,
+                             weight = 0 )
     chb_include_screenshot_in_errormail_title: Label = Label( master = error_group,
                                                              text = _( 'Include screenshot in mail when reporting error' ),
-                                                             padding = ( 5, 10 ) )
+                                                             padding = ( 5, 10 ),
+                                                             wraplength = _title_label_wraplength )
     chb_include_screenshot_in_errormail_title.grid( column = 0,
                                                    row = row,
                                                    sticky = 'we' )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_include_screenshot_in_errormail_title, default_text = 'Include screenshot in mail when reporting error' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = chb_include_screenshot_in_errormail_title,
+                                                     default_text = 'Include screenshot in mail when reporting error' )
     add_translatable( wft )
 
     val_chb_include_ss_in_error_mail: BooleanVar = BooleanVar( value = settings.include_ss_in_error_mail )
@@ -490,9 +582,11 @@ def build_settings( tab: Frame, settings: Settings, settings_ui_controller: Sett
                                              sticky = 'we' )
     settings_ui.chb_include_ss_in_error_mail = chb_include_screenshot_in_errormail
 
-    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_include_screenshot_in_errormail, msg = _( 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' ) )
+    tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = chb_include_screenshot_in_errormail,
+                                                msg = _( 'Should the mail be sent to script developer when reporting that an error occured, have a screenshot of main window attached?' ) )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = tt, default_text = 'Should the mail sent to script developer when reporting that an error occured, have a screenshot of main window attached?' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tt,
+                                                     default_text = 'Should the mail be sent to script developer when reporting that an error occured, have a screenshot of main window attached?' )
     add_translatable( wft )
 
     if not val_chb_send_mail_on_error.get():
@@ -518,12 +612,16 @@ def create_settings_tab( tab_control: Notebook, translate_store_callback: Callab
                                padding = ( 5, 5, 5, 5 ),
                                name = 'settings' )
     tabSettings.grid( sticky = 'nswe' )
-    tabSettings.columnconfigure( index = 0, weight = 1 )
-    tabSettings.rowconfigure( index = 0, weight = 1 )
+    tabSettings.columnconfigure( index = 0,
+                                weight = 1 )
+    tabSettings.rowconfigure( index = 0,
+                             weight = 1 )
 
-    tab_control.add( child = tabSettings, text = _( 'Settings' ) )
+    tab_control.add( child = tabSettings,
+                    text = _( 'Settings' ) )
 
-    wft: WidgetForTranslation = WidgetForTranslation( widget = tabSettings, default_text = 'Settings' )
+    wft: WidgetForTranslation = WidgetForTranslation( widget = tabSettings,
+                                                     default_text = 'Settings' )
     translate_store_callback( wft )
 
     return tabSettings

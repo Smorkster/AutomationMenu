@@ -46,14 +46,14 @@ class Sequence:
 
         if not isinstance( data, dict ):
 
-            raise TypeError( _( f'Data was not of type \'dict\', got {t}' ).format( t = type( data ) ) )
+            raise TypeError( _( 'Data was not of type \'dict\', got {t}' ).format( t = type( data ) ) )
 
         return cls( description = data.get( 'description', _( '<Description not set>' ) ),
                    id = data.get( 'id', str( uuid.uuid4() ) ),
                    name = data.get( 'name', _( 'Unnamed sequence' ) ),
                    steps = [ SequenceStep.from_dict( step )
                             for step in data.get( 'steps', [] ) ],
-                            stop_on_error = data.get( 'stop_on_error', False ) )
+                   stop_on_error = data.get( 'stop_on_error', False ) )
 
 
     @classmethod

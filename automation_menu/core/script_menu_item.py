@@ -98,6 +98,7 @@ class ScriptMenuItem:
                 desc += f'\n\n{ _( 'Application test script, only used to test application functionality' ) }'
                 app_test = True
 
+            desc += f'\n\n{ script_info.fullpath }'
             tt: AlwaysOnTopToolTip = AlwaysOnTopToolTip( widget = self.menu_button,
                                                         msg = desc,
                                                         delay = 200 )

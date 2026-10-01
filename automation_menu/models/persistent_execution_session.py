@@ -8,17 +8,15 @@ License: MIT
 
 
 import datetime
+import psutil
 import subprocess
-
-
 import threading
 import time
-import psutil
 import win32gui
 import win32process
 
 from dataclasses import dataclass
-from psutil import Process
+from psutil import NoSuchProcess, Process
 
 from automation_menu.core.persistent_script_runner import PersistentScriptRunner
 from automation_menu.models.enums import ExecutionState
@@ -211,7 +209,7 @@ class PersistentExecutionSession:
             pid (int): Process id for the session's root process.
         """
 
-        self._psutil_process = psutil.Process( pid )
+        self._psutil_process = Process( pid )
 
         # Check for children
         self._psutil_children = self._psutil_process.children( recursive = True )
@@ -279,9 +277,9 @@ class PersistentExecutionSession:
 
         while time.time() < end:
             try:
-                root = psutil.Process( pid )
-                processes = [root] + root.children( recursive = True )
-                pids = { p.pid for p in processes }
+                root: Process = psutil.Process( pid )
+                processes: list[ Process ] = [ root ] + root.children( recursive = True )
+                pids: set[ int ] = { p.pid for p in processes }
 
             except psutil.Error:
 
@@ -369,52 +367,64 @@ class PersistentExecutionSession:
 
             return
 
-        if self._psutil_process is None:
-            self._get_process_and_children( self._runner.current_process.pid )
+        try:
+            # Process not registered
+            if self._psutil_process is None:
+                self._get_process_and_children( self._runner.current_process.pid )
 
-        if self._psutil_process is None:
+            assert self._psutil_process is not None
+            self._psutil_process.resume()
 
-            return
+            # Resume children too
+            for child in self._psutil_children:
+                child.resume()
 
-        self._psutil_process.resume()
+            self.update_state( row_id = self._row_id, state = 'running' )
 
-        # Resume children too
-        for child in self._psutil_children:
-            child.resume()
+        except NoSuchProcess as e:
+            from automation_menu.utils.localization import _
 
-        self.update_state( row_id = self._row_id, state = 'running' )
+            self.update_error( self._row_id, _( 'Could not find the process to resume' ) )
 
 
     def pause_runner( self ) -> None:
         """ Pause the session process when the script supports it. """
 
-        if not self._runner or not self._runner.current_process:
+        if self._runner is None or self._runner.current_process is None:
 
                 return
 
-        self._get_process_and_children( self._runner.current_process.pid )
+        try:
+            self._get_process_and_children( self._runner.current_process.pid )
 
-        if self._psutil_process is None:
+            assert self._psutil_process is not None
+            self._psutil_process.suspend()
 
-            return
+            # Suspend children too
+            for child in self._psutil_children:
+                child.suspend()
 
-        self._psutil_process.suspend()
+            self.update_state( row_id = self._row_id, state = 'paused' )
 
-        # Suspend children too
-        for child in self._psutil_children:
-            child.suspend()
+        except NoSuchProcess as e:
 
-        self.update_state( row_id = self._row_id, state = 'paused' )
+            from automation_menu.utils.localization import _
+
+            self.update_error( self._row_id, _( 'Could not find the process to pause' ) )
 
 
     def show_main_window( self ) -> None:
         """ Bring the script window to the foreground when available. """
 
+        if self._process is None or self._process.pid is None:
+            from automation_menu.utils.localization import _
+
+            self.update_error( self._row_id, _( 'Could not find the scripts main window' ) )
+
+            return
+
         if not self._window_handle or not win32gui.IsWindow( self._window_handle ):
-
-            if self._process and self._process.pid is not None:
-
-                self._window_handle = self.get_main_window_handle( pid = self._process.pid )
+            self._window_handle = self.get_main_window_handle( pid = self._process.pid )
 
         if not self._window_handle:
 

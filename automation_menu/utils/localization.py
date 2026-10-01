@@ -33,8 +33,6 @@ def find_locales_directory() -> Path:
         locale_dir (Path): Path to the locales directory.
     """
 
-    current_file: Path = Path( __file__ )
-
     # Go up two levels to reach root directory
     project_root: Path = app_path()
     locale_dir: Path = project_root / 'locales'
@@ -89,7 +87,7 @@ def get_system_locale() -> str:
 
         return system_locale
 
-    except ( ValueError, TypeError ):
+    except ( ValueError, TypeError ) as e:
 
         return default_localization
 
@@ -121,15 +119,16 @@ def setup_localization( domain: str = 'messages', language: str | None = None ) 
                                                             languages = [ language ],
                                                             fallback = True )
 
-        print( f'Loaded localization: { language } from { locale_dir }' )
+        #print( f'Loaded localization: { language } from { locale_dir }' )
         _ = translation.gettext
 
     except Exception as e:
         print( f'Warning: Could not load translation for { language } from { locale_dir }: { e }' )
         print( 'Falling back to English' )
+
+        # Use a function that just returns the original string
         _ = lambda text: text
 
-    # Return a function that just returns the original string
     return _
 
 

@@ -19,6 +19,7 @@ from tkinter.ttk import Frame, Notebook
 from typing import TYPE_CHECKING
 
 from automation_menu.types.rawsettings import RawSettings
+from automation_menu.types.settings_ui_callbacks import SettingsUiCallbacks
 
 if TYPE_CHECKING:
     from automation_menu.core.app_context import ApplicationContext
@@ -43,14 +44,22 @@ class SettingsManager:
             settings_file_path (str): Path to the settings file.
         """
 
-        self._app_context: ApplicationContext = app_context
-
-        self.read_saved_settings( settings_file_path = settings_file_path )
-
         self.settings: Settings
         self.settings_ui: SettingsUi
         self._settings_file_path: Path
         self.settings_ui_controller: SettingsUiController
+        self._op_callbacks: SettingsUiCallbacks
+
+        self._app_context: ApplicationContext = app_context
+        self.read_saved_settings( settings_file_path = settings_file_path )
+
+
+    def _collect_op_callbacks( self ) -> None:
+        """ Setup collection of callbacks for UI handlres """
+
+        self._op_callbacks = SettingsUiCallbacks( clear_script_menu = self._app_context.main_window.menu_buttons.script_menu.rebuild_menu,
+                                                 gather_script_info = self._app_context.ScriptManager.gather_scripts,
+                                                 get_script_list = self._app_context.ScriptManager.get_script_list )
 
 
     def build_tab_content( self ) -> SettingsUi:
@@ -60,9 +69,12 @@ class SettingsManager:
             (SettingsUi): Created settings UI widget collection.
         """
 
+        self._collect_op_callbacks()
+
         self.settings_ui_controller = SettingsUiController( settings = self.settings,
                                                            root_window = self._app_context.main_window.root,
-                                                           change_app_language = self._app_context.LanguageManager.change_app_language )
+                                                           change_app_language = self._app_context.LanguageManager.change_app_language ,
+                                                           op_callbacks = self._op_callbacks )
         self.settings_ui = build_settings( tab = self._tab,
                                           settings = self.settings,
                                           settings_ui_controller = self.settings_ui_controller,
