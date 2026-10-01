@@ -7,7 +7,7 @@ License: MIT
 """
 
 
-from tkinter.ttk import Button, Frame
+from tkinter.ttk import Button
 from typing import cast
 from unittest.mock import Mock, call, patch
 
