@@ -41,4 +41,4 @@ def recycle( file_path: str ) -> bool:
     fop.wFunc = 3  # FO_DELETE
     fop.fFlags = 1620  # FOF_ALLOWUNDO | FOF_NO_UI
 
-    return shell32.SHFileOperationW(byref(fop)) == 0
+    return shell32.SHFileOperationW( byref( fop ) ) == 0
