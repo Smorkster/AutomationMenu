@@ -2,9 +2,16 @@
 requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
+
+[tool.pytest]
+testpaths = [ "tests" ]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["automation_menu", "automation_menu.*"]
+
 
 [project]
 name = "automation-menu"
@@ -59,6 +66,7 @@ dependencies = [
     "UiAutomation==2.0.29"
 ]
 gui-scripts = {main = "main:main"}
+
 
 [project.urls]
 Homepage = "https://github.com/Smorkster/AutomationMenu"
